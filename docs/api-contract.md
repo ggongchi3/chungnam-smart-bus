@@ -1,0 +1,338 @@
+# 내부 API 계약 초안
+
+이 문서는 프론트엔드·백엔드·AI 사이에서 합의할 **우리 서비스의 내부 설계 초안**이다. 실제 서버나 외부 교통 데이터 제공기관의 API 명세가 아니며, 아래 주소·필드·상태·통신 방식은 모두 구현을 위한 추가 설계 제안이다. 언어·프레임워크·DB·외부 제공자·인증·배포 주소·제한시간·갱신 주기는 미정이다. 실제 외부 API의 필드·지역·실시간 정보·운행 변경 제공 여부를 보장하지 않는다.
+
+모든 JSON의 `demo-` ID, 장소·노선 이름, 시간은 실제 운행과 무관한 합성 예시다. 예시 시각은 고정된 설명용 값이며 현재 시각이나 실제 데이터 갱신을 뜻하지 않는다. 코드 블록은 요청/응답 구조 예시이며 실행 프로그램이 아니다.
+
+## 1. 연결과 공통 규칙
+
+- 프론트엔드는 백엔드의 공개 서비스 API만 호출한다. 외부 데이터 키와 AI 접근 정보는 프론트엔드에 전달하지 않는다.
+- 백엔드는 등록된 교통 데이터와 경로 계산 결과를 검증하고 외부 필드를 내부 모델로 변환한다. 경로 계산 방식과 검증 범위는 미정이다.
+- 백엔드는 등록된 목적지 후보 또는 검증 경로의 구간 ID·허용 표현만 AI에 전달한다. AI가 외부 교통 API나 프론트엔드와 직접 연결된다고 가정하지 않는다.
+- ID는 불투명한 문자열이다. 표시 이름을 ID로 쓰지 않으며 제공기관 간 ID 매핑은 백엔드가 관리한다.
+- 계약 필드명은 lowerCamelCase로 제안한다. 시간은 시간대 오프셋이 있는 ISO 8601 문자열을 사용하고 사용자 표시 시간대는 `Asia/Seoul`로 제안한다. 소요·남은 시간은 초 단위다. 정확한 포맷은 개발 착수 시 합의한다.
+- 알 수 없는 값은 `null`과 상태 필드로 표현한다. `0분`, 빈 문자열, 현재 시각으로 대체하지 않는다. 없는 알림과 조회 실패를 구분한다.
+- 공개 응답은 아래 봉투를 사용한다. 성공 시 `error=null`, 실패 시 `data=null`이다. `generatedAt`은 응답 생성 시각이며 교통정보의 최종 갱신 시각이 아니다.
+
+```json
+{
+  "data": {},
+  "error": null,
+  "meta": {
+    "requestId": "demo-request-001",
+    "generatedAt": "2026-10-25T10:00:00+09:00",
+    "dataMode": "demo"
+  }
+}
+```
+
+`dataMode`는 `demo | live`다. 서버가 정하며 클라이언트가 live로 승격하지 않는다. live 데이터 일부가 실패하면 시연 값으로 조용히 채우지 않고 해당 항목을 unavailable 또는 stale로 반환한다. 시연 모드 표시는 모든 화면·인쇄·음성 안내에 반영한다.
+
+## 2. 공통 데이터 모델
+
+| 모델 | 주요 필드와 의미 | 대표 관리자 |
+| --- | --- | --- |
+| Station | `stationId`, `name`, `directionLabel`, `region`, `coordinates`(확인 전 null). 같은 이름/반대편 정류장 구분 | 백엔드 |
+| Destination | `destinationId`, `name`, `category`, `aliases`. 등록·확인된 장소 후보. 장소와 접근 정류장의 연결도 검증 대상 | 백엔드 |
+| TransitRoute / RouteStop | `routeId`, `routeName`, `directionLabel`; `stationId`, `sequence`. 순환/반복 정차 시 ID와 순번으로 승하차 지점 구분 | 백엔드 |
+| RouteOption | 검색 결과에서 고르는 하나의 이동 경로. 버스 노선 ID와 다르다. `routeOptionId`, `routeSnapshotVersion`, `journeyStatus`, 요약 필드 | 백엔드 |
+| RouteDetail | `routeSearchId`, `routeOptionId`, `routeSnapshotVersion`, `originStationId`, `destinationId`, `computedAt`, `journeyStatus`, `segments`, `referenceDataQuality` | 백엔드 |
+| DataQuality | `sourceId`, `sourceUpdatedAt`, `fetchedAt`, `freshness`. freshness는 `fresh | stale | unknown`이며 기준 임계값은 미정 | 백엔드 |
+| RouteSelection | A→B의 선택 식별자·버전·데이터 모드. 상세 사실 데이터의 원본이 아니다 | 프론트엔드 A |
+| GuideTemplateChoice | 검증된 구간 ID에 대응하는 허용 템플릿 ID. 사실 값을 새로 생성하지 않는다 | AI |
+
+목적지 분류 초안은 `hospital | market | terminal | station | other`다. 장소와 버스 정류장을 의미하는 stationId는 별도 개념이다.
+
+`journeyStatus`는 `ready | recheck_required | unavailable`이다. ready는 해당 데이터 모드와 확인된 경로 자료 안에서 이용 순서를 검증했다는 뜻이다. 현실의 운행을 보증하거나 모든 항목이 실시간임을 뜻하지 않는다. 도보·환승 연결 근거가 없으면 가능한 환승으로 확정하지 않는다.
+
+`segments`는 순서가 있는 배열이며 모든 구간은 고유 `segmentId`를 가진다.
+
+| 구간 type | 필수 구조 | 미확인 값 처리 |
+| --- | --- | --- |
+| `bus` | `routeId`, `routeName`, `boardStation`, `alightStation`, `boardSequence`, `alightSequence`, `stopCount`, `durationSeconds` | 순번·정류장 수는 확인된 경유 순서로 계산한다. 소요시간은 미확인 시 null |
+| `walk` | `fromLabel`, `toLabel`, `distanceMeters`, `durationSeconds` | 검증한 도보 연결만 경로에 사용한다. 거리·시간 미제공 시 null; 임의 속도로 시간을 만들지 않는다 |
+| `transfer` | `fromSegmentId`, `toSegmentId`, `atStation`, `instructionTemplateId` | 연결되는 버스 구간·환승 지점 확인이 필수다. 도보 이동이 있으면 별도 walk 구간으로 포함한다 |
+
+`boardStation`, `alightStation`, `atStation`은 `{ "stationId": "...", "name": "..." }` 구조다. `stopCount`는 출발 정류장을 제외하고 하차 정류장을 포함해 앞으로 지나는 정류장 수로 제안한다. 실제 경유 순서에 따라 산정하며 이름만 비교하지 않는다. UI와 출력물은 이 정의를 함께 사용한다.
+
+## 3. 프론트엔드 → 백엔드 API 목록
+
+아래 경로의 `/api/v1`은 제안한 내부 접두사다. 조회 조건과 응답 스키마를 합의하기 위한 목록이며 현재 호출 가능한 주소가 아니다.
+
+| 메서드·경로 | 요청 | 성공 시 data 구조·사용처 |
+| --- | --- | --- |
+| `GET /api/v1/stations/{stationId}` | 시연 설정 등으로 지정한 현재 정류장 ID | `{station: Station}`. A의 시작 화면 |
+| `GET /api/v1/destinations` | 필수 `originStationId`; 선택 `query`, `category` | `{destinations: Destination[]}`. 텍스트 검색·주요 장소 선택. 두 선택 조건을 함께 주면 교집합 |
+| `POST /api/v1/route-searches` | `originStationId`, `destinationId`, `departAt` | `{routeSearchId, originStationId, destinationId, routeOptions: RouteOption[]}`. A의 경로 선택 |
+| `GET /api/v1/route-searches/{routeSearchId}/options/{routeOptionId}` | 경로 선택 식별자 | `RouteDetail`. B의 승차·하차·정류장 수·도보·환승 |
+| `GET /api/v1/route-searches/{routeSearchId}/options/{routeOptionId}/live` | 선택 경로의 식별자 | `{routeSnapshotVersion, arrivals, serviceChanges}`. B의 도착·운행 현황·변경·갱신 시각 |
+| `POST /api/v1/destination-interpretations` | `originStationId`, `text` | `{status, candidates: Destination[], reasonCode}`. 추가 제안인 자연어 검색; 백엔드가 후보 ID를 재검증 |
+| `POST /api/v1/easy-guidance` | `routeSearchId`, `routeOptionId`, `expectedRouteSnapshotVersion` | `{routeSnapshotVersion, mode, steps}`. 검증 경로의 쉬운 안내; 추가 제안 |
+| `POST /api/v1/print-guides` | `routeSearchId`, `routeOptionId`, `expectedRouteSnapshotVersion` | `{printGuideId, generatedAt, routeDetail, liveInfoSnapshot, notice}`. B가 인쇄용 스냅샷을 화면으로 렌더링 |
+
+검색 결과 없음은 성공 응답의 빈 배열로 표현한다. `departAt`의 초기 범위는 현재 출발 조회다. 미래/과거 출발 경로를 지원한다고 가정하지 않는다. 생성/전달 기준 시각과 허용 오차는 미정이다. 브라우저 세션·인증·CORS·정확한 검색 길이/개수 제한·페이지 분할은 미정이다.
+
+## 4. 프론트엔드 A → B 공통 전달 데이터
+
+대표 관리자는 A이며 백엔드 계약 변경 시 B와 함께 조정한다. 단일 앱의 라우터/공통 상태에 보관하는 구체적 방법은 미정이다.
+
+```json
+{
+  "originStationId": "demo-stop-001",
+  "destinationId": "demo-destination-001",
+  "routeSearchId": "demo-search-001",
+  "routeOptionId": "demo-option-001",
+  "routeSnapshotVersion": "demo-v1",
+  "dataMode": "demo"
+}
+```
+
+| 필드 | 의미·검증 규칙 |
+| --- | --- |
+| `originStationId` | 현재 출발 정류장. 상세 응답의 출발 정류장과 일치해야 한다 |
+| `destinationId` | 사용자가 확정한 등록 목적지 ID. 자연어 원문만 넘기지 않는다 |
+| `routeSearchId` | 백엔드가 생성한 검색 결과 묶음. 저장/유효기간 정책은 미정 |
+| `routeOptionId` | 그 검색에서 선택한 이동 경로. 버스 노선 ID와 구분 |
+| `routeSnapshotVersion` | A가 선택할 당시 경로의 버전. B의 조회/인쇄 준비에서 변경 감지 |
+| `dataMode` | 선택 당시 모드 표시용. 상세 응답이 최종 기준이며 불일치 시 다시 조회/선택 |
+
+B는 ID 누락·만료·새로고침 후 상태 소실 시 다시 선택하도록 안내한다. 상세 조회 버전이 달라졌거나 live 응답이 다른 경로 버전을 참조하면 기존 값과 섞지 않고 상세를 다시 조회한다. 변경된 경로를 사용자가 확인하기 전에는 이전 선택으로 인쇄를 진행하지 않는다.
+
+## 5. 경로 요청·응답 예시
+
+경로 검색 요청 예시:
+
+```json
+{
+  "originStationId": "demo-stop-001",
+  "destinationId": "demo-destination-001",
+  "departAt": "2026-10-25T10:00:00+09:00"
+}
+```
+
+성공 응답의 `data` 예시:
+
+```json
+{
+  "routeSearchId": "demo-search-001",
+  "originStationId": "demo-stop-001",
+  "destinationId": "demo-destination-001",
+  "routeOptions": [
+    {
+      "routeOptionId": "demo-option-001",
+      "routeSnapshotVersion": "demo-v1",
+      "journeyStatus": "ready",
+      "routeNames": ["시연 1번"],
+      "transferCount": 0,
+      "totalDurationSeconds": null,
+      "walkingDurationSeconds": null
+    }
+  ]
+}
+```
+
+동일한 경로의 상세 응답 `data` 예시:
+
+```json
+{
+  "routeSearchId": "demo-search-001",
+  "routeOptionId": "demo-option-001",
+  "routeSnapshotVersion": "demo-v1",
+  "originStationId": "demo-stop-001",
+  "destinationId": "demo-destination-001",
+  "computedAt": "2026-10-25T10:00:00+09:00",
+  "journeyStatus": "ready",
+  "referenceDataQuality": {
+    "sourceId": "demo-fixture",
+    "sourceUpdatedAt": null,
+    "fetchedAt": "2026-10-25T10:00:00+09:00",
+    "freshness": "unknown"
+  },
+  "segments": [
+    {
+      "segmentId": "demo-leg-bus-001",
+      "type": "bus",
+      "routeId": "demo-route-001",
+      "routeName": "시연 1번",
+      "boardStation": {"stationId": "demo-stop-001", "name": "시연 출발 정류장"},
+      "alightStation": {"stationId": "demo-stop-003", "name": "시연 병원 앞 정류장"},
+      "boardSequence": 1,
+      "alightSequence": 3,
+      "stopCount": 2,
+      "durationSeconds": null
+    },
+    {
+      "segmentId": "demo-leg-walk-001",
+      "type": "walk",
+      "fromLabel": "시연 병원 앞 정류장",
+      "toLabel": "시연 병원",
+      "distanceMeters": null,
+      "durationSeconds": null
+    }
+  ]
+}
+```
+
+위의 연결은 합성 시나리오 안에서 정의한 경로다. 실제 도보·환승 가능성이나 운행 검증을 뜻하지 않는다. 실제 데이터로 전환할 때는 정류장 순서, 방향, 연결 가능성과 출처를 별도로 검증한다.
+
+## 6. 실시간 도착·운행 변경·시간 표시
+
+성공 응답의 `data` 예시다. 300초는 시연 수치다.
+
+```json
+{
+  "routeSnapshotVersion": "demo-v1",
+  "arrivals": [
+    {
+      "segmentId": "demo-leg-bus-001",
+      "routeId": "demo-route-001",
+      "boardStationId": "demo-stop-001",
+      "arrivalStatus": "available",
+      "etaSeconds": 300,
+      "expectedArrivalAt": "2026-10-25T10:05:00+09:00",
+      "operationStatus": "unknown",
+      "dataQuality": {
+        "sourceId": "demo-fixture",
+        "sourceUpdatedAt": null,
+        "fetchedAt": "2026-10-25T10:00:00+09:00",
+        "freshness": "unknown"
+      }
+    }
+  ],
+  "serviceChanges": {
+    "coverageStatus": "unknown",
+    "items": [],
+    "dataQuality": {
+      "sourceId": null,
+      "sourceUpdatedAt": null,
+      "fetchedAt": null,
+      "freshness": "unknown"
+    }
+  }
+}
+```
+
+- `arrivalStatus`: `available | unavailable`. available은 값이 있다는 뜻이다. 현재성은 dataQuality를 별도로 확인한다.
+- `operationStatus`: `running | not_running | unknown`. 도착 데이터가 없다는 이유로 결행이라고 판단하지 않는다. 실제 제공 필드에 대응할 수 있을 때만 상태를 매핑한다.
+- `serviceChanges.coverageStatus`: `available | unknown`. items가 비어 있고 coverageStatus가 unknown이면 `운행 변경 정보 확인 불가`로 표시한다. 정상 운행이나 변경 없음으로 단정하지 않는다. available이어도 해당 출처가 조회한 범위와 시각을 함께 표시한다.
+- 변경 항목 초안: `{changeId, type, affectedRouteIds, affectedStationIds, title, description, validFrom, validUntil, dataQuality}`. type은 `timetable_change | cancellation | detour | other`다. 미확인 적용 시각은 null이며 출처에 없는 내용을 채우지 않는다.
+- 항목마다 `sourceUpdatedAt`을 최종 원천 갱신 시각으로 표시한다. 제공되지 않으면 `원천 갱신 시각 확인 불가`, 별도로 `서버 수집 시각`을 표시한다. `meta.generatedAt`이나 화면을 새로 그린 시각으로 대체하지 않는다.
+- fresh/stale 판단 임계값·조회 간격·재시도·타임아웃은 제공자 정책을 확인한 뒤 합의한다. 오래된 값은 현재 도착 정보처럼 표시하지 않는다. 마지막 값을 참고로 유지할 경우 그 시각과 `오래된 정보` 표시를 붙인다.
+- 모든 부분 데이터의 갱신 시각을 하나의 시각으로 덮지 않는다. live의 경로 버전이 상세와 다르면 먼저 상세를 재조회한다.
+
+## 7. 안내표와 브라우저 인쇄
+
+`POST /api/v1/print-guides`는 인쇄 준비용 내부 설계 제안이다. 서버가 선택 경로의 버전·이용 가능 상태를 다시 확인하고, 같은 경로 상세와 실시간 정보의 스냅샷을 반환한다. `routeDetail`은 5절의 구조, `liveInfoSnapshot`은 6절의 구조를 사용한다. `notice`에는 시연 여부·시각·확인 불가 상태를 나타내는 서버의 표시 문구를 담는다.
+
+B는 같은 `routeSnapshotVersion`으로 승차 버스·승하차 정류장·정류장 수·도보·환승 순서·목적지를 렌더링하고 인쇄 UI를 제공한다. 화면용 버튼·내비게이션을 제외하는 인쇄 레이아웃과 브라우저 인쇄 미리보기를 계획한다. 용지 크기·페이지 나눔·글꼴·여백은 디자인과 합의 후 브라우저에서 확인한다.
+
+`generatedAt`은 안내표 생성 시각이다. 종이 출력 완료 시각이나 프린터 성공을 의미하지 않는다. 인쇄물에는 교통정보의 원천 갱신 시각/확인 불가 상태를 별도로 표시한다. 실시간 정보가 미수신이어도 경로 자체가 검증된 경우 경고 문구와 함께 인쇄할지 사용자 흐름을 합의한다. 결행·경로 변경 등으로 이용 불가가 확인되거나 버전이 바뀌면 기존 확정 안내를 중단하고 재선택하도록 한다. 프린터 직접 제어·기기 탐지·출력 완료 판정은 확장 과제다.
+
+## 8. AI 목적지 표현 해석 — 추가 제안
+
+공개 요청 예시: `{originStationId, text}`. 백엔드는 텍스트 길이 등 입력을 검증하고 현재 정류장/시연 범위에 맞는 등록 후보만 구성한다. AI 통신은 논리 계약이며 별도 프로세스·함수·HTTP 중 무엇을 쓸지는 미정이다. HTTP를 선택할 때의 경로 제안은 `POST /internal/ai/v1/interpret-destination`이다.
+
+AI 내부 요청 예시:
+
+```json
+{
+  "text": "큰 병원에 가고 싶어요",
+  "dataMode": "demo",
+  "allowedDestinations": [
+    {"destinationId": "demo-destination-001", "name": "시연 병원", "aliases": ["시연 큰 병원"]}
+  ]
+}
+```
+
+AI 내부 응답 예시:
+
+```json
+{
+  "status": "needs_confirmation",
+  "candidateDestinationIds": ["demo-destination-001"],
+  "reasonCode": "USER_CONFIRMATION_REQUIRED"
+}
+```
+
+status는 `matched | needs_confirmation | no_match | unavailable`이다. matched도 사용자가 화면에서 목적지를 확인하고 선택한다. 동명 장소·모호한 표현은 후보를 표시하고 확인받는다. 점수·확정 임계값은 미정이다.
+
+백엔드는 후보 ID가 allowedDestinations의 부분집합인지 검증하고 직접 보관한 Destination 값으로 공개 응답 candidates를 구성한다. AI가 반환한 새로운 장소·좌표·노선은 사용하지 않는다. no_match이면 일반 검색/주요 장소 선택, unavailable 또는 시간초과이면 같은 수동 경로로 대체한다. reasonCode의 상세 목록은 구현 전 합의한다.
+
+## 9. AI 쉬운 한국어 안내 — 추가 제안
+
+검증된 경로를 쉽게 설명하되 AI가 숫자·이름·노선·환승·도착 시각을 새로 만들지 않도록, 초기 계약은 **허용된 안내 템플릿 선택 + 백엔드의 사실 값 삽입** 방식으로 제안한다. 자유 서술로 교통 사실을 생성하는 기능은 초기 계약에 포함하지 않는다.
+
+공개 요청은 경로 식별자와 `expectedRouteSnapshotVersion`만 받는다. 클라이언트가 임의의 경로 사실을 만들어 AI에 직접 전달하지 않는다. 백엔드가 저장/검증한 RouteDetail을 읽어 내부 요청을 구성한다. HTTP를 선택할 경우의 내부 경로 제안은 `POST /internal/ai/v1/easy-guidance`다.
+
+AI 내부 요청 예시:
+
+```json
+{
+  "routeSnapshotVersion": "demo-v1",
+  "dataMode": "demo",
+  "verifiedSegments": [
+    {"segmentId": "demo-leg-bus-001", "type": "bus", "allowedTemplateIds": ["bus.basic"]},
+    {"segmentId": "demo-leg-walk-001", "type": "walk", "allowedTemplateIds": ["walk.basic"]}
+  ]
+}
+```
+
+AI 내부 응답 예시:
+
+```json
+{
+  "status": "ok",
+  "routeSnapshotVersion": "demo-v1",
+  "steps": [
+    {"segmentId": "demo-leg-bus-001", "templateId": "bus.basic"},
+    {"segmentId": "demo-leg-walk-001", "templateId": "walk.basic"}
+  ]
+}
+```
+
+AI 내부 status는 `ok | unavailable`이다. 모델·방식·표현 변형의 폭은 미정이며, 여러 허용 표현은 AI·디자인 담당이 함께 검토한다. `ai/contracts/`는 구체 스키마, `ai/easy-guidance/`는 검토한 템플릿과 선택 로직을 관리할 위치다.
+
+백엔드는 버전, 구간 ID, 구간 순서, 누락·추가·중복, 구간 유형별 허용 템플릿을 검사한다. 검증된 정류장명·노선명·정류장 수는 백엔드가 템플릿 슬롯에 넣는다. 미확인 시간·도착 수치는 생략하거나 확인 불가 표현을 사용하며 AI가 채우지 않는다.
+
+공개 응답은 `{routeSnapshotVersion, mode, steps}`이며 mode는 `ai_assisted | template_fallback`이다. 공개 steps의 항목은 `{segmentId, text}`다. AI 실패·유효하지 않은 출력·시간초과 시 같은 검증 경로로 고정 템플릿을 적용하고 template_fallback으로 반환한다. 텍스트는 일반 문자열로 처리하며 임의 HTML을 실행하지 않는다. B는 이 안내를 음성·화면에서 사용하되 구조화된 교통 사실을 항상 기준으로 삼는다.
+
+## 10. 오류·만료·실패 처리
+
+오류 응답 예시:
+
+```json
+{
+  "data": null,
+  "error": {
+    "code": "ROUTE_VERSION_CHANGED",
+    "message": "경로 정보가 바뀌었습니다. 다시 확인해 주세요.",
+    "retryable": true
+  },
+  "meta": {
+    "requestId": "demo-request-002",
+    "generatedAt": "2026-10-25T10:01:00+09:00",
+    "dataMode": "demo"
+  }
+}
+```
+
+| HTTP 상태 제안 | 서비스 code/상태 | 화면·서버 처리 |
+| --- | --- | --- |
+| 200 | 검색 결과 빈 배열 | 결과 없음. 사용자가 목적지를 다시 선택 |
+| 400 | `INVALID_REQUEST` | ID·형식·지원하지 않는 출발 시각 등 입력 확인 |
+| 404 | `NOT_FOUND` | 등록되지 않은 정류장/목적지/경로 확인 후 재선택 |
+| 409 | `ROUTE_VERSION_CHANGED` | 기존 버전과 혼합 금지. 상세/경로 재조회 후 확인 |
+| 410 | `ROUTE_SEARCH_EXPIRED` | 검색을 다시 시작. 실제 만료 시간은 미정 |
+| 503 | `TRANSPORT_DATA_UNAVAILABLE` | 핵심 경로 검증 자료가 없을 때 가능한 경로라고 확정하지 않음 |
+| 200, 항목별 unavailable/unknown | 실시간 부분 실패 | 확인 불가·갱신 상태 표시. 정상/결행을 추정하지 않음 |
+| 200, AI unavailable 또는 template_fallback | AI 실패 | 일반 검색 또는 고정 안내로 계속 진행 |
+
+외부 제공자 오류·개인정보·키·내부 접근정보를 사용자 메시지나 로그 예시에 넣지 않는다. 재시도 횟수·제한시간·저장 기간·요청 제한은 미정이다.
+
+## 11. 평가와 연동 전 합의
+
+- AI 평가에는 같은 이름의 목적지, 모호한 표현, 후보 없음, 목록 밖 ID, 경로 버전 불일치, 구간 누락/추가, 틀린 템플릿, 시간초과를 포함한다. 실제 사례·기준·목표치는 `ai/evaluation/`에 후속 작성한다.
+- A/B/백엔드는 출발·목적지·노선·경유 순서 ID, 버전, 미수신/오래됨 상태, 갱신 시각과 시간대, 시연 모드, 호출 시점·폴링 정책을 합의한다.
+- 백엔드/AI는 후보 제한, 스키마, 허용 템플릿, 검증 및 대체 동작을 합의한다. 백엔드가 최종 교통 사실을 소유한다.
+- 디자인/A/B는 화면 흐름·접근성 기준·음성 기술·음성 실패·인쇄 용지/페이지 나눔·인쇄 취소 동작을 합의한다. 특정 접근성 표준 준수 완료를 주장하지 않는다.
+- 스택·정확한 인증·실행 명령·실제 출처·커버리지·호출 제한·환승 검증 범위를 확정하고 문서를 갱신한 뒤 실제 데이터 연동을 진행한다.

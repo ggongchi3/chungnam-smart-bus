@@ -1,0 +1,62 @@
+# Operating system and local editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Dependencies and local environments; stack is not selected yet
+node_modules/
+.venv/
+venv/
+env/
+vendor/
+
+# Build outputs
+build/
+dist/
+out/
+target/
+bin/
+obj/
+.next/
+.nuxt/
+
+# Caches, coverage and logs
+__pycache__/
+*.py[cod]
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.gradle/
+coverage/
+.nyc_output/
+htmlcov/
+.coverage
+.coverage.*
+logs/
+*.log
+*.tmp
+
+# Secrets and local environment configuration
+.env
+.env.*
+!.env.example
+!.env.*.example
+.envrc
+secrets/
+credentials.json
+credentials.*.json
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+
+# Keep dependency lockfiles and extensionless temp placeholders tracked.
+# Commit .env example files only after removing all real credentials.
