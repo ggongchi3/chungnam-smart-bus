@@ -1,6 +1,6 @@
 # 전체 저장소 구조와 폴더 목적
 
-이 구조는 기술 스택에 종속되지 않는 초기 구분이다. 실행 코드·언어별 설정·외부 데이터 파일은 아직 없다. 5개 파트는 5명의 역할이며, 루트의 5개 영역과 일대일로 대응하는 뜻은 아니다. 프론트엔드는 하나의 앱이다.
+이 구조는 기술 스택에 종속되지 않는 초기 구분이다. 실행 코드·언어별 설정·외부 데이터 파일은 아직 없다. 선정 기술과 시연 범위는 [development-plan.md](development-plan.md)를 따른다. 5개 파트는 5명의 역할이며, 루트의 5개 영역과 일대일로 대응하는 뜻은 아니다. 프론트엔드는 하나의 앱이다.
 
 ## 실제 파일 트리
 
@@ -68,6 +68,7 @@ chungnam-smart-bus/
 └── docs/
     ├── api-contract.md
     ├── data-sources.md
+    ├── development-plan.md
     ├── roles.md
     ├── structure.md
     └── verification.md
@@ -82,8 +83,8 @@ chungnam-smart-bus/
 | `backend/services/` | 백엔드 | 목적지 조회, 경로 계산/검증, 운행 정보 조합, AI 중계와 인쇄 스냅샷 준비 |
 | `backend/models/` | 백엔드 | 정류장·목적지·노선·경유 순서·이동 구간과 공통 데이터 모델 |
 | `backend/integrations/` | 백엔드 | 외부 제공자 어댑터, 내부 필드 매핑, 출처별 시간/실패 처리; 제공자 미정 |
-| `frontend/` | 프론트엔드 A | A와 B가 기능별로 개발하는 하나의 앱; 언어·프레임워크 미정 |
-| `frontend/config/` | 프론트엔드 A | 스택 확정 후 앱 설정과 시연 정류장 설정; 실제 키 저장 금지 |
+| `frontend/` | 프론트엔드 A | A와 B가 기능별로 개발하는 하나의 React + TypeScript + Vite 앱 |
+| `frontend/config/` | 프론트엔드 A | 선정 기술의 앱 설정과 시연 정류장 설정; 실제 키 저장 금지 |
 | `frontend/src/` | 프론트엔드 A | 단일 앱의 진입·기능·공통 코드 구분 |
 | `frontend/src/app/` | 프론트엔드 A | 앱 진입, 시작 화면, 현재 정류장, 화면 전환과 공통 화면 틀 |
 | `frontend/src/features/` | 프론트엔드 A | 기능별 경계; 아래 각 기능의 대표 관리자는 개별 지정 |
@@ -92,7 +93,7 @@ chungnam-smart-bus/
 | `frontend/src/features/journey-guide/` | 프론트엔드 B | 승차·하차·정류장 수·도보·환승 순서와 쉬운 안내 |
 | `frontend/src/features/live-info/` | 프론트엔드 B | 도착·운행 현황·변경·항목별 갱신 시각·미수신/오래됨 상태 |
 | `frontend/src/features/print-guide/` | 프론트엔드 B | 이동 안내표, 인쇄 레이아웃, 브라우저 인쇄/미리보기 |
-| `frontend/src/features/voice-guide/` | 프론트엔드 B | 음성 안내 재생·중지·실패 UI; 음성 기술 미정 |
+| `frontend/src/features/voice-guide/` | 프론트엔드 B | 음성 안내 재생·중지·실패 UI; Web Speech API, 실제 한국어 음성 가용성 확인 필요 |
 | `frontend/src/shared/` | 프론트엔드 A | 중복을 피할 공통 코드의 관리 경계 |
 | `frontend/src/shared/ui/` | 프론트엔드 A | 공통 버튼·카드·오류/로딩 표시 등; 디자인 기준과 접근성 적용 |
 | `frontend/src/shared/api/` | 프론트엔드 A | 단일 API 클라이언트, 공통 응답/오류 처리와 데이터 계약 반영 |
@@ -121,6 +122,7 @@ chungnam-smart-bus/
 | `docs/roles.md` | 정확히 5명 역할·입출력·공통 항목 대표 관리자·접근성 |
 | `docs/api-contract.md` | 공개/내부 API 초안·A→B 데이터·AI 경계·실패 처리 |
 | `docs/data-sources.md` | 사진 확인 범위·필요 데이터·출처/키/제공 범위 미확인 사항 |
+| `docs/development-plan.md` | 시연 범위·선정 기술·합성 데이터·API 처리 수치·화면/음성/인쇄·개발 순서 |
 | `docs/structure.md` | 실제 전체 트리·폴더 목적·관리자 |
 | `docs/verification.md` | 이번 초기 생성 결과의 구조·문서·Git 제외 규칙 점검 기록 |
 
@@ -130,4 +132,4 @@ chungnam-smart-bus/
 Placeholder file. Remove after adding actual project files.
 ```
 
-실제 작업 파일을 추가하면 해당 최하위 폴더의 `temp`를 삭제한다. 실제 파일이 있는 `docs/`나 하위 폴더만 있는 상위 폴더에는 `temp`를 추가하지 않는다. 이 문서의 트리는 초기 생성 상태이며 후속 구조 변경 시 대표 관리자가 갱신한다.
+실제 작업 파일을 추가하면 해당 최하위 폴더의 `temp`를 삭제한다. 실제 파일이 있는 `docs/`나 하위 폴더만 있는 상위 폴더에는 `temp`를 추가하지 않는다. 이 문서의 트리는 개발 기준안 추가 후 상태이며 후속 구조 변경 시 대표 관리자가 갱신한다.
