@@ -1,1 +1,1 @@
-# smart-bus-stop-platform
+# chungnam-bus-stop
