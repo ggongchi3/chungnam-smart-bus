@@ -1,0 +1,2224 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "충남 스마트 버스 · 합성 시연 API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/stations/{stationId}": {
+      "get": {
+        "summary": "Station",
+        "operationId": "station_api_v1_stations__stationId__get",
+        "parameters": [
+          {
+            "name": "stationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Stationid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_StationData_"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/destinations": {
+      "get": {
+        "summary": "Destinations",
+        "operationId": "destinations_api_v1_destinations_get",
+        "parameters": [
+          {
+            "name": "originStationId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Originstationid"
+            }
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "default": "",
+              "title": "Query"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "hospital",
+                    "market",
+                    "terminal",
+                    "station",
+                    "other"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_DestinationData_"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/route-searches": {
+      "post": {
+        "summary": "Search",
+        "operationId": "search_api_v1_route_searches_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_SearchData_"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Gone",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/route-searches/{routeSearchId}/options/{routeOptionId}": {
+      "get": {
+        "summary": "Detail",
+        "operationId": "detail_api_v1_route_searches__routeSearchId__options__routeOptionId__get",
+        "parameters": [
+          {
+            "name": "routeSearchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Routesearchid"
+            }
+          },
+          {
+            "name": "routeOptionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Routeoptionid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_RouteDetail_"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/route-searches/{routeSearchId}/options/{routeOptionId}/live": {
+      "get": {
+        "summary": "Live",
+        "operationId": "live_api_v1_route_searches__routeSearchId__options__routeOptionId__live_get",
+        "parameters": [
+          {
+            "name": "routeSearchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Routesearchid"
+            }
+          },
+          {
+            "name": "routeOptionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Routeoptionid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_LiveData_"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/destination-interpretations": {
+      "post": {
+        "summary": "Interpretation",
+        "operationId": "interpretation_api_v1_destination_interpretations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterpretationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_InterpretationData_"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Gone",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/easy-guidance": {
+      "post": {
+        "summary": "Guidance",
+        "operationId": "guidance_api_v1_easy_guidance_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_GuidanceData_"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Gone",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/print-guides": {
+      "post": {
+        "summary": "Print Guide",
+        "operationId": "print_guide_api_v1_print_guides_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_PrintData_"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Gone",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_NoneType_"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Arrival": {
+        "properties": {
+          "segmentId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Segmentid"
+          },
+          "routeId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Routeid"
+          },
+          "boardStationId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Boardstationid"
+          },
+          "arrivalStatus": {
+            "type": "string",
+            "enum": [
+              "available",
+              "unavailable"
+            ],
+            "title": "Arrivalstatus"
+          },
+          "etaSeconds": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Etaseconds"
+          },
+          "expectedArrivalAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expectedarrivalat"
+          },
+          "operationStatus": {
+            "type": "string",
+            "enum": [
+              "running",
+              "not_running",
+              "unknown"
+            ],
+            "title": "Operationstatus"
+          },
+          "dataQuality": {
+            "$ref": "#/components/schemas/Quality"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "segmentId",
+          "routeId",
+          "boardStationId",
+          "arrivalStatus",
+          "etaSeconds",
+          "expectedArrivalAt",
+          "operationStatus",
+          "dataQuality"
+        ],
+        "title": "Arrival"
+      },
+      "Bus": {
+        "properties": {
+          "segmentId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Segmentid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "bus"
+            ],
+            "const": "bus",
+            "title": "Type",
+            "default": "bus"
+          },
+          "routeId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Routeid"
+          },
+          "routeName": {
+            "type": "string",
+            "title": "Routename"
+          },
+          "boardStation": {
+            "$ref": "#/components/schemas/StationRef"
+          },
+          "alightStation": {
+            "$ref": "#/components/schemas/StationRef"
+          },
+          "boardSequence": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Boardsequence"
+          },
+          "alightSequence": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Alightsequence"
+          },
+          "stopCount": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Stopcount"
+          },
+          "durationSeconds": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Durationseconds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "segmentId",
+          "routeId",
+          "routeName",
+          "boardStation",
+          "alightStation",
+          "boardSequence",
+          "alightSequence",
+          "stopCount",
+          "durationSeconds"
+        ],
+        "title": "Bus"
+      },
+      "Change": {
+        "properties": {
+          "changeId": {
+            "type": "string",
+            "title": "Changeid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "timetable_change",
+              "cancellation",
+              "detour",
+              "other"
+            ],
+            "title": "Type"
+          },
+          "affectedRouteIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Affectedrouteids"
+          },
+          "affectedStationIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Affectedstationids"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "validFrom": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Validfrom"
+          },
+          "validUntil": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Validuntil"
+          },
+          "dataQuality": {
+            "$ref": "#/components/schemas/Quality"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "changeId",
+          "type",
+          "affectedRouteIds",
+          "affectedStationIds",
+          "title",
+          "description",
+          "validFrom",
+          "validUntil",
+          "dataQuality"
+        ],
+        "title": "Change"
+      },
+      "Coordinates": {
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "title": "Latitude"
+          },
+          "longitude": {
+            "type": "number",
+            "title": "Longitude"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "title": "Coordinates"
+      },
+      "Destination": {
+        "properties": {
+          "destinationId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Destinationid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "hospital",
+              "market",
+              "terminal",
+              "station",
+              "other"
+            ],
+            "title": "Category"
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Aliases"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "destinationId",
+          "name",
+          "category",
+          "aliases"
+        ],
+        "title": "Destination"
+      },
+      "DestinationData": {
+        "properties": {
+          "destinations": {
+            "items": {
+              "$ref": "#/components/schemas/Destination"
+            },
+            "type": "array",
+            "title": "Destinations"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "destinations"
+        ],
+        "title": "DestinationData"
+      },
+      "Envelope_DestinationData_": {
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DestinationData"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Error"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "Envelope[DestinationData]"
+      },
+      "Envelope_GuidanceData_": {
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GuidanceData"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Error"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "Envelope[GuidanceData]"
+      },
+      "Envelope_InterpretationData_": {
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InterpretationData"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Error"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "Envelope[InterpretationData]"
+      },
+      "Envelope_LiveData_": {
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LiveData"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Error"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "Envelope[LiveData]"
+      },
+      "Envelope_NoneType_": {
+        "properties": {
+          "data": {
+            "type": "null",
+            "title": "Data"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Error"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "Envelope[NoneType]"
+      },
+      "Envelope_PrintData_": {
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrintData"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Error"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "Envelope[PrintData]"
+      },
+      "Envelope_RouteDetail_": {
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RouteDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Error"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "Envelope[RouteDetail]"
+      },
+      "Envelope_SearchData_": {
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SearchData"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Error"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "Envelope[SearchData]"
+      },
+      "Envelope_StationData_": {
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StationData"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Error"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "Envelope[StationData]"
+      },
+      "Error": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "retryable": {
+            "type": "boolean",
+            "title": "Retryable"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "retryable"
+        ],
+        "title": "Error"
+      },
+      "GuidanceData": {
+        "properties": {
+          "routeSnapshotVersion": {
+            "type": "string",
+            "title": "Routesnapshotversion"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "ai_assisted",
+              "template_fallback"
+            ],
+            "title": "Mode"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/Step"
+            },
+            "type": "array",
+            "title": "Steps"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "routeSnapshotVersion",
+          "mode",
+          "steps"
+        ],
+        "title": "GuidanceData"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "InterpretationData": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "matched",
+              "needs_confirmation",
+              "no_match",
+              "unavailable"
+            ],
+            "title": "Status"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/Destination"
+            },
+            "type": "array",
+            "title": "Candidates"
+          },
+          "reasonCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoncode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status",
+          "candidates",
+          "reasonCode"
+        ],
+        "title": "InterpretationData"
+      },
+      "InterpretationRequest": {
+        "properties": {
+          "originStationId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Originstationid"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "originStationId",
+          "text"
+        ],
+        "title": "InterpretationRequest"
+      },
+      "LiveData": {
+        "properties": {
+          "routeSnapshotVersion": {
+            "type": "string",
+            "title": "Routesnapshotversion"
+          },
+          "arrivals": {
+            "items": {
+              "$ref": "#/components/schemas/Arrival"
+            },
+            "type": "array",
+            "title": "Arrivals"
+          },
+          "serviceChanges": {
+            "$ref": "#/components/schemas/ServiceChanges"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "routeSnapshotVersion",
+          "arrivals",
+          "serviceChanges"
+        ],
+        "title": "LiveData"
+      },
+      "Meta": {
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "title": "Requestid"
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generatedat"
+          },
+          "dataMode": {
+            "type": "string",
+            "enum": [
+              "demo",
+              "live"
+            ],
+            "title": "Datamode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "requestId",
+          "generatedAt",
+          "dataMode"
+        ],
+        "title": "Meta"
+      },
+      "PrintData": {
+        "properties": {
+          "printGuideId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Printguideid"
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generatedat"
+          },
+          "routeDetail": {
+            "$ref": "#/components/schemas/RouteDetail"
+          },
+          "liveInfoSnapshot": {
+            "$ref": "#/components/schemas/LiveData"
+          },
+          "notice": {
+            "type": "string",
+            "title": "Notice"
+          },
+          "guidance": {
+            "$ref": "#/components/schemas/GuidanceData"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "printGuideId",
+          "generatedAt",
+          "routeDetail",
+          "liveInfoSnapshot",
+          "notice",
+          "guidance"
+        ],
+        "title": "PrintData"
+      },
+      "Quality": {
+        "properties": {
+          "sourceId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sourceid"
+          },
+          "sourceUpdatedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sourceupdatedat"
+          },
+          "fetchedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fetchedat"
+          },
+          "freshness": {
+            "type": "string",
+            "enum": [
+              "fresh",
+              "stale",
+              "unknown"
+            ],
+            "title": "Freshness"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "sourceId",
+          "sourceUpdatedAt",
+          "fetchedAt",
+          "freshness"
+        ],
+        "title": "Quality"
+      },
+      "RouteDetail": {
+        "properties": {
+          "routeSearchId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Routesearchid"
+          },
+          "routeOptionId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Routeoptionid"
+          },
+          "routeSnapshotVersion": {
+            "type": "string",
+            "title": "Routesnapshotversion"
+          },
+          "originStationId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Originstationid"
+          },
+          "destinationId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Destinationid"
+          },
+          "computedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Computedat"
+          },
+          "journeyStatus": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "recheck_required",
+              "unavailable"
+            ],
+            "title": "Journeystatus"
+          },
+          "referenceDataQuality": {
+            "$ref": "#/components/schemas/Quality"
+          },
+          "segments": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/Bus"
+                },
+                {
+                  "$ref": "#/components/schemas/Walk"
+                },
+                {
+                  "$ref": "#/components/schemas/Transfer"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                  "bus": "#/components/schemas/Bus",
+                  "transfer": "#/components/schemas/Transfer",
+                  "walk": "#/components/schemas/Walk"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Segments"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "routeSearchId",
+          "routeOptionId",
+          "routeSnapshotVersion",
+          "originStationId",
+          "destinationId",
+          "computedAt",
+          "journeyStatus",
+          "referenceDataQuality",
+          "segments"
+        ],
+        "title": "RouteDetail"
+      },
+      "RouteOption": {
+        "properties": {
+          "routeOptionId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Routeoptionid"
+          },
+          "routeSnapshotVersion": {
+            "type": "string",
+            "title": "Routesnapshotversion"
+          },
+          "journeyStatus": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "recheck_required",
+              "unavailable"
+            ],
+            "title": "Journeystatus"
+          },
+          "routeNames": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Routenames"
+          },
+          "transferCount": {
+            "type": "integer",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Transfercount"
+          },
+          "totalDurationSeconds": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Totaldurationseconds"
+          },
+          "walkingDurationSeconds": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Walkingdurationseconds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "routeOptionId",
+          "routeSnapshotVersion",
+          "journeyStatus",
+          "routeNames",
+          "transferCount",
+          "totalDurationSeconds",
+          "walkingDurationSeconds"
+        ],
+        "title": "RouteOption"
+      },
+      "SearchData": {
+        "properties": {
+          "routeSearchId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Routesearchid"
+          },
+          "originStationId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Originstationid"
+          },
+          "destinationId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Destinationid"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expiresat"
+          },
+          "routeOptions": {
+            "items": {
+              "$ref": "#/components/schemas/RouteOption"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Routeoptions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "routeSearchId",
+          "originStationId",
+          "destinationId",
+          "expiresAt",
+          "routeOptions"
+        ],
+        "title": "SearchData"
+      },
+      "SearchRequest": {
+        "properties": {
+          "originStationId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Originstationid"
+          },
+          "destinationId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Destinationid"
+          },
+          "departAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Departat"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "originStationId",
+          "destinationId",
+          "departAt"
+        ],
+        "title": "SearchRequest"
+      },
+      "SelectionRequest": {
+        "properties": {
+          "routeSearchId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Routesearchid"
+          },
+          "routeOptionId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Routeoptionid"
+          },
+          "expectedRouteSnapshotVersion": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Expectedroutesnapshotversion"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "routeSearchId",
+          "routeOptionId",
+          "expectedRouteSnapshotVersion"
+        ],
+        "title": "SelectionRequest"
+      },
+      "ServiceChanges": {
+        "properties": {
+          "coverageStatus": {
+            "type": "string",
+            "enum": [
+              "available",
+              "unknown"
+            ],
+            "title": "Coveragestatus"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Change"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "dataQuality": {
+            "$ref": "#/components/schemas/Quality"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "coverageStatus",
+          "items",
+          "dataQuality"
+        ],
+        "title": "ServiceChanges"
+      },
+      "Station": {
+        "properties": {
+          "stationId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Stationid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "directionLabel": {
+            "type": "string",
+            "title": "Directionlabel"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region"
+          },
+          "coordinates": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Coordinates"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "stationId",
+          "name",
+          "directionLabel",
+          "region",
+          "coordinates"
+        ],
+        "title": "Station"
+      },
+      "StationData": {
+        "properties": {
+          "station": {
+            "$ref": "#/components/schemas/Station"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "station"
+        ],
+        "title": "StationData"
+      },
+      "StationRef": {
+        "properties": {
+          "stationId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Stationid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "stationId",
+          "name"
+        ],
+        "title": "StationRef"
+      },
+      "Step": {
+        "properties": {
+          "segmentId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Segmentid"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "segmentId",
+          "text"
+        ],
+        "title": "Step"
+      },
+      "Transfer": {
+        "properties": {
+          "segmentId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Segmentid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "transfer"
+            ],
+            "const": "transfer",
+            "title": "Type",
+            "default": "transfer"
+          },
+          "fromSegmentId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Fromsegmentid"
+          },
+          "toSegmentId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Tosegmentid"
+          },
+          "atStation": {
+            "$ref": "#/components/schemas/StationRef"
+          },
+          "instructionTemplateId": {
+            "type": "string",
+            "enum": [
+              "transfer.basic"
+            ],
+            "const": "transfer.basic",
+            "title": "Instructiontemplateid",
+            "default": "transfer.basic"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "segmentId",
+          "fromSegmentId",
+          "toSegmentId",
+          "atStation"
+        ],
+        "title": "Transfer"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "Walk": {
+        "properties": {
+          "segmentId": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Segmentid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "walk"
+            ],
+            "const": "walk",
+            "title": "Type",
+            "default": "walk"
+          },
+          "fromLabel": {
+            "type": "string",
+            "title": "Fromlabel"
+          },
+          "toLabel": {
+            "type": "string",
+            "title": "Tolabel"
+          },
+          "distanceMeters": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distancemeters"
+          },
+          "durationSeconds": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Durationseconds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "segmentId",
+          "fromLabel",
+          "toLabel",
+          "distanceMeters",
+          "durationSeconds"
+        ],
+        "title": "Walk"
+      }
+    }
+  }
+}

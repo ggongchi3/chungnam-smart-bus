@@ -1,0 +1,481 @@
+{
+  "station": {
+    "httpStatus": 200,
+    "response": {
+      "data": {
+        "station": {
+          "stationId": "demo-stop-001",
+          "name": "시연 출발 정류장",
+          "directionLabel": "시연 병원 방향",
+          "region": null,
+          "coordinates": null
+        }
+      },
+      "error": null,
+      "meta": {
+        "requestId": "c290ef8e-2cea-41c3-b963-0289fa554f7c",
+        "generatedAt": "2026-10-26T05:22:58.131282Z",
+        "dataMode": "demo"
+      }
+    }
+  },
+  "destinations": {
+    "httpStatus": 200,
+    "response": {
+      "data": {
+        "destinations": [
+          {
+            "destinationId": "demo-destination-002",
+            "name": "시연 시장",
+            "category": "market",
+            "aliases": [
+              "시연 장터"
+            ]
+          }
+        ]
+      },
+      "error": null,
+      "meta": {
+        "requestId": "11a4d513-b96d-4937-aaf2-96f83e2ff1d5",
+        "generatedAt": "2026-10-26T05:22:58.142804Z",
+        "dataMode": "demo"
+      }
+    }
+  },
+  "emptyResult": {
+    "httpStatus": 200,
+    "response": {
+      "data": {
+        "destinations": []
+      },
+      "error": null,
+      "meta": {
+        "requestId": "e8668892-a1f3-45a5-be39-e710d2024bfb",
+        "generatedAt": "2026-10-26T05:22:58.152033Z",
+        "dataMode": "demo"
+      }
+    }
+  },
+  "invalidInput": {
+    "httpStatus": 400,
+    "response": {
+      "data": null,
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "입력 형식과 허용 범위를 확인해 주세요.",
+        "retryable": false
+      },
+      "meta": {
+        "requestId": "debcc36a-1c01-4677-bbb3-5ea62a86494b",
+        "generatedAt": "2026-10-26T05:22:58.156662+00:00",
+        "dataMode": "demo"
+      }
+    }
+  },
+  "notFound": {
+    "httpStatus": 404,
+    "response": {
+      "data": null,
+      "error": {
+        "code": "NOT_FOUND",
+        "message": "등록된 대상을 찾을 수 없습니다.",
+        "retryable": false
+      },
+      "meta": {
+        "requestId": "935578e0-3124-4830-b094-23c77345442b",
+        "generatedAt": "2026-10-26T05:22:58.162467+00:00",
+        "dataMode": "demo"
+      }
+    }
+  },
+  "routeSearch": {
+    "httpStatus": 200,
+    "response": {
+      "data": {
+        "routeSearchId": "demo-search-50e067af167a4e489750b8f0bbba8ef1",
+        "originStationId": "demo-stop-001",
+        "destinationId": "demo-destination-003",
+        "expiresAt": "2026-10-26T05:32:58.168494Z",
+        "routeOptions": [
+          {
+            "routeOptionId": "demo-option-846b67ee349031e85d43e3ea",
+            "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+            "journeyStatus": "ready",
+            "routeNames": [
+              "시연 1번",
+              "시연 2번"
+            ],
+            "transferCount": 1,
+            "totalDurationSeconds": null,
+            "walkingDurationSeconds": null
+          }
+        ]
+      },
+      "error": null,
+      "meta": {
+        "requestId": "45412bfb-e926-4cf5-b70a-2852e2fb1818",
+        "generatedAt": "2026-10-26T05:22:58.206884Z",
+        "dataMode": "demo"
+      }
+    }
+  },
+  "routeDetail": {
+    "httpStatus": 200,
+    "response": {
+      "data": {
+        "routeSearchId": "demo-search-50e067af167a4e489750b8f0bbba8ef1",
+        "routeOptionId": "demo-option-846b67ee349031e85d43e3ea",
+        "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+        "originStationId": "demo-stop-001",
+        "destinationId": "demo-destination-003",
+        "computedAt": "2026-10-26T05:22:58.168494Z",
+        "journeyStatus": "ready",
+        "referenceDataQuality": {
+          "sourceId": "demo-fixture",
+          "sourceUpdatedAt": null,
+          "fetchedAt": "2026-10-26T05:22:58.168494Z",
+          "freshness": "unknown"
+        },
+        "segments": [
+          {
+            "segmentId": "demo-leg-bus-001",
+            "type": "bus",
+            "routeId": "demo-route-001",
+            "routeName": "시연 1번",
+            "boardStation": {
+              "stationId": "demo-stop-001",
+              "name": "시연 출발 정류장"
+            },
+            "alightStation": {
+              "stationId": "demo-stop-003",
+              "name": "시연 병원 앞 정류장"
+            },
+            "boardSequence": 1,
+            "alightSequence": 3,
+            "stopCount": 2,
+            "durationSeconds": null
+          },
+          {
+            "segmentId": "demo-leg-transfer-001",
+            "type": "transfer",
+            "fromSegmentId": "demo-leg-bus-001",
+            "toSegmentId": "demo-leg-bus-002",
+            "atStation": {
+              "stationId": "demo-stop-003",
+              "name": "시연 병원 앞 정류장"
+            },
+            "instructionTemplateId": "transfer.basic"
+          },
+          {
+            "segmentId": "demo-leg-bus-002",
+            "type": "bus",
+            "routeId": "demo-route-002",
+            "routeName": "시연 2번",
+            "boardStation": {
+              "stationId": "demo-stop-003",
+              "name": "시연 병원 앞 정류장"
+            },
+            "alightStation": {
+              "stationId": "demo-stop-005",
+              "name": "시연 터미널 앞 정류장"
+            },
+            "boardSequence": 1,
+            "alightSequence": 3,
+            "stopCount": 2,
+            "durationSeconds": null
+          },
+          {
+            "segmentId": "demo-leg-walk-001",
+            "type": "walk",
+            "fromLabel": "시연 터미널 앞 정류장",
+            "toLabel": "시연 터미널",
+            "distanceMeters": null,
+            "durationSeconds": null
+          }
+        ]
+      },
+      "error": null,
+      "meta": {
+        "requestId": "4edca1c8-bf83-46b7-a9a9-86d44ca0c447",
+        "generatedAt": "2026-10-26T05:22:58.264590Z",
+        "dataMode": "demo"
+      }
+    }
+  },
+  "live": {
+    "httpStatus": 200,
+    "response": {
+      "data": {
+        "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+        "arrivals": [
+          {
+            "segmentId": "demo-leg-bus-001",
+            "routeId": "demo-route-001",
+            "boardStationId": "demo-stop-001",
+            "arrivalStatus": "available",
+            "etaSeconds": 299,
+            "expectedArrivalAt": "2026-10-26T05:27:58.129315Z",
+            "operationStatus": "unknown",
+            "dataQuality": {
+              "sourceId": "demo-fixture",
+              "sourceUpdatedAt": "2026-10-26T05:22:58.129315Z",
+              "fetchedAt": "2026-10-26T05:22:58.129315Z",
+              "freshness": "fresh"
+            }
+          },
+          {
+            "segmentId": "demo-leg-bus-002",
+            "routeId": "demo-route-002",
+            "boardStationId": "demo-stop-003",
+            "arrivalStatus": "available",
+            "etaSeconds": 299,
+            "expectedArrivalAt": "2026-10-26T05:27:58.129315Z",
+            "operationStatus": "unknown",
+            "dataQuality": {
+              "sourceId": "demo-fixture",
+              "sourceUpdatedAt": "2026-10-26T05:22:58.129315Z",
+              "fetchedAt": "2026-10-26T05:22:58.129315Z",
+              "freshness": "fresh"
+            }
+          }
+        ],
+        "serviceChanges": {
+          "coverageStatus": "available",
+          "items": [],
+          "dataQuality": {
+            "sourceId": "demo-fixture",
+            "sourceUpdatedAt": "2026-10-26T05:22:58.129315Z",
+            "fetchedAt": "2026-10-26T05:22:58.129315Z",
+            "freshness": "fresh"
+          }
+        }
+      },
+      "error": null,
+      "meta": {
+        "requestId": "5020dd78-999e-46e6-a5c8-d88b23c9c21c",
+        "generatedAt": "2026-10-26T05:22:58.296373Z",
+        "dataMode": "demo"
+      }
+    }
+  },
+  "interpretation": {
+    "httpStatus": 200,
+    "response": {
+      "data": {
+        "status": "unavailable",
+        "candidates": [],
+        "reasonCode": "AI_UNAVAILABLE"
+      },
+      "error": null,
+      "meta": {
+        "requestId": "1ddfd1dd-0ccf-4af8-bdbc-32aae9829ac6",
+        "generatedAt": "2026-10-26T05:22:58.308273Z",
+        "dataMode": "demo"
+      }
+    }
+  },
+  "guidance": {
+    "httpStatus": 200,
+    "response": {
+      "data": {
+        "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+        "mode": "template_fallback",
+        "steps": [
+          {
+            "segmentId": "demo-leg-bus-001",
+            "text": "시연 데이터 · 실제 운행 정보 아님. 시연 출발 정류장에서 시연 1번 버스를 타세요. 2개 정류장을 지나 시연 병원 앞 정류장에서 내리세요."
+          },
+          {
+            "segmentId": "demo-leg-transfer-001",
+            "text": "시연 병원 앞 정류장에서 다음 안내의 버스로 갈아타세요."
+          },
+          {
+            "segmentId": "demo-leg-bus-002",
+            "text": "시연 병원 앞 정류장에서 시연 2번 버스를 타세요. 2개 정류장을 지나 시연 터미널 앞 정류장에서 내리세요."
+          },
+          {
+            "segmentId": "demo-leg-walk-001",
+            "text": "시연 터미널 앞 정류장에서 시연 터미널까지 걸어가세요. 거리와 이동 시간은 확인되지 않았습니다."
+          }
+        ]
+      },
+      "error": null,
+      "meta": {
+        "requestId": "40edae4e-0ad3-4a4d-a2f0-636b633976a4",
+        "generatedAt": "2026-10-26T05:22:58.370855Z",
+        "dataMode": "demo"
+      }
+    }
+  },
+  "printGuide": {
+    "httpStatus": 200,
+    "response": {
+      "data": {
+        "printGuideId": "demo-print-52c9eb111de04224b58ea44db7e11d12",
+        "generatedAt": "2026-10-26T05:22:58.378838Z",
+        "routeDetail": {
+          "routeSearchId": "demo-search-50e067af167a4e489750b8f0bbba8ef1",
+          "routeOptionId": "demo-option-846b67ee349031e85d43e3ea",
+          "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+          "originStationId": "demo-stop-001",
+          "destinationId": "demo-destination-003",
+          "computedAt": "2026-10-26T05:22:58.168494Z",
+          "journeyStatus": "ready",
+          "referenceDataQuality": {
+            "sourceId": "demo-fixture",
+            "sourceUpdatedAt": null,
+            "fetchedAt": "2026-10-26T05:22:58.168494Z",
+            "freshness": "unknown"
+          },
+          "segments": [
+            {
+              "segmentId": "demo-leg-bus-001",
+              "type": "bus",
+              "routeId": "demo-route-001",
+              "routeName": "시연 1번",
+              "boardStation": {
+                "stationId": "demo-stop-001",
+                "name": "시연 출발 정류장"
+              },
+              "alightStation": {
+                "stationId": "demo-stop-003",
+                "name": "시연 병원 앞 정류장"
+              },
+              "boardSequence": 1,
+              "alightSequence": 3,
+              "stopCount": 2,
+              "durationSeconds": null
+            },
+            {
+              "segmentId": "demo-leg-transfer-001",
+              "type": "transfer",
+              "fromSegmentId": "demo-leg-bus-001",
+              "toSegmentId": "demo-leg-bus-002",
+              "atStation": {
+                "stationId": "demo-stop-003",
+                "name": "시연 병원 앞 정류장"
+              },
+              "instructionTemplateId": "transfer.basic"
+            },
+            {
+              "segmentId": "demo-leg-bus-002",
+              "type": "bus",
+              "routeId": "demo-route-002",
+              "routeName": "시연 2번",
+              "boardStation": {
+                "stationId": "demo-stop-003",
+                "name": "시연 병원 앞 정류장"
+              },
+              "alightStation": {
+                "stationId": "demo-stop-005",
+                "name": "시연 터미널 앞 정류장"
+              },
+              "boardSequence": 1,
+              "alightSequence": 3,
+              "stopCount": 2,
+              "durationSeconds": null
+            },
+            {
+              "segmentId": "demo-leg-walk-001",
+              "type": "walk",
+              "fromLabel": "시연 터미널 앞 정류장",
+              "toLabel": "시연 터미널",
+              "distanceMeters": null,
+              "durationSeconds": null
+            }
+          ]
+        },
+        "liveInfoSnapshot": {
+          "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+          "arrivals": [
+            {
+              "segmentId": "demo-leg-bus-001",
+              "routeId": "demo-route-001",
+              "boardStationId": "demo-stop-001",
+              "arrivalStatus": "available",
+              "etaSeconds": null,
+              "expectedArrivalAt": "2026-10-26T05:27:58.129315Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-26T05:22:58.129315Z",
+                "fetchedAt": "2026-10-26T05:22:58.129315Z",
+                "freshness": "fresh"
+              }
+            },
+            {
+              "segmentId": "demo-leg-bus-002",
+              "routeId": "demo-route-002",
+              "boardStationId": "demo-stop-003",
+              "arrivalStatus": "available",
+              "etaSeconds": null,
+              "expectedArrivalAt": "2026-10-26T05:27:58.129315Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-26T05:22:58.129315Z",
+                "fetchedAt": "2026-10-26T05:22:58.129315Z",
+                "freshness": "fresh"
+              }
+            }
+          ],
+          "serviceChanges": {
+            "coverageStatus": "available",
+            "items": [],
+            "dataQuality": {
+              "sourceId": "demo-fixture",
+              "sourceUpdatedAt": "2026-10-26T05:22:58.129315Z",
+              "fetchedAt": "2026-10-26T05:22:58.129315Z",
+              "freshness": "fresh"
+            }
+          }
+        },
+        "notice": "시연 데이터 · 실제 운행 정보 아님 · 생성 시각과 원천 갱신 시각을 구분해 주세요. 도착·운행 변경 정보는 확인 불가하거나 오래될 수 있습니다.",
+        "guidance": {
+          "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+          "mode": "template_fallback",
+          "steps": [
+            {
+              "segmentId": "demo-leg-bus-001",
+              "text": "시연 데이터 · 실제 운행 정보 아님. 시연 출발 정류장에서 시연 1번 버스를 타세요. 2개 정류장을 지나 시연 병원 앞 정류장에서 내리세요."
+            },
+            {
+              "segmentId": "demo-leg-transfer-001",
+              "text": "시연 병원 앞 정류장에서 다음 안내의 버스로 갈아타세요."
+            },
+            {
+              "segmentId": "demo-leg-bus-002",
+              "text": "시연 병원 앞 정류장에서 시연 2번 버스를 타세요. 2개 정류장을 지나 시연 터미널 앞 정류장에서 내리세요."
+            },
+            {
+              "segmentId": "demo-leg-walk-001",
+              "text": "시연 터미널 앞 정류장에서 시연 터미널까지 걸어가세요. 거리와 이동 시간은 확인되지 않았습니다."
+            }
+          ]
+        }
+      },
+      "error": null,
+      "meta": {
+        "requestId": "567cd847-5d42-4727-9530-7f765e91bb16",
+        "generatedAt": "2026-10-26T05:22:58.422609Z",
+        "dataMode": "demo"
+      }
+    }
+  },
+  "changedVersion": {
+    "httpStatus": 409,
+    "response": {
+      "data": null,
+      "error": {
+        "code": "ROUTE_VERSION_CHANGED",
+        "message": "경로 정보가 바뀌었습니다. 다시 검색해 주세요.",
+        "retryable": true
+      },
+      "meta": {
+        "requestId": "0f920f20-75ec-4840-9e82-1ff2dcd16872",
+        "generatedAt": "2026-10-26T05:22:58.467733+00:00",
+        "dataMode": "demo"
+      }
+    }
+  }
+}
