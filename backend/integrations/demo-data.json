@@ -1,0 +1,40 @@
+{
+  "notice": "시연 데이터 · 실제 운행 정보 아님",
+  "stations": [
+    {"station_id":"demo-stop-001","name":"시연 출발 정류장","direction_label":"시연 병원 방향","region":null,"coordinates":null},
+    {"station_id":"demo-stop-002","name":"시연 시장 앞 정류장","direction_label":"시연 병원 방향","region":null,"coordinates":null},
+    {"station_id":"demo-stop-003","name":"시연 병원 앞 정류장","direction_label":"시연 터미널 방향","region":null,"coordinates":null},
+    {"station_id":"demo-stop-004","name":"시연 중간 정류장","direction_label":"시연 터미널 방향","region":null,"coordinates":null},
+    {"station_id":"demo-stop-005","name":"시연 터미널 앞 정류장","direction_label":"종점","region":null,"coordinates":null}
+  ],
+  "destinations": [
+    {"destination_id":"demo-destination-001","name":"시연 병원","category":"hospital"},
+    {"destination_id":"demo-destination-002","name":"시연 시장","category":"market"},
+    {"destination_id":"demo-destination-003","name":"시연 터미널","category":"terminal"}
+  ],
+  "aliases": [
+    {"destination_id":"demo-destination-001","alias":"시연 큰 병원"},
+    {"destination_id":"demo-destination-002","alias":"시연 장터"},
+    {"destination_id":"demo-destination-003","alias":"시연 버스터미널"}
+  ],
+  "routes": [
+    {"route_id":"demo-route-001","name":"시연 1번","direction_label":"시연 출발 → 시연 병원"},
+    {"route_id":"demo-route-002","name":"시연 2번","direction_label":"시연 병원 → 시연 터미널"}
+  ],
+  "route_stops": [
+    {"route_id":"demo-route-001","sequence":1,"station_id":"demo-stop-001"},
+    {"route_id":"demo-route-001","sequence":2,"station_id":"demo-stop-002"},
+    {"route_id":"demo-route-001","sequence":3,"station_id":"demo-stop-003"},
+    {"route_id":"demo-route-002","sequence":1,"station_id":"demo-stop-003"},
+    {"route_id":"demo-route-002","sequence":2,"station_id":"demo-stop-004"},
+    {"route_id":"demo-route-002","sequence":3,"station_id":"demo-stop-005"}
+  ],
+  "access": [
+    {"destination_id":"demo-destination-001","station_id":"demo-stop-003","distance_meters":null,"duration_seconds":null},
+    {"destination_id":"demo-destination-002","station_id":"demo-stop-002","distance_meters":null,"duration_seconds":null},
+    {"destination_id":"demo-destination-003","station_id":"demo-stop-005","distance_meters":null,"duration_seconds":null}
+  ],
+  "transfers": [
+    {"from_route_id":"demo-route-001","from_sequence":3,"to_route_id":"demo-route-002","to_sequence":1,"evidence":"명시적 합성 연결 · 실제 환승 검증 아님"}
+  ]
+}

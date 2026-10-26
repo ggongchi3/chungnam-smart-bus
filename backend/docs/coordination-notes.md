@@ -1,0 +1,21 @@
+# 공통 영역 반영 제안 · 직접 수정 없음
+
+확인 기준은 사용자 구현 요청, HWP 전체 본문(`source-plan.txt`), 실제 저장소 공통 문서다. HWP의 과거 '계획서 작성만' 범위·발표/커밋/PR 지시는 이번 구현 요청에 적용하지 않았다. 중요한 기존 API 필드·ID 충돌은 발견되지 않았다. 저장소에 없는 미정값은 이번 명시적 요청과 HWP의 구현 세부안으로 구체화했다.
+
+| 대상 / 담당 | 관찰·변경 이유 | 제안 / 영향 |
+| --- | --- | --- |
+| `docs/development-plan.md` / 공통 관리자 | 현재 파일이 없으며 HWP가 참조한 확정 합성 원본도 저장소에 없음 | 생성 전 팀 확인 필요. 이번 요청의 5/2/3 수량, HWP의 6개 경유·003 환승, 기존 병원 ID/이름을 유지해 `backend/integrations/demo-data.json`으로 구체화함. 시장·터미널 ID/별칭과 미지정 정류장 이름은 이 파일을 A/B/AI와 공유할 것 |
+| `README.md`, `docs/structure.md` / 공통 관리자 | 현재 '실행 코드·스택 미정'이라는 초기 상태 설명 | 백엔드 독립 구현 상태·파일 구조·실행 문서 링크를 반영 제안. 해당 원본은 수정하지 않음 |
+| `.gitignore` / 공통 관리자 | HWP와 달리 루트 규칙에는 `.local/` 제외가 없음 | 백엔드 내부 `.gitignore`로 `.local/`, `.test-tmp/` 제외 완료. 공통 파일 변경 불필요 |
+| `docs/api-contract.md` / 백엔드 + A/B/AI | 입력 길이·유효기간·최신성·AI 제한이 현재 미정 | 이번 요청의 100자/200자/120초/600초/90초/1초를 공통 문서에 반영 제안. `SearchData.expiresAt`, `PrintData.guidance`는 HWP/요청에 필요한 추가 응답 필드로 제공하며 기존 필드는 보존 |
+| `docs/api-contract.md` / 백엔드 + B | unavailable 전용 서비스 code 미정, 기존 표에는 409 ROUTE_VERSION_CHANGED만 존재 | 별도 새 코드 도입 없이 현재 409 코드를 사용. 구체 사유는 재선택 메시지로 전달. 상세/live/안내/인쇄 동일 우선순위 적용 |
+| `docs/api-contract.md` / B | print liveInfoSnapshot 구조에 ETA가 있으나 요청은 카운트다운 제외 | 구조는 유지하고 print의 etaSeconds를 null로 반환. absolute expectedArrivalAt·출처 시각 유지. `guidance`의 검증된 고정 문구도 같은 버전으로 사용 |
+| `ai/contracts/`, `ai/destination-interpretation/`, `ai/easy-guidance/` / AI | 현재 temp만 있어 공개 Python 함수 없음 | backend AIAdapter에 interpret_destination(dict), choose_guidance(dict) 제공 필요. 공통 JSON 논리 계약을 그대로 사용. 하이픈 폴더 개명·AI 모듈 대리 구현 없음. transfer.basic 표현은 AI/디자인의 검토 필요 |
+| `frontend/config/`, `frontend/src/shared/api/` / A | 실제 프록시·클라이언트 미구현 | 5173 → 8000의 /api 프록시와 5초 제한, GET 일시 실패/5xx 1초 후 1회 재시도, POST/4xx 무재시도 구현 필요. 백엔드 CORS는 로컬 두 origin만 허용 |
+| `frontend/src/features/` / A/B | 검색·상세·인쇄·음성 UI 없음 | 6개 선택 필드와 실제 JSON 예시 제공. 폴링 30초·이탈 중지, 409 재검색·410 재검색, unknown/stale 표시와 시연 문구 구현·공동 검증 대기 |
+| `docs/data-sources.md` / 백엔드 | 실제 API·지원 범위·키·라이선스 계속 미확인 | 상태 갱신할 외부 증거 없음. live는 503, demo 값 혼입 없음 |
+| `docs/verification.md` / 공통 관리자 | 최초 구조 검증 기록임 | 원문 유지. 이번 기능 검증은 backend/docs/implementation-status.md와 테스트 출력에 별도 기록 |
+
+현재 계약상 부분 실패를 보존한다. 도착 unavailable을 not_running으로 바꾸지 않고, 변경 조회 실패는 coverageStatus=unknown이다. ready 경로의 미수신 인쇄는 경고를 붙여 허용한다. 초기 시연은 단방향·동일 정류장 명시 환승만 지원하며, 서로 다른 정류장 사이 환승을 지원하려면 별도 검증 도보 연결 자료와 계약 검토가 필요하다.
+
+공동 검증 담당/우선순위: A/B 실제 화면 연결 및 재검색 처리 P1, AI 공개 모듈/동일 Python 환경 P1, B·디자인 음성/인쇄 레이아웃 P1, 전원 다른 PC 재현 P1. 실제 교통 제공자 선정·현장 장비는 후속 범위다.

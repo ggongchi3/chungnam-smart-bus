@@ -1,0 +1,33 @@
+{
+  "branchBefore": "main",
+  "statusBefore": "clean",
+  "outsideBackend": {
+    ".gitignore": "fad1a5eaa34a6cef12317dda1691c6602e47a5c530c7cda659952fb67aca90c7",
+    "README.md": "7b90d1b30810087924d5897c5a79a9139605fb5a4cc1b387ea414ea24702a968",
+    "docs/api-contract.md": "68e441b548be8c5995dade6354a84c05546952fc45aa6041cbc709461ac4723b",
+    "docs/data-sources.md": "77619b7edc848077c04f5b60e0c93636a98a0b4543c4b9f43f29c83d2ede2124",
+    "docs/roles.md": "046678d03332d86df93846c0085a9a03c74dda36ded7fea264fe164f7d147622",
+    "docs/structure.md": "386707c538a806645438d947917efef1369230cc28634cdb811b7e0bd15e576d",
+    "docs/verification.md": "25387c2bd0829a0bd2813562c8b2716672564f2611affeb8df7aebc698e777c6",
+    "frontend/config/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "frontend/src/app/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "frontend/src/shared/api/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "frontend/src/shared/ui/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "frontend/src/features/destination-search/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "frontend/src/features/journey-guide/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "frontend/src/features/live-info/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "frontend/src/features/print-guide/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "frontend/src/features/route-selection/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "frontend/src/features/voice-guide/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "design/assets/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "design/guidelines/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "design/kiosk-concept/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "design/print-guide/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "design/screens/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "design/wireframes/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "ai/contracts/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "ai/destination-interpretation/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "ai/easy-guidance/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f",
+    "ai/evaluation/temp": "5898eaf0177ca5ccce1355a88fa237490c3cf4fc1d0ae63d848c0b0851772f6f"
+  }
+}
