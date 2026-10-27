@@ -90,6 +90,19 @@ backend/.venv/Scripts/python -m pytest backend/tests/test_stage3.py -q --basetem
 
 A 담당자가 사용할 요청·응답·8000/5173 프록시 기준은 [3단계 연동 안내](docs/stage3-integration.md), 실제 HTTP 기록은 [조회 응답 예시](docs/stage3-http-examples.json)에 있다. 프론트엔드 A 화면은 아직 없어 실제 브라우저 공동 검증은 대기다.
 
+### 4단계 경로 검색·상세 검증 (2026-10-27)
+
+직통·명시적 1회 환승, 검색 스냅샷과 상세 조회를 보완했다. 전체 후보를 정렬하고 이용 가능한 후보를 고른 뒤 최대 3개로 제한한다. 새 후보가 추가돼 순위만 바뀌어도 기존 선택 경로의 사실·버전이 같으면 상세를 유지한다. 저장 스냅샷은 쓰기/읽기에서 내부 모델로 검증하고 같은 버전의 재계산 구간과 대조한다. 손상된 자료는 503이며 실제 경로 변경은 기존 409다. 숫자 epoch 대신 시간대 포함 ISO 8601 departAt을 요구한다.
+
+```powershell
+backend/.venv/Scripts/python -m backend.tools.verify_stage4
+backend/.venv/Scripts/python -m pytest backend/tests/test_stage4.py -q -p no:cacheprovider
+```
+
+두 명령을 실제 실행했다. 전용 테스트 **39개**, 전체 테스트 **161개**, 실제 Uvicorn **21개 검색·상세 HTTP 사례**와 CORS/OpenAPI가 통과했다. 시장1·병원2·터미널 환승 합계4, 후보 정렬·제한·명시 환승·출발 시각 경계·스냅샷 저장/재시작·손상 거부를 확인했다. HTTP 도구는 독립 메모리 DB의 자식 서버를 사용해 실행 DB·시연 상태를 보존한다.
+
+요청·응답과 A→B 6개 필드는 [4단계 연동 안내](docs/stage4-integration.md)와 [실제 HTTP 기록](docs/stage4-http-examples.json)에 있다. 응답 기록의 검색 ID는 그 검증 실행에서만 유효하므로 새로운 검색 결과를 사용한다. 실제 A/B 화면의 선택→상세 연결은 대기다.
+
 ## API와 연동
 
 `api/routes.py`의 8개 경로와 `models/schemas.py`가 실제 요청·응답 스키마다. 생성된 명세는 `docs/openapi.json`이다. 성공/오류 모두 `data/error/meta`를 사용한다. FastAPI 입력 검증 오류는 422 대신 **400 INVALID_REQUEST**다. 기본 요청 ID는 서버가 생성하며 `X-Request-ID`에도 반환한다. 응답은 `Cache-Control: no-store`다.

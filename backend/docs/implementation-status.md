@@ -1,5 +1,55 @@
 # 백엔드 구현·검증 상태
 
+## 2026-10-27 · v2 계획서 4단계 실행 결과
+
+요청 범위: **경로 검색과 상세 안내 API**. v2 계획서 4단계 본문·추가 체크리스트 10개 항목을 공통 계약과 대조했다. 시작 상태는 `codex/backend-implementation`, 커밋 `0ca2cd3`, Git 변경 없음이다. 11/1은 화면 연동 목표일이며 해당 날짜까지 기다리지 않고 백엔드 독립 작업을 진행했다.
+
+| v2 4단계 항목 | 결과 |
+| --- | --- |
+| 출발·목적지·aware departAt, ±120초 | 완료. UTC 비교·±120 허용/±121 거부 및 120.000001초 경계 검증. 숫자 epoch/숫자 문자열·naive 입력은 400 |
+| 순번에 따른 정방향 직통 | 완료. 역방향 생성 없음, 비연속 순번·동일 정류장 재방문도 실제 경유 행 수로 계산 |
+| 명시 연결·최대 1회 환승 | 완료. 등록 연결만 사용, 서로 다른 정류장 사이 미등록 도보 연결 추정 없음, 두 번 환승하는 3개 버스 경로 제외 |
+| 순서 있는 bus/walk/transfer·고유 ID·null | 완료. 구간 순서·고유 segmentId·환승의 앞뒤 버스 참조·미확인 시간/거리 null 확인 |
+| 안정 정렬·중복 제거·최대3개 | 완료. 환승 수→버스 정류장 합계→경로 키 정렬. 이용 가능 상태 확인 후 최대3개로 제한하도록 수정 |
+| 시장1·병원2·터미널 환승4 | 완료. 전용 테스트 및 실제 HTTP에서 확인 |
+| 검색/옵션/버전/만료·스냅샷 저장 | 완료. 스냅샷 쓰기/읽기 검증 보강, 같은 검색의 상세·구간·computedAt 유지, 재시작 후 조회 확인 |
+| 상세 조회·없는 검색/옵션·경로 없음 구분 | 완료. 정상200, 경로 없음200 빈 배열, 없는 대상404, 손상된 자료503, 실제 경로 변경409, 만료410 유지 |
+| A→B 전달값6개 | 완료. 출발·목적지·검색·옵션·버전·dataMode를 검색 및 상세와 대조하고 사례3개 준비 |
+| A/B 검색→선택→상세 공동 화면 | API 흐름 완료, 브라우저 공동 검증 대기. 다른 화면은 아직 자리 표시자뿐 |
+
+발견하고 수정한 문제:
+
+1. 후보를 가용 상태 확인 전에 3개로 자르면 앞 3개가 막히고 뒤 후보가 정상이어도 빈 결과가 됐다. 전체 정렬 후보 중 ready 경로를 고른 후 공개 응답만 최대3개로 제한한다.
+2. 선택 후 더 짧은 후보가 추가돼 상위3개 밖으로 밀리면, 경로가 그대로여도 상세가409였다. 상세 존재 확인은 전체 후보를 사용해 해당 선택 경로 자체의 구조·버전만 검사한다.
+3. 저장 JSON의 detail 타입만 검사해 잘못된 legs가 500이 되거나, stopCount를 바꾼 자료가200으로 반환될 수 있었다. 기존 JSON 배치와 호환되는 SavedRouteOption 내부 모델로 구조·구간 참조를 검증하고 현재 버전의 재계산 사실과 대조한다. 정상 형식에서 실제 경로가 바뀐 경우409를 우선 판단하고, 같은 버전에서 저장 사실이 다른 경우503으로 거부한다.
+4. Pydantic이 numeric epoch를 aware datetime으로 자동 변환해 OpenAPI의 ISO 문자열 기준과 달랐다. 문자열 ISO 시각(또는 내부 Python aware datetime)만 받아 HTTP 숫자/숫자 문자열을400으로 거부한다.
+
+변경 파일:
+
+- `backend/services/routing.py`: 후보 생성과 공개 응답 제한을 분리한다. 방향·명시 환승·정렬 기준은 유지한다.
+- `backend/services/journeys.py`: 가용 후보의 최대3개 선택, 저장 모델의 쓰기/읽기 검증, 검색/옵션/계산시각 연결 및 저장 사실 대조.
+- `backend/models/snapshots.py`: 공개 응답과 별개인 내부 스냅샷 모델. legs·접근 정류장·순서/누락/중복·환승 참조를 검증한다. 기존 DB JSON 배열 형식은 유지한다.
+- `backend/models/schemas.py`: SearchRequest.departAt의 ISO 문자열 검증.
+- `backend/tests/test_stage4.py`: 전용39개. 정상 경로, 최대1회, 정렬/상한, 시간/ID, 저장/재시작, 위 결함 회귀와 스냅샷 손상12종을 포함한다.
+- `backend/tools/verify_stage4.py`: 실제 HTTP 검색→상세 검증 및 동적 요청·A→B 선택 객체 기록. 기본 실행은 독립 메모리 DB를 사용한다.
+- `backend/docs/stage4-integration.md`, `stage4-http-examples.json`, `stage4-regression-results.xml`, `stage4-workspace-audit.json`: 연동·실행·검증·범위 증거.
+- `backend/README.md`, `backend/docs/coordination-notes.md`, 이 문서: 재현·담당자 확인 대기·상태 기록.
+
+실행한 명령과 결과:
+
+```text
+backend/.venv/Scripts/python -m pytest backend/tests/test_stage4.py -q -p no:cacheprovider
+  → 39 passed, 1 warning, 8.39초
+backend/.venv/Scripts/python -m pytest backend/tests -q --basetemp=backend/.test-tmp -p no:cacheprovider --junitxml=backend/docs/stage4-regression-results.xml
+  → 161 passed, 1 warning, 28.77초
+backend/.venv/Scripts/python -m backend.tools.verify_stage4
+  → 최종 보완 후 실제 HTTP21개 + POST/GET CORS/OpenAPI 통과
+```
+
+최종 HTTP 기록의 가장 긴 요청은 이번 환경에서 27.26ms이며 부하 성능 검증은 아니다. ±120초 경계는 주입 시각으로, 실제 HTTP의 범위 밖 오류는 ±180초로 확인해 네트워크 경과 시간 영향을 분리했다. 기존 실행 DB의 검색2개/옵션2개는 새 내부 모델과 형식 호환됨을 별도 확인했다. 테스트는 별도 DB와 주입 시각을 사용했으며 실행 DB·상태 파일을 삭제하지 않았다.
+
+경고는 기존 Starlette/anyio BlockingPortal 폐기 예정 알림1개다. 실제 HTTP/TestClient는 앞서 확인한 Windows 샌드박스의 로컬 소켓 제한을 피하기 위해 권한이 허용된 실행에서 수행했다. 공통 필드·서비스 code·스키마의 공개 의미는 바꾸지 않았다. 초기 합성 원본과 다른 파트 파일을 보존했고 원격 변경·커밋·태그·push·PR·배포를 수행하지 않았다. API 흐름 검증을 A/B 브라우저 연동 완료로 표시하지 않는다.
+
 ## 2026-10-27 · v2 계획서 3단계 실행 결과
 
 요청 범위: **정류장·목적지 조회 API**. v2 계획서의 3단계 본문과 추가 체크리스트 8개 항목을 현재 API 계약 및 실제 사용처와 대조했다. 시작 상태는 `codex/backend-implementation`, 커밋 `0bb90c2`, Git 변경 없음이다. 기존 1·2단계 및 경로/AI/인쇄 기능을 보존했다.

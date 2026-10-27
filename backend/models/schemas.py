@@ -131,6 +131,20 @@ class SearchRequest(Model):
     destinationId: Identifier
     departAt: AwareDatetime
 
+    @field_validator('departAt', mode='before')
+    @classmethod
+    def iso_departure(cls, value):
+        # Pydantic otherwise accepts numeric epochs, including numeric strings,
+        # while our JSON/OpenAPI contract requires an ISO 8601 time string.
+        if isinstance(value, datetime):
+            return value
+        if not isinstance(value, str):
+            raise ValueError('departAt must be a timezone-aware ISO 8601 string')
+        parsed = datetime.fromisoformat(value)
+        if parsed.tzinfo is None:
+            raise ValueError('departAt must include a timezone')
+        return value
+
 
 class SearchData(Model):
     routeSearchId: Identifier

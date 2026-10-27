@@ -39,7 +39,9 @@ def build_candidates(session, origin, destination_id):
                     candidates[(tuple(legs), access.station_id)] = (legs, access)
     def count(legs):
         return sum(sum(a < p.sequence <= b for p in stops if p.route_id == route) for route, a, b in legs)
-    return sorted(candidates.values(), key=lambda item: (len(item[0]) - 1, count(item[0]), tuple(item[0]), item[1].station_id))[:3]
+    # Availability is checked by the search service before taking the public
+    # top three. Detail checks also need every path, regardless of current rank.
+    return sorted(candidates.values(), key=lambda item: (len(item[0]) - 1, count(item[0]), tuple(item[0]), item[1].station_id))
 
 
 def station_ref(session, station_id):

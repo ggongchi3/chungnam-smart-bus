@@ -6,6 +6,7 @@ from sqlalchemy import select
 
 from backend.api.errors import ServiceError, changed, not_found, unavailable
 from backend.models import schemas as s
+from backend.models.snapshots import SavedRouteOption
 from backend.models.tables import DestinationAccess, RouteSearch
 from backend.services import catalog, routing
 from backend.services.ai import fixed_guidance
@@ -35,10 +36,12 @@ def create_search(session, request, state, now, data_mode):
         detail = s.RouteDetail(routeSearchId=search_id, routeOptionId=option_id, routeSnapshotVersion=version,
             originStationId=request.originStationId, destinationId=request.destinationId, computedAt=now,
             journeyStatus=status, referenceDataQuality=quality(None, now, now), segments=segments)
-        saved[option_id] = {'detail': detail.model_dump(mode='json'), 'legs': legs, 'accessStationId': access.station_id}
+        saved[option_id] = SavedRouteOption(detail=detail, legs=legs, accessStationId=access.station_id).model_dump(mode='json')
         options.append(s.RouteOption(routeOptionId=option_id, routeSnapshotVersion=version, journeyStatus=status,
             routeNames=[p.routeName for p in segments if p.type == 'bus'], transferCount=len(legs) - 1,
             totalDurationSeconds=None, walkingDurationSeconds=None))
+        if len(options) == 3:
+            break
     session.add(RouteSearch(search_id=search_id, origin_station_id=request.originStationId,
         destination_id=request.destinationId, created_at=now.timestamp(), expires_at=expires.timestamp(),
         data_mode=data_mode, snapshot=saved))
@@ -52,23 +55,27 @@ def checked_detail(session, search_id, option_id, state, now, data_mode, expecte
         not_found()
     if now.timestamp() >= search.expires_at:
         raise ServiceError(410, 'ROUTE_SEARCH_EXPIRED', '검색 유효기간이 지났습니다. 다시 검색해 주세요.')
-    saved = search.snapshot.get(option_id)
-    if saved is None:
+    if not isinstance(search.snapshot, dict):
+        unavailable()
+    if option_id not in search.snapshot:
         not_found()
     require_core(state)
     if search.data_mode != data_mode:
         changed()
     try:
-        detail = s.RouteDetail.model_validate(saved['detail'])
-    except (ValidationError, KeyError, TypeError):
+        saved = SavedRouteOption.model_validate(search.snapshot[option_id])
+    except (ValidationError, TypeError, ValueError):
         unavailable()
+    detail = saved.detail
     if (detail.routeSearchId != search_id or detail.routeOptionId != option_id or
-            detail.originStationId != search.origin_station_id or detail.destinationId != search.destination_id):
+            detail.originStationId != search.origin_station_id or detail.destinationId != search.destination_id or
+            detail.computedAt.timestamp() != search.created_at or
+            option_id != 'demo-option-' + routing.digest([saved.legs, saved.accessStationId])):
         unavailable()
-    legs = [tuple(p) for p in saved['legs']]
+    legs = saved.legs
     candidates = routing.build_candidates(session, search.origin_station_id, search.destination_id)
     current = next((access for current_legs, access in candidates
-                    if current_legs == legs and access.station_id == saved['accessStationId']), None)
+                    if current_legs == legs and access.station_id == saved.accessStationId), None)
     if current is None:
         changed('경유 순서 또는 연결이 바뀌었습니다. 다시 검색해 주세요.')
     destination = catalog.destination(session, search.destination_id)
@@ -77,6 +84,10 @@ def checked_detail(session, search_id, option_id, state, now, data_mode, expecte
         changed('선택 경로를 이용할 수 없거나 재확인이 필요합니다. 다시 검색해 주세요.')
     if version != detail.routeSnapshotVersion or (expected is not None and expected != version):
         changed()
+    if segments != detail.segments:
+        # A real reference-data change already returns 409 above. With the same
+        # version, differing stored facts are an invalid snapshot, not new facts.
+        unavailable()
     return detail
 
 
