@@ -1,0 +1,572 @@
+{
+  "verifiedAt": "2026-10-27T01:49:54.501730+00:00",
+  "dataMode": "demo",
+  "notice": "시연 데이터 · 실제 운행 정보 아님",
+  "sourceSha256": "698dc67dfaab198c73dd481a416038f8adb83cf3b2afb4c4867c3b4e5f884e03",
+  "databasePath": "C:/Users/LG/OneDrive/Desktop/chungnam-smart-bus/backend/.local/bus.sqlite3",
+  "firstLoad": {
+    "inserted": {
+      "stations": 0,
+      "destinations": 0,
+      "routes": 0,
+      "destination_aliases": 0,
+      "route_stops": 0,
+      "destination_access": 0,
+      "transfer_connections": 0
+    },
+    "totals": {
+      "stations": 5,
+      "destinations": 3,
+      "routes": 2,
+      "destination_aliases": 3,
+      "route_stops": 6,
+      "destination_access": 3,
+      "transfer_connections": 1
+    }
+  },
+  "secondLoad": {
+    "inserted": {
+      "stations": 0,
+      "destinations": 0,
+      "routes": 0,
+      "destination_aliases": 0,
+      "route_stops": 0,
+      "destination_access": 0,
+      "transfer_connections": 0
+    },
+    "totals": {
+      "stations": 5,
+      "destinations": 3,
+      "routes": 2,
+      "destination_aliases": 3,
+      "route_stops": 6,
+      "destination_access": 3,
+      "transfer_connections": 1
+    }
+  },
+  "foreignKeysEnabled": true,
+  "foreignKeyViolations": [],
+  "existingRowsPreserved": true,
+  "beforeSha256": "a81ba346c3cef97d76023f706da7236d236f3bc3cef089b9b6399299ecb0028c",
+  "afterSha256": "a81ba346c3cef97d76023f706da7236d236f3bc3cef089b9b6399299ecb0028c",
+  "catalog": {
+    "destinations": [
+      {
+        "destination_id": "demo-destination-001",
+        "name": "시연 병원",
+        "category": "hospital"
+      },
+      {
+        "destination_id": "demo-destination-002",
+        "name": "시연 시장",
+        "category": "market"
+      },
+      {
+        "destination_id": "demo-destination-003",
+        "name": "시연 터미널",
+        "category": "terminal"
+      }
+    ],
+    "routes": [
+      {
+        "route_id": "demo-route-001",
+        "name": "시연 1번",
+        "direction_label": "시연 출발 → 시연 병원"
+      },
+      {
+        "route_id": "demo-route-002",
+        "name": "시연 2번",
+        "direction_label": "시연 병원 → 시연 터미널"
+      }
+    ],
+    "stations": [
+      {
+        "station_id": "demo-stop-001",
+        "name": "시연 출발 정류장",
+        "direction_label": "시연 병원 방향",
+        "region": null,
+        "coordinates": null
+      },
+      {
+        "station_id": "demo-stop-002",
+        "name": "시연 시장 앞 정류장",
+        "direction_label": "시연 병원 방향",
+        "region": null,
+        "coordinates": null
+      },
+      {
+        "station_id": "demo-stop-003",
+        "name": "시연 병원 앞 정류장",
+        "direction_label": "시연 터미널 방향",
+        "region": null,
+        "coordinates": null
+      },
+      {
+        "station_id": "demo-stop-004",
+        "name": "시연 중간 정류장",
+        "direction_label": "시연 터미널 방향",
+        "region": null,
+        "coordinates": null
+      },
+      {
+        "station_id": "demo-stop-005",
+        "name": "시연 터미널 앞 정류장",
+        "direction_label": "종점",
+        "region": null,
+        "coordinates": null
+      }
+    ],
+    "destination_access": [
+      {
+        "destination_id": "demo-destination-001",
+        "station_id": "demo-stop-003",
+        "distance_meters": null,
+        "duration_seconds": null
+      },
+      {
+        "destination_id": "demo-destination-002",
+        "station_id": "demo-stop-002",
+        "distance_meters": null,
+        "duration_seconds": null
+      },
+      {
+        "destination_id": "demo-destination-003",
+        "station_id": "demo-stop-005",
+        "distance_meters": null,
+        "duration_seconds": null
+      }
+    ],
+    "destination_aliases": [
+      {
+        "destination_id": "demo-destination-001",
+        "alias": "시연 큰 병원"
+      },
+      {
+        "destination_id": "demo-destination-002",
+        "alias": "시연 장터"
+      },
+      {
+        "destination_id": "demo-destination-003",
+        "alias": "시연 버스터미널"
+      }
+    ],
+    "route_stops": [
+      {
+        "route_id": "demo-route-001",
+        "sequence": 1,
+        "station_id": "demo-stop-001"
+      },
+      {
+        "route_id": "demo-route-001",
+        "sequence": 2,
+        "station_id": "demo-stop-002"
+      },
+      {
+        "route_id": "demo-route-001",
+        "sequence": 3,
+        "station_id": "demo-stop-003"
+      },
+      {
+        "route_id": "demo-route-002",
+        "sequence": 1,
+        "station_id": "demo-stop-003"
+      },
+      {
+        "route_id": "demo-route-002",
+        "sequence": 2,
+        "station_id": "demo-stop-004"
+      },
+      {
+        "route_id": "demo-route-002",
+        "sequence": 3,
+        "station_id": "demo-stop-005"
+      }
+    ],
+    "transfer_connections": [
+      {
+        "from_route_id": "demo-route-001",
+        "from_sequence": 3,
+        "to_route_id": "demo-route-002",
+        "to_sequence": 1,
+        "evidence": "명시적 합성 연결 · 실제 환승 검증 아님"
+      }
+    ]
+  },
+  "preservedSearchCount": 2,
+  "databaseSchema": {
+    "destinations": {
+      "primaryKey": [
+        "destination_id"
+      ],
+      "columns": [
+        {
+          "name": "destination_id",
+          "type": "VARCHAR",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR",
+          "nullable": false
+        },
+        {
+          "name": "category",
+          "type": "VARCHAR",
+          "nullable": false
+        }
+      ],
+      "foreignKeys": [],
+      "checkConstraints": [
+        {
+          "sqltext": "category IN ('hospital','market','terminal','station','other')",
+          "name": null
+        }
+      ]
+    },
+    "routes": {
+      "primaryKey": [
+        "route_id"
+      ],
+      "columns": [
+        {
+          "name": "route_id",
+          "type": "VARCHAR",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR",
+          "nullable": false
+        },
+        {
+          "name": "direction_label",
+          "type": "VARCHAR",
+          "nullable": false
+        }
+      ],
+      "foreignKeys": [],
+      "checkConstraints": []
+    },
+    "stations": {
+      "primaryKey": [
+        "station_id"
+      ],
+      "columns": [
+        {
+          "name": "station_id",
+          "type": "VARCHAR",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR",
+          "nullable": false
+        },
+        {
+          "name": "direction_label",
+          "type": "VARCHAR",
+          "nullable": false
+        },
+        {
+          "name": "region",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "coordinates",
+          "type": "JSON",
+          "nullable": true
+        }
+      ],
+      "foreignKeys": [],
+      "checkConstraints": []
+    },
+    "destination_access": {
+      "primaryKey": [
+        "destination_id",
+        "station_id"
+      ],
+      "columns": [
+        {
+          "name": "destination_id",
+          "type": "VARCHAR",
+          "nullable": false
+        },
+        {
+          "name": "station_id",
+          "type": "VARCHAR",
+          "nullable": false
+        },
+        {
+          "name": "distance_meters",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "duration_seconds",
+          "type": "INTEGER",
+          "nullable": true
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": null,
+          "constrained_columns": [
+            "destination_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "destinations",
+          "referred_columns": [
+            "destination_id"
+          ],
+          "options": {}
+        },
+        {
+          "name": null,
+          "constrained_columns": [
+            "station_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "stations",
+          "referred_columns": [
+            "station_id"
+          ],
+          "options": {}
+        }
+      ],
+      "checkConstraints": [
+        {
+          "sqltext": "distance_meters IS NULL OR distance_meters >= 0",
+          "name": null
+        },
+        {
+          "sqltext": "duration_seconds IS NULL OR duration_seconds >= 0",
+          "name": null
+        }
+      ]
+    },
+    "destination_aliases": {
+      "primaryKey": [
+        "destination_id",
+        "alias"
+      ],
+      "columns": [
+        {
+          "name": "destination_id",
+          "type": "VARCHAR",
+          "nullable": false
+        },
+        {
+          "name": "alias",
+          "type": "VARCHAR",
+          "nullable": false
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": null,
+          "constrained_columns": [
+            "destination_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "destinations",
+          "referred_columns": [
+            "destination_id"
+          ],
+          "options": {}
+        }
+      ],
+      "checkConstraints": []
+    },
+    "route_searches": {
+      "primaryKey": [
+        "search_id"
+      ],
+      "columns": [
+        {
+          "name": "search_id",
+          "type": "VARCHAR",
+          "nullable": false
+        },
+        {
+          "name": "origin_station_id",
+          "type": "VARCHAR",
+          "nullable": false
+        },
+        {
+          "name": "destination_id",
+          "type": "VARCHAR",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "FLOAT",
+          "nullable": false
+        },
+        {
+          "name": "expires_at",
+          "type": "FLOAT",
+          "nullable": false
+        },
+        {
+          "name": "data_mode",
+          "type": "VARCHAR",
+          "nullable": false
+        },
+        {
+          "name": "snapshot",
+          "type": "JSON",
+          "nullable": false
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": null,
+          "constrained_columns": [
+            "origin_station_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "stations",
+          "referred_columns": [
+            "station_id"
+          ],
+          "options": {}
+        },
+        {
+          "name": null,
+          "constrained_columns": [
+            "destination_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "destinations",
+          "referred_columns": [
+            "destination_id"
+          ],
+          "options": {}
+        }
+      ],
+      "checkConstraints": []
+    },
+    "route_stops": {
+      "primaryKey": [
+        "route_id",
+        "sequence"
+      ],
+      "columns": [
+        {
+          "name": "route_id",
+          "type": "VARCHAR",
+          "nullable": false
+        },
+        {
+          "name": "sequence",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "station_id",
+          "type": "VARCHAR",
+          "nullable": false
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": null,
+          "constrained_columns": [
+            "route_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "routes",
+          "referred_columns": [
+            "route_id"
+          ],
+          "options": {}
+        },
+        {
+          "name": null,
+          "constrained_columns": [
+            "station_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "stations",
+          "referred_columns": [
+            "station_id"
+          ],
+          "options": {}
+        }
+      ],
+      "checkConstraints": [
+        {
+          "sqltext": "sequence > 0",
+          "name": null
+        }
+      ]
+    },
+    "transfer_connections": {
+      "primaryKey": [
+        "from_route_id",
+        "from_sequence",
+        "to_route_id",
+        "to_sequence"
+      ],
+      "columns": [
+        {
+          "name": "from_route_id",
+          "type": "VARCHAR",
+          "nullable": false
+        },
+        {
+          "name": "from_sequence",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "to_route_id",
+          "type": "VARCHAR",
+          "nullable": false
+        },
+        {
+          "name": "to_sequence",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "evidence",
+          "type": "VARCHAR",
+          "nullable": false
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": null,
+          "constrained_columns": [
+            "from_route_id",
+            "from_sequence"
+          ],
+          "referred_schema": null,
+          "referred_table": "route_stops",
+          "referred_columns": [
+            "route_id",
+            "sequence"
+          ],
+          "options": {}
+        },
+        {
+          "name": null,
+          "constrained_columns": [
+            "to_route_id",
+            "to_sequence"
+          ],
+          "referred_schema": null,
+          "referred_table": "route_stops",
+          "referred_columns": [
+            "route_id",
+            "sequence"
+          ],
+          "options": {}
+        }
+      ],
+      "checkConstraints": []
+    }
+  }
+}

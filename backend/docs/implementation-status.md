@@ -1,5 +1,52 @@
 # 백엔드 구현·검증 상태
 
+## 2026-10-27 · v2 계획서 2단계 실행 결과
+
+요청 범위: `backend-development-plan-v2(1).hwp`의 **DB와 시연 데이터 준비**. 첨부 파일을 직접 추출해 2단계 본문·DB 세부안·추가 체크리스트(2단계 9개 항목)를 확인했다. 과거 '계획서 작성만' 문구는 이번 실행 요청에 적용하지 않았다. 이번 시작 상태는 `codex/backend-implementation`, 커밋 `2a4b91e`, Git 변경 없음이다. 아래 2026-10-26 기록의 코드는 이미 저장소에 있었으므로 보존했다.
+
+| v2 2단계 항목 | 결과 |
+| --- | --- |
+| PK/FK/nullable/고유 조건·ORM/API 분리 | 완료. 실제 테이블 검사 및 `database-schema.md` 작성. 기존 테이블·API 계약 변경 없음 |
+| 연결마다 외래키·세션·커밋·롤백 | 완료. 새 물리 연결에서도 PRAGMA=1, 실제 seed 마지막 그룹 실패 및 commit 실패 롤백 확인 |
+| 노선 ID+순번·복합 환승 참조 | 완료. 양쪽 노선 순번 참조 및 존재하지 않는 참조 거부 |
+| 공통 ID·이름·별칭·분류·수량 적재 | 완료. 원본 JSON 변경 없이 실행 DB에 재적재; 정류장5/노선2/목적지3/경유6/환승1 유지 |
+| 001노선 3번 → 002노선 1번·목적지 접근 | 완료. stop-003에서의 명시적 합성 환승1, 병원/시장/터미널 접근3 확인 |
+| 반복 적재 중복 없음·실패 시 부분 반영 없음 | 완료. 전용 테스트 13개 통과. 기존 팀원 수정값 보존·재시도 가능 확인 |
+| integrations 제공 인터페이스·시연 제공자 | 완료. 기존 TransportProvider/DemoProvider/ProviderState를 유지·대조; 실제 외부기관 URL 의존 없음 |
+| DB·저널 제외·합성 원본/잠금/환경 예시 보존 | 완료. .local의 sqlite3/-journal/-wal/-shm 제외, 원본/lock/.env.example 추적 확인 |
+| A/B 응답 예시·AI 후보/함수 입출력 | 자료 준비 완료, 담당자 공동 확인 대기. stage2-handoff-examples.json에 실제 API 200/빈 결과/400/404/환승 응답 및 AI 입력 계약 제공. 메시지 전송·다른 파트 수정 없음 |
+
+이번 변경 파일:
+
+- `backend/seed.py`: 선택 원본 주입으로 실패를 재현할 수 있게 하고, 신규 삽입 수·실제 전체 수량을 반환/출력한다. 전체 적재는 기존과 동일하게 단일 트랜잭션이며 기존 행을 보존한다.
+- `backend/tests/test_stage2.py`: 적재 중/commit 시 실패 롤백, 빈/기존 DB, 외래키, 복합키 중복, 연결별 PRAGMA, 명시적 연결·nullable·모델 분리 테스트 13개.
+- `backend/tools/verify_stage2.py`: 실행 DB에 반복 적재 후 수량·참조·기존 행·검색 스냅샷 보존·실제 DB 스키마를 검사하고 기록한다.
+- `backend/.gitignore`: 전용 테스트의 JSON 원본 임시 폴더 `.test-tmp-stage2/` 제외.
+- `backend/README.md`, `backend/docs/database-schema.md`: 재현 명령·실제 테이블 조건·제공 경계·합성 원본 설명.
+- `backend/docs/stage2-verification-20261027.json`, `stage2-handoff-examples.json`, `stage2-test-results.xml`, `stage2-regression-results.xml`, `stage2-workspace-audit.json`: 이번 실행 증거.
+- `backend/docs/coordination-notes.md`, 이 문서: 인수인계/공동 확인 대기·변경 범위 기록.
+
+실제 실행 결과:
+
+```text
+backend/.venv/Scripts/python -m pip check
+  → No broken requirements found
+backend/.venv/Scripts/python -m backend.seed  (두 번)
+  → inserted 모두 0, totals stations5/destinations3/aliases3/routes2/stops6/access3/transfers1
+backend/.venv/Scripts/python -m backend.tools.verify_stage2
+  → 외래키 활성, 위반0, 기존 행 보존, 재적재 전후 행 SHA-256 동일, 검색 스냅샷2 유지
+backend/.venv/Scripts/python -m pytest backend/tests/test_stage2.py -q --basetemp=backend/.test-tmp-stage2 -p no:cacheprovider --junitxml=backend/docs/stage2-test-results.xml
+  → 13 passed, 1 warning, 1.33초
+backend/.venv/Scripts/python -m pytest backend/tests -q --basetemp=backend/.test-tmp -p no:cacheprovider --junitxml=backend/docs/stage2-regression-results.xml
+  → 78 passed, 1 warning, 24.29초
+```
+
+API 인수인계 예시는 주입 DemoProvider와 격리 메모리 DB의 실제 TestClient 응답으로 생성했다. 전체 API 회귀 검증과 예시 생성은 이전에 확인된 Windows 로컬 socketpair 제한 때문에 권한이 허용된 실행에서 수행했다. 경고 1개는 기존 Starlette/anyio BlockingPortal 폐기 예정 알림이다. 실데이터 조회·AI 모듈 연결·A/B 브라우저·팀원 PC 공동 검증은 수행하지 않았다.
+
+이번 작업은 backend 밖 파일을 변경하지 않았으며 기존 실행 DB를 삭제·초기화하지 않았다. 합성 원본 ID/값도 변경하지 않았다. Git commit/tag/push/PR/배포와 원격 변경은 수행하지 않았다. 최종 범위 비교는 `stage2-workspace-audit.json`에 기록한다.
+
+## 2026-10-26 · 기존 전체 구현 기록
+
 작업일: 2026-10-26, Asia/Seoul. 작업 루트: `C:/Users/LG/OneDrive/Desktop/chungnam-smart-bus`. 시작 상태: `main`, 추적/미추적 변경 없음. 로컬 작업 브랜치: `codex/backend-implementation`. 커밋·태그·push·PR·이슈·배포는 수행하지 않았다.
 
 ## 자료 확인

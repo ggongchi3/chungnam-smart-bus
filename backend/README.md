@@ -64,6 +64,19 @@ backend/.venv/Scripts/python -m backend.demo scenario --name normal
 
 DB·저널·시나리오·로그·테스트 DB는 `.local/`, 가상환경은 `.venv/`에 있다. 모두 Git 제외를 확인했다. 합성 JSON·의존성 잠금·환경 설정 예시는 추적 가능하다.
 
+### 2단계 DB·시연 데이터 검증 (2026-10-27)
+
+v2 계획서의 2단계를 다시 대조하여 기존 구현을 보존하고 적재 결과 집계·실제 적재 실패 롤백 검증을 보강했다. `seed` 명령은 고정 문구 대신 테이블별 `inserted`(이번 신규 수)와 `totals`(실제 DB 전체 수)를 JSON으로 출력한다. 이미 준비된 DB에서는 재실행 시 inserted가 모두 0이며, totals는 정류장 5·목적지 3·별칭 3·노선 2·경유 6·접근 연결 3·환승 1이다.
+
+```powershell
+backend/.venv/Scripts/python -m backend.tools.verify_stage2
+backend/.venv/Scripts/python -m pytest backend/tests/test_stage2.py -q --basetemp=backend/.test-tmp-stage2 -p no:cacheprovider
+```
+
+두 명령을 실제 실행했다. 전용 테스트 **13개**, 기존 기능을 포함한 전체 테스트 **78개**를 통과했다. 실행 DB의 전체 행 해시가 재적재 전후 동일하고 기존 검색 스냅샷 2개도 보존됐다. 검증 도구는 DB를 삭제하거나 기존 행을 덮어쓰지 않는다.
+
+테이블별 PK·FK·nullable·고유 조건은 [DB 명세](docs/database-schema.md), 실제 DB 검증 기록은 [2단계 결과](docs/stage2-verification-20261027.json), A/B용 정상·빈 결과·오류 및 AI 입출력 예시는 [2단계 인수인계 JSON](docs/stage2-handoff-examples.json)에 있다. 응답 기록의 시각·검색 ID는 당시 실행값이다. 새 요청은 기존 `backend.tools.request_examples`처럼 현재 시각을 생성한다. 실제 A/B·AI 담당자와의 공동 확인은 대기 중이다.
+
 ## API와 연동
 
 `api/routes.py`의 8개 경로와 `models/schemas.py`가 실제 요청·응답 스키마다. 생성된 명세는 `docs/openapi.json`이다. 성공/오류 모두 `data/error/meta`를 사용한다. FastAPI 입력 검증 오류는 422 대신 **400 INVALID_REQUEST**다. 기본 요청 ID는 서버가 생성하며 `X-Request-ID`에도 반환한다. 응답은 `Cache-Control: no-store`다.
