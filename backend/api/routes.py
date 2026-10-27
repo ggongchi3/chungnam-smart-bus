@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, Request
 
 from backend.models import schemas as s
+from backend.integrations.providers import read_provider
 from backend.services import ai, catalog, journeys
 
 router = APIRouter(prefix='/api/v1', responses={status: {'model': s.Envelope[None]} for status in (400,404,409,410,503,500)})
@@ -18,7 +19,7 @@ Session = Annotated[object, Depends(session)]
 
 def state(request):
     now = request.app.state.clock()
-    return now, request.app.state.provider.read(now)
+    return now, read_provider(request.app.state.provider, now)
 
 
 def response(request, data):
@@ -59,7 +60,7 @@ async def detail(routeSearchId: s.Identifier, routeOptionId: s.Identifier, reque
 async def live(routeSearchId: s.Identifier, routeOptionId: s.Identifier, request: Request, db: Session):
     now, provider = state(request)
     result = journeys.checked_detail(db, routeSearchId, routeOptionId, provider, now, request.app.state.settings.data_mode)
-    return response(request, journeys.live_info(result, provider, now))
+    return response(request, journeys.live_info(result, provider, now, session=db))
 
 
 @router.post('/destination-interpretations', response_model=s.Envelope[s.InterpretationData])
@@ -89,4 +90,4 @@ async def guidance(body: s.SelectionRequest, request: Request, db: Session):
 @router.post('/print-guides', response_model=s.Envelope[s.PrintData])
 async def print_guide(body: s.SelectionRequest, request: Request, db: Session):
     now, provider, detail = selected(request, db, body)
-    return response(request, journeys.print_guide(detail, provider, now))
+    return response(request, journeys.print_guide(detail, provider, now, session=db))

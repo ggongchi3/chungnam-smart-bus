@@ -1,5 +1,60 @@
 # 백엔드 구현·검증 상태
 
+## 2026-10-27 · v2 계획서 5단계 실행 결과
+
+요청 범위: **도착·운행 변경·시간·버전 처리**. v2 계획서 5단계 본문과 추가 체크리스트 11개 항목을 공통 계약·실제 코드와 대조했다. 시작 상태는 `codex/backend-implementation`, 커밋 `62d4f2a`, Git 변경 없음이다. 일정일까지 기다리지 않고 백엔드 독립 작업을 수행했다.
+
+| v2 5단계 항목 | 결과 |
+| --- | --- |
+| live API·합성 도착·운행 시나리오 | 완료. 기존10개에 명시 running/not_running/미수신+running 3개 추가. demo 및 기존 API 구조 유지 |
+| sourceUpdatedAt/fetchedAt/generatedAt 분리 | 완료. 도착 관측·버스 구간·변경 피드/항목마다 자기 시각 보존, 응답 생성 시각으로 대체하지 않음 |
+| 0~90초 fresh·초과 stale·없음/미래 unknown | 완료. 90.000001초·미래1마이크로초·다른 시간대도 테스트. 캐시된 변경 품질도 now에서 재계산 |
+| 도착 미수신·운행 상태 독립 | 완료. 관측 없음/ETA 없음/지난 이벤트는 null·unavailable, 명시적 running은 별도 유지. 서비스의 임의 ETA 생성 제거 |
+| 시간표·결행·우회·적용 범위 | 완료. 관련 노선/실제 승하차 사이 경유 정류장, 시작 포함/종료 제외 검사. 미확인 시작을 현재 결행으로 확정하지 않음 |
+| 변경 조회 실패 unknown | 완료. 하위 변경 자료가 잘못돼도 core가 유효하면 200/unknown. 빈 목록을 정상 운행으로 해석하지 않음 |
+| 경로 관련 변경/버전·ETA 갱신 | 완료. 경유·연결·적용 변경/운행 중단은 반영. ETA·변경 항목 순서·적용 ID 집합 순서/중복만의 차이는 버전 유지 |
+| 상세/live/안내/인쇄의 공통 검사 | 완료. 기존 checked_detail를 모두 사용하며 버전·상태·만료 검사 회귀 확인 |
+| now>=expiresAt 410·변경/불가409·우선순위 | 완료. 검색없음404 → 만료410 → 옵션없음404 → 핵심자료503 → 모드/경로/상태/버전409. provider 예외도 우선순위 보존 |
+| 부분 실패200·핵심 자료503 구분 | 완료. 일부 잘못된 관측·하위 컨테이너는 unavailable/unknown, 전체 read 실패/핵심 자료 미확인은503. 내부 오류 문구 노출 없음 |
+| B 연동 자료·30초/5초/재시도 | 자료 준비 완료, 브라우저 공동 확인 대기. 타이머·취소·재시도·UI는 구현하지 않음 |
+
+확인하고 수정한 문제:
+
+1. 도착 품질만 재계산하고 운행 변경의 저장 freshness를 신뢰해 같은 원천 나이에도 fresh/stale이 달랐다. 피드와 개별 항목 모두 원천 시각 기준으로 계산한다.
+2. 노선 전체 정류장을 경로 영향 범위로 보면서 live에서는 승하차 끝점만 사용했다. 선택한 실제 경유 구간(중간 포함)으로 일원화해 무관 변경이 막거나 필요한 알림이 빠지는 문제를 보완했다.
+3. 같은 변경 자료의 배열·적용 ID 순서만 바뀌어도 버전이 달랐다. 항목 정렬과 적용 대상 집합 정규화로 의미상 같은 자료는 같은 버전을 사용한다.
+4. 제공자 read 예외가500으로 새어나가 만료/없는 대상 응답을 가렸다. 핵심 확인 불가 상태로 변환해 기존404/410/503 우선순위를 유지한다. 이미 확인된 core를 하위 관측 오류 때문에 버리지 않는다.
+5. 서비스가 fetchedAt+300으로 ETA를 만들고 operationStatus를 항상 unknown으로 고정했다. 제공자 경계에 ArrivalObservation을 추가해 예상 절대 시각·운행 상태·각 출처/시각을 명시적으로 전달한다. 기본 normal의 unknown 상태는 유지하며, 새로운 합성 프로필로 명시 운행 증거를 시연한다.
+
+변경 파일:
+
+- `backend/integrations/providers.py`: 버스 노선/승차 정류장별 ArrivalObservation, 13개 시나리오, 품질/집합 정규화, 전체/부분 실패 경계.
+- `backend/services/time.py`: aware 시각만 사용하고 원천 기준 freshness·품질 재계산.
+- `backend/services/routing.py`: 선택 구간 범위·변경 적용기간·정렬·명시 운행 중단을 경로 상태/버전에 반영.
+- `backend/services/journeys.py`: 제공받은 관측만 live에 사용하고 항목별 시각·상태·null을 보존. live/인쇄에 같은 경유 범위를 적용.
+- `backend/api/routes.py`: 제공자 안전 경계를 사용하고 요청 DB 세션을 범위 조회에 전달.
+- `backend/tests/test_stage5.py`: 전용45개. 최신성, 시각 분리, 부분 실패, 기간/범위, 집합 동일성, 공통 오류 우선순위, 관측/운행 독립성과 제공자 실패 포함.
+- `backend/tools/verify_stage5.py`: 전용 제어 파일·주입 시각·메모리 DB의 자식 서버로 실제 HTTP 시간·상태 재현. 새 서비스/제어 API 없음.
+- `backend/docs/stage5-integration.md`, `stage5-http-examples.json`, `stage5-regression-results.xml`, `stage5-workspace-audit.json`: B 연동/검증/범위 기록.
+- `backend/README.md`, `backend/docs/coordination-notes.md`, 이 문서: 실행 안내·제약/공동 검증 대기.
+
+최종 실제 실행:
+
+```text
+backend/.venv/Scripts/python -m pytest backend/tests/test_stage5.py -q -p no:cacheprovider
+  → 45 passed, 1 warning, 17.43초
+backend/.venv/Scripts/python -m pytest backend/tests -q --basetemp=backend/.test-tmp -p no:cacheprovider --junitxml=backend/docs/stage5-regression-results.xml
+  → 206 passed, 1 warning, 54.17초
+backend/.venv/Scripts/python -m backend.tools.verify_stage5
+  → 최종 코드의 실제 HTTP36개 통과, 공개 API8개 유지
+```
+
+자동 검증은 10분을 실제로 기다리지 않고 clock/provider/관측을 주입했다. 실제 HTTP 도구도 테스트 전용 clock과 `.local/stage5-http-<ID>/control.json`을 사용하며 운영 앱·실행 DB·공용 scenario.json을 변경하지 않는다. 경고는 기존 Starlette/anyio BlockingPortal 폐기 예정 알림1개다. HTTP/TestClient는 기존 Windows 샌드박스 로컬 소켓 제한을 피하기 위해 권한이 허용된 실행에서 수행했다.
+
+기존 DB의 검색2개에 저장된 정상 버전2개는 현재 정상 자료로 재계산해도 동일함을 확인했다(이미 만료된 검색을 유효하다고 표시한 것은 아님). 공개 필드·오류 코드·초기 원본 데이터는 변경하지 않았다. 실제 교통기관·키·지원 범위·실데이터 연결은 여전히 미확인이고 live 미연결은503이다. B 화면·30초 폴링/이탈 중지/5초 제한/GET 재시도·팀원 PC 검증은 대기다.
+
+backend 밖 파일과 기존 실행 DB·상태를 보존했으며 commit/tag/push/PR/배포·외부 메시지 전송은 수행하지 않았다. 최종 범위·테스트·DB 보존 증거는 `stage5-workspace-audit.json`에 기록한다.
+
 ## 2026-10-27 · v2 계획서 4단계 실행 결과
 
 요청 범위: **경로 검색과 상세 안내 API**. v2 계획서 4단계 본문·추가 체크리스트 10개 항목을 공통 계약과 대조했다. 시작 상태는 `codex/backend-implementation`, 커밋 `0ca2cd3`, Git 변경 없음이다. 11/1은 화면 연동 목표일이며 해당 날짜까지 기다리지 않고 백엔드 독립 작업을 진행했다.

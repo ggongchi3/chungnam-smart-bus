@@ -1,0 +1,1698 @@
+{
+  "verifiedAt": "2026-10-27T02:28:50.267477+00:00",
+  "baseUrl": "http://127.0.0.1:8000",
+  "dataMode": "demo",
+  "notice": "시연 데이터 · 실제 운행 정보 아님",
+  "passedCases": 36,
+  "openapiServiceCount": 8,
+  "controlledFixtureClock": true,
+  "realTenMinuteWaitPerformed": false,
+  "runtimeDatabaseChanged": false,
+  "frontendBBrowserChecked": false,
+  "cases": [
+    {
+      "name": "initialSearch",
+      "fixture": {
+        "scenario": "normal",
+        "revision": "1",
+        "now": "2026-10-27T02:28:44+00:00"
+      },
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/route-searches",
+        "json": {
+          "originStationId": "demo-stop-001",
+          "destinationId": "demo-destination-003",
+          "departAt": "<current controlled fixture time; use current aware ISO time in real requests>"
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 85.39,
+      "response": {
+        "data": {
+          "routeSearchId": "demo-search-6e4d37f7015241ec92e8d86435bbc63b",
+          "originStationId": "demo-stop-001",
+          "destinationId": "demo-destination-003",
+          "expiresAt": "2026-10-27T02:38:44Z",
+          "routeOptions": [
+            {
+              "routeOptionId": "demo-option-846b67ee349031e85d43e3ea",
+              "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+              "journeyStatus": "ready",
+              "routeNames": [
+                "시연 1번",
+                "시연 2번"
+              ],
+              "transferCount": 1,
+              "totalDurationSeconds": null,
+              "walkingDurationSeconds": null
+            }
+          ]
+        },
+        "error": null,
+        "meta": {
+          "requestId": "59b7cf5a-b960-4473-987e-e9f1463c0437",
+          "generatedAt": "2026-10-27T02:28:44Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "freshAge0",
+      "fixture": {
+        "scenario": "normal",
+        "revision": "1",
+        "now": "2026-10-27T02:28:44+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6e4d37f7015241ec92e8d86435bbc63b/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 38.62,
+      "response": {
+        "data": {
+          "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+          "arrivals": [
+            {
+              "segmentId": "demo-leg-bus-001",
+              "routeId": "demo-route-001",
+              "boardStationId": "demo-stop-001",
+              "arrivalStatus": "available",
+              "etaSeconds": 300,
+              "expectedArrivalAt": "2026-10-27T02:33:44Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:28:44Z",
+                "fetchedAt": "2026-10-27T02:28:44Z",
+                "freshness": "fresh"
+              }
+            },
+            {
+              "segmentId": "demo-leg-bus-002",
+              "routeId": "demo-route-002",
+              "boardStationId": "demo-stop-003",
+              "arrivalStatus": "available",
+              "etaSeconds": 300,
+              "expectedArrivalAt": "2026-10-27T02:33:44Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:28:44Z",
+                "fetchedAt": "2026-10-27T02:28:44Z",
+                "freshness": "fresh"
+              }
+            }
+          ],
+          "serviceChanges": {
+            "coverageStatus": "available",
+            "items": [],
+            "dataQuality": {
+              "sourceId": "demo-fixture",
+              "sourceUpdatedAt": "2026-10-27T02:28:44Z",
+              "fetchedAt": "2026-10-27T02:28:44Z",
+              "freshness": "fresh"
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "95a9d032-8af8-4cc0-b2c9-48441e9752eb",
+          "generatedAt": "2026-10-27T02:28:44Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "etaAfter30SecondsVersionUnchanged",
+      "fixture": {
+        "scenario": "normal",
+        "revision": "1",
+        "now": "2026-10-27T02:29:14+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6e4d37f7015241ec92e8d86435bbc63b/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 43.08,
+      "response": {
+        "data": {
+          "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+          "arrivals": [
+            {
+              "segmentId": "demo-leg-bus-001",
+              "routeId": "demo-route-001",
+              "boardStationId": "demo-stop-001",
+              "arrivalStatus": "available",
+              "etaSeconds": 270,
+              "expectedArrivalAt": "2026-10-27T02:33:44Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:28:44Z",
+                "fetchedAt": "2026-10-27T02:28:44Z",
+                "freshness": "fresh"
+              }
+            },
+            {
+              "segmentId": "demo-leg-bus-002",
+              "routeId": "demo-route-002",
+              "boardStationId": "demo-stop-003",
+              "arrivalStatus": "available",
+              "etaSeconds": 270,
+              "expectedArrivalAt": "2026-10-27T02:33:44Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:28:44Z",
+                "fetchedAt": "2026-10-27T02:28:44Z",
+                "freshness": "fresh"
+              }
+            }
+          ],
+          "serviceChanges": {
+            "coverageStatus": "available",
+            "items": [],
+            "dataQuality": {
+              "sourceId": "demo-fixture",
+              "sourceUpdatedAt": "2026-10-27T02:28:44Z",
+              "fetchedAt": "2026-10-27T02:28:44Z",
+              "freshness": "fresh"
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "2b0be8f5-38c4-4528-99d1-0147185d7a4a",
+          "generatedAt": "2026-10-27T02:29:14Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "freshnessAge90",
+      "fixture": {
+        "scenario": "normal",
+        "revision": "1",
+        "now": "2026-10-27T02:30:14+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6e4d37f7015241ec92e8d86435bbc63b/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 67.58,
+      "response": {
+        "data": {
+          "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+          "arrivals": [
+            {
+              "segmentId": "demo-leg-bus-001",
+              "routeId": "demo-route-001",
+              "boardStationId": "demo-stop-001",
+              "arrivalStatus": "available",
+              "etaSeconds": 210,
+              "expectedArrivalAt": "2026-10-27T02:33:44Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:28:44Z",
+                "fetchedAt": "2026-10-27T02:28:44Z",
+                "freshness": "fresh"
+              }
+            },
+            {
+              "segmentId": "demo-leg-bus-002",
+              "routeId": "demo-route-002",
+              "boardStationId": "demo-stop-003",
+              "arrivalStatus": "available",
+              "etaSeconds": 210,
+              "expectedArrivalAt": "2026-10-27T02:33:44Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:28:44Z",
+                "fetchedAt": "2026-10-27T02:28:44Z",
+                "freshness": "fresh"
+              }
+            }
+          ],
+          "serviceChanges": {
+            "coverageStatus": "available",
+            "items": [],
+            "dataQuality": {
+              "sourceId": "demo-fixture",
+              "sourceUpdatedAt": "2026-10-27T02:28:44Z",
+              "fetchedAt": "2026-10-27T02:28:44Z",
+              "freshness": "fresh"
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "7b7f878a-9a7c-40bb-91c6-98f35a30d4d5",
+          "generatedAt": "2026-10-27T02:30:14Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "freshnessAge91",
+      "fixture": {
+        "scenario": "normal",
+        "revision": "1",
+        "now": "2026-10-27T02:30:15+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6e4d37f7015241ec92e8d86435bbc63b/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 44.22,
+      "response": {
+        "data": {
+          "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+          "arrivals": [
+            {
+              "segmentId": "demo-leg-bus-001",
+              "routeId": "demo-route-001",
+              "boardStationId": "demo-stop-001",
+              "arrivalStatus": "available",
+              "etaSeconds": 209,
+              "expectedArrivalAt": "2026-10-27T02:33:44Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:28:44Z",
+                "fetchedAt": "2026-10-27T02:28:44Z",
+                "freshness": "stale"
+              }
+            },
+            {
+              "segmentId": "demo-leg-bus-002",
+              "routeId": "demo-route-002",
+              "boardStationId": "demo-stop-003",
+              "arrivalStatus": "available",
+              "etaSeconds": 209,
+              "expectedArrivalAt": "2026-10-27T02:33:44Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:28:44Z",
+                "fetchedAt": "2026-10-27T02:28:44Z",
+                "freshness": "stale"
+              }
+            }
+          ],
+          "serviceChanges": {
+            "coverageStatus": "available",
+            "items": [],
+            "dataQuality": {
+              "sourceId": "demo-fixture",
+              "sourceUpdatedAt": "2026-10-27T02:28:44Z",
+              "fetchedAt": "2026-10-27T02:28:44Z",
+              "freshness": "stale"
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "ff876786-d921-41c5-91f0-cbc05e4065f8",
+          "generatedAt": "2026-10-27T02:30:15Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "arrivalsMissingDoesNotMeanCancellation",
+      "fixture": {
+        "scenario": "arrivals_missing",
+        "revision": "2",
+        "now": "2026-10-27T02:30:24+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6e4d37f7015241ec92e8d86435bbc63b/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 49.15,
+      "response": {
+        "data": {
+          "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+          "arrivals": [
+            {
+              "segmentId": "demo-leg-bus-001",
+              "routeId": "demo-route-001",
+              "boardStationId": "demo-stop-001",
+              "arrivalStatus": "unavailable",
+              "etaSeconds": null,
+              "expectedArrivalAt": null,
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:30:24Z",
+                "fetchedAt": "2026-10-27T02:30:24Z",
+                "freshness": "fresh"
+              }
+            },
+            {
+              "segmentId": "demo-leg-bus-002",
+              "routeId": "demo-route-002",
+              "boardStationId": "demo-stop-003",
+              "arrivalStatus": "unavailable",
+              "etaSeconds": null,
+              "expectedArrivalAt": null,
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:30:24Z",
+                "fetchedAt": "2026-10-27T02:30:24Z",
+                "freshness": "fresh"
+              }
+            }
+          ],
+          "serviceChanges": {
+            "coverageStatus": "available",
+            "items": [],
+            "dataQuality": {
+              "sourceId": "demo-fixture",
+              "sourceUpdatedAt": "2026-10-27T02:30:24Z",
+              "fetchedAt": "2026-10-27T02:30:24Z",
+              "freshness": "fresh"
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "fba3b990-6d8a-449b-9f6d-e83b5dff6af1",
+          "generatedAt": "2026-10-27T02:30:24Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "source_missing",
+      "fixture": {
+        "scenario": "source_missing",
+        "revision": "3",
+        "now": "2026-10-27T02:30:34+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6e4d37f7015241ec92e8d86435bbc63b/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 47.16,
+      "response": {
+        "data": {
+          "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+          "arrivals": [
+            {
+              "segmentId": "demo-leg-bus-001",
+              "routeId": "demo-route-001",
+              "boardStationId": "demo-stop-001",
+              "arrivalStatus": "available",
+              "etaSeconds": 300,
+              "expectedArrivalAt": "2026-10-27T02:35:34Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": null,
+                "fetchedAt": "2026-10-27T02:30:34Z",
+                "freshness": "unknown"
+              }
+            },
+            {
+              "segmentId": "demo-leg-bus-002",
+              "routeId": "demo-route-002",
+              "boardStationId": "demo-stop-003",
+              "arrivalStatus": "available",
+              "etaSeconds": 300,
+              "expectedArrivalAt": "2026-10-27T02:35:34Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": null,
+                "fetchedAt": "2026-10-27T02:30:34Z",
+                "freshness": "unknown"
+              }
+            }
+          ],
+          "serviceChanges": {
+            "coverageStatus": "available",
+            "items": [],
+            "dataQuality": {
+              "sourceId": "demo-fixture",
+              "sourceUpdatedAt": null,
+              "fetchedAt": "2026-10-27T02:30:34Z",
+              "freshness": "unknown"
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "3ff8a626-cbf1-4518-8293-964364df332d",
+          "generatedAt": "2026-10-27T02:30:34Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "source_future",
+      "fixture": {
+        "scenario": "source_future",
+        "revision": "4",
+        "now": "2026-10-27T02:30:44+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6e4d37f7015241ec92e8d86435bbc63b/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 53.4,
+      "response": {
+        "data": {
+          "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+          "arrivals": [
+            {
+              "segmentId": "demo-leg-bus-001",
+              "routeId": "demo-route-001",
+              "boardStationId": "demo-stop-001",
+              "arrivalStatus": "available",
+              "etaSeconds": 300,
+              "expectedArrivalAt": "2026-10-27T02:35:44Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:31:14Z",
+                "fetchedAt": "2026-10-27T02:30:44Z",
+                "freshness": "unknown"
+              }
+            },
+            {
+              "segmentId": "demo-leg-bus-002",
+              "routeId": "demo-route-002",
+              "boardStationId": "demo-stop-003",
+              "arrivalStatus": "available",
+              "etaSeconds": 300,
+              "expectedArrivalAt": "2026-10-27T02:35:44Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:31:14Z",
+                "fetchedAt": "2026-10-27T02:30:44Z",
+                "freshness": "unknown"
+              }
+            }
+          ],
+          "serviceChanges": {
+            "coverageStatus": "available",
+            "items": [],
+            "dataQuality": {
+              "sourceId": "demo-fixture",
+              "sourceUpdatedAt": "2026-10-27T02:31:14Z",
+              "fetchedAt": "2026-10-27T02:30:44Z",
+              "freshness": "unknown"
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "7e43c3b6-60e9-44f3-9f31-9d5a4b080485",
+          "generatedAt": "2026-10-27T02:30:44Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "stale",
+      "fixture": {
+        "scenario": "stale",
+        "revision": "5",
+        "now": "2026-10-27T02:30:54+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6e4d37f7015241ec92e8d86435bbc63b/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 42.89,
+      "response": {
+        "data": {
+          "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+          "arrivals": [
+            {
+              "segmentId": "demo-leg-bus-001",
+              "routeId": "demo-route-001",
+              "boardStationId": "demo-stop-001",
+              "arrivalStatus": "available",
+              "etaSeconds": 300,
+              "expectedArrivalAt": "2026-10-27T02:35:54Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:29:23Z",
+                "fetchedAt": "2026-10-27T02:30:54Z",
+                "freshness": "stale"
+              }
+            },
+            {
+              "segmentId": "demo-leg-bus-002",
+              "routeId": "demo-route-002",
+              "boardStationId": "demo-stop-003",
+              "arrivalStatus": "available",
+              "etaSeconds": 300,
+              "expectedArrivalAt": "2026-10-27T02:35:54Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:29:23Z",
+                "fetchedAt": "2026-10-27T02:30:54Z",
+                "freshness": "stale"
+              }
+            }
+          ],
+          "serviceChanges": {
+            "coverageStatus": "available",
+            "items": [],
+            "dataQuality": {
+              "sourceId": "demo-fixture",
+              "sourceUpdatedAt": "2026-10-27T02:29:23Z",
+              "fetchedAt": "2026-10-27T02:30:54Z",
+              "freshness": "stale"
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "2f462cfd-ff1e-4cce-ade0-0415ae16ca36",
+          "generatedAt": "2026-10-27T02:30:54Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "changesQueryFailureRemainsUnknown",
+      "fixture": {
+        "scenario": "changes_unknown",
+        "revision": "6",
+        "now": "2026-10-27T02:31:04+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6e4d37f7015241ec92e8d86435bbc63b/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 51.74,
+      "response": {
+        "data": {
+          "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+          "arrivals": [
+            {
+              "segmentId": "demo-leg-bus-001",
+              "routeId": "demo-route-001",
+              "boardStationId": "demo-stop-001",
+              "arrivalStatus": "available",
+              "etaSeconds": 300,
+              "expectedArrivalAt": "2026-10-27T02:36:04Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:31:04Z",
+                "fetchedAt": "2026-10-27T02:31:04Z",
+                "freshness": "fresh"
+              }
+            },
+            {
+              "segmentId": "demo-leg-bus-002",
+              "routeId": "demo-route-002",
+              "boardStationId": "demo-stop-003",
+              "arrivalStatus": "available",
+              "etaSeconds": 300,
+              "expectedArrivalAt": "2026-10-27T02:36:04Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:31:04Z",
+                "fetchedAt": "2026-10-27T02:31:04Z",
+                "freshness": "fresh"
+              }
+            }
+          ],
+          "serviceChanges": {
+            "coverageStatus": "unknown",
+            "items": [],
+            "dataQuality": {
+              "sourceId": null,
+              "sourceUpdatedAt": null,
+              "fetchedAt": null,
+              "freshness": "unknown"
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "72dc8cc5-eb22-4ff4-a639-5df2857fa677",
+          "generatedAt": "2026-10-27T02:31:04Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "explicitRunningStatusKeepsRouteVersion",
+      "fixture": {
+        "scenario": "operation_running",
+        "revision": "7",
+        "now": "2026-10-27T02:31:14+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6e4d37f7015241ec92e8d86435bbc63b/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 51.24,
+      "response": {
+        "data": {
+          "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+          "arrivals": [
+            {
+              "segmentId": "demo-leg-bus-001",
+              "routeId": "demo-route-001",
+              "boardStationId": "demo-stop-001",
+              "arrivalStatus": "available",
+              "etaSeconds": 300,
+              "expectedArrivalAt": "2026-10-27T02:36:14Z",
+              "operationStatus": "running",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:31:14Z",
+                "fetchedAt": "2026-10-27T02:31:14Z",
+                "freshness": "fresh"
+              }
+            },
+            {
+              "segmentId": "demo-leg-bus-002",
+              "routeId": "demo-route-002",
+              "boardStationId": "demo-stop-003",
+              "arrivalStatus": "available",
+              "etaSeconds": 300,
+              "expectedArrivalAt": "2026-10-27T02:36:14Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:31:14Z",
+                "fetchedAt": "2026-10-27T02:31:14Z",
+                "freshness": "fresh"
+              }
+            }
+          ],
+          "serviceChanges": {
+            "coverageStatus": "available",
+            "items": [],
+            "dataQuality": {
+              "sourceId": "demo-fixture",
+              "sourceUpdatedAt": "2026-10-27T02:31:14Z",
+              "fetchedAt": "2026-10-27T02:31:14Z",
+              "freshness": "fresh"
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "2aba28ba-569d-433c-8512-1d052038d69b",
+          "generatedAt": "2026-10-27T02:31:14Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "missingArrivalCanStillHaveExplicitRunningStatus",
+      "fixture": {
+        "scenario": "arrivals_missing_running",
+        "revision": "8",
+        "now": "2026-10-27T02:31:24+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6e4d37f7015241ec92e8d86435bbc63b/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 41.76,
+      "response": {
+        "data": {
+          "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+          "arrivals": [
+            {
+              "segmentId": "demo-leg-bus-001",
+              "routeId": "demo-route-001",
+              "boardStationId": "demo-stop-001",
+              "arrivalStatus": "unavailable",
+              "etaSeconds": null,
+              "expectedArrivalAt": null,
+              "operationStatus": "running",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:31:24Z",
+                "fetchedAt": "2026-10-27T02:31:24Z",
+                "freshness": "fresh"
+              }
+            },
+            {
+              "segmentId": "demo-leg-bus-002",
+              "routeId": "demo-route-002",
+              "boardStationId": "demo-stop-003",
+              "arrivalStatus": "unavailable",
+              "etaSeconds": null,
+              "expectedArrivalAt": null,
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:31:24Z",
+                "fetchedAt": "2026-10-27T02:31:24Z",
+                "freshness": "fresh"
+              }
+            }
+          ],
+          "serviceChanges": {
+            "coverageStatus": "available",
+            "items": [],
+            "dataQuality": {
+              "sourceId": "demo-fixture",
+              "sourceUpdatedAt": "2026-10-27T02:31:24Z",
+              "fetchedAt": "2026-10-27T02:31:24Z",
+              "freshness": "fresh"
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "3fea8561-ac9e-45cc-b794-492464e197a8",
+          "generatedAt": "2026-10-27T02:31:24Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "explicitNotRunningBlocksLive",
+      "fixture": {
+        "scenario": "operation_not_running",
+        "revision": "9",
+        "now": "2026-10-27T02:31:34+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6e4d37f7015241ec92e8d86435bbc63b/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 409,
+      "elapsedMilliseconds": 42.99,
+      "response": {
+        "data": null,
+        "error": {
+          "code": "ROUTE_VERSION_CHANGED",
+          "message": "선택 경로를 이용할 수 없거나 재확인이 필요합니다. 다시 검색해 주세요.",
+          "retryable": true
+        },
+        "meta": {
+          "requestId": "60dfc8f0-fda0-4cfa-9264-664446f16a4a",
+          "generatedAt": "2026-10-27T02:31:34+00:00",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "explicitNotRunningBlocksDetail",
+      "fixture": {
+        "scenario": "operation_not_running",
+        "revision": "9",
+        "now": "2026-10-27T02:31:34+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6e4d37f7015241ec92e8d86435bbc63b/options/demo-option-846b67ee349031e85d43e3ea"
+      },
+      "httpStatus": 409,
+      "elapsedMilliseconds": 27.54,
+      "response": {
+        "data": null,
+        "error": {
+          "code": "ROUTE_VERSION_CHANGED",
+          "message": "선택 경로를 이용할 수 없거나 재확인이 필요합니다. 다시 검색해 주세요.",
+          "retryable": true
+        },
+        "meta": {
+          "requestId": "1cdc050e-40b3-4d96-854b-bcf7dd0e5562",
+          "generatedAt": "2026-10-27T02:31:34+00:00",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "searchAge599StillValid",
+      "fixture": {
+        "scenario": "normal",
+        "revision": "10",
+        "now": "2026-10-27T02:38:43+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6e4d37f7015241ec92e8d86435bbc63b/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 43.18,
+      "response": {
+        "data": {
+          "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+          "arrivals": [
+            {
+              "segmentId": "demo-leg-bus-001",
+              "routeId": "demo-route-001",
+              "boardStationId": "demo-stop-001",
+              "arrivalStatus": "available",
+              "etaSeconds": 300,
+              "expectedArrivalAt": "2026-10-27T02:43:43Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:38:43Z",
+                "fetchedAt": "2026-10-27T02:38:43Z",
+                "freshness": "fresh"
+              }
+            },
+            {
+              "segmentId": "demo-leg-bus-002",
+              "routeId": "demo-route-002",
+              "boardStationId": "demo-stop-003",
+              "arrivalStatus": "available",
+              "etaSeconds": 300,
+              "expectedArrivalAt": "2026-10-27T02:43:43Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:38:43Z",
+                "fetchedAt": "2026-10-27T02:38:43Z",
+                "freshness": "fresh"
+              }
+            }
+          ],
+          "serviceChanges": {
+            "coverageStatus": "available",
+            "items": [],
+            "dataQuality": {
+              "sourceId": "demo-fixture",
+              "sourceUpdatedAt": "2026-10-27T02:38:43Z",
+              "fetchedAt": "2026-10-27T02:38:43Z",
+              "freshness": "fresh"
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "ec66e149-beaa-4cf7-9a20-3c3eae5d3c43",
+          "generatedAt": "2026-10-27T02:38:43Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "searchAge600ExpiredLive",
+      "fixture": {
+        "scenario": "normal",
+        "revision": "10",
+        "now": "2026-10-27T02:38:44+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6e4d37f7015241ec92e8d86435bbc63b/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 410,
+      "elapsedMilliseconds": 21.15,
+      "response": {
+        "data": null,
+        "error": {
+          "code": "ROUTE_SEARCH_EXPIRED",
+          "message": "검색 유효기간이 지났습니다. 다시 검색해 주세요.",
+          "retryable": false
+        },
+        "meta": {
+          "requestId": "4f47bcd0-9565-41a1-b7dd-c81795658433",
+          "generatedAt": "2026-10-27T02:38:44+00:00",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "searchAge600ExpiredDetail",
+      "fixture": {
+        "scenario": "normal",
+        "revision": "10",
+        "now": "2026-10-27T02:38:44+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6e4d37f7015241ec92e8d86435bbc63b/options/demo-option-846b67ee349031e85d43e3ea"
+      },
+      "httpStatus": 410,
+      "elapsedMilliseconds": 11.12,
+      "response": {
+        "data": null,
+        "error": {
+          "code": "ROUTE_SEARCH_EXPIRED",
+          "message": "검색 유효기간이 지났습니다. 다시 검색해 주세요.",
+          "retryable": false
+        },
+        "meta": {
+          "requestId": "e6229f85-ba8f-41cb-bc64-31e1ff36475b",
+          "generatedAt": "2026-10-27T02:38:44+00:00",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "cancellationBaselineSearch",
+      "fixture": {
+        "scenario": "normal",
+        "revision": "11",
+        "now": "2026-10-27T02:38:54+00:00"
+      },
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/route-searches",
+        "json": {
+          "originStationId": "demo-stop-001",
+          "destinationId": "demo-destination-003",
+          "departAt": "<current controlled fixture time; use current aware ISO time in real requests>"
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 39.8,
+      "response": {
+        "data": {
+          "routeSearchId": "demo-search-c2036b095b184f318106c2b3e2c5277a",
+          "originStationId": "demo-stop-001",
+          "destinationId": "demo-destination-003",
+          "expiresAt": "2026-10-27T02:48:54Z",
+          "routeOptions": [
+            {
+              "routeOptionId": "demo-option-846b67ee349031e85d43e3ea",
+              "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+              "journeyStatus": "ready",
+              "routeNames": [
+                "시연 1번",
+                "시연 2번"
+              ],
+              "transferCount": 1,
+              "totalDurationSeconds": null,
+              "walkingDurationSeconds": null
+            }
+          ]
+        },
+        "error": null,
+        "meta": {
+          "requestId": "a058a8f2-0ca0-4851-99cd-535777cd5502",
+          "generatedAt": "2026-10-27T02:38:54Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "cancellationUnaffectedRouteSearch",
+      "fixture": {
+        "scenario": "normal",
+        "revision": "11",
+        "now": "2026-10-27T02:38:54+00:00"
+      },
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/route-searches",
+        "json": {
+          "originStationId": "demo-stop-003",
+          "destinationId": "demo-destination-003",
+          "departAt": "<current controlled fixture time; use current aware ISO time in real requests>"
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 24.84,
+      "response": {
+        "data": {
+          "routeSearchId": "demo-search-7a76189cf67d4536a2d9c9be3b8166e5",
+          "originStationId": "demo-stop-003",
+          "destinationId": "demo-destination-003",
+          "expiresAt": "2026-10-27T02:48:54Z",
+          "routeOptions": [
+            {
+              "routeOptionId": "demo-option-0be60603b0f9cd1cebadf903",
+              "routeSnapshotVersion": "demo-v-6ea15fb877367d728d9fd1ec",
+              "journeyStatus": "ready",
+              "routeNames": [
+                "시연 2번"
+              ],
+              "transferCount": 0,
+              "totalDurationSeconds": null,
+              "walkingDurationSeconds": null
+            }
+          ]
+        },
+        "error": null,
+        "meta": {
+          "requestId": "71d8d304-a80a-42ab-bfc1-0bbd4a4f35e3",
+          "generatedAt": "2026-10-27T02:38:54Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "cancellationRequiresReselectionLive",
+      "fixture": {
+        "scenario": "cancellation",
+        "revision": "12",
+        "now": "2026-10-27T02:38:55+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-c2036b095b184f318106c2b3e2c5277a/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 409,
+      "elapsedMilliseconds": 55.64,
+      "response": {
+        "data": null,
+        "error": {
+          "code": "ROUTE_VERSION_CHANGED",
+          "message": "선택 경로를 이용할 수 없거나 재확인이 필요합니다. 다시 검색해 주세요.",
+          "retryable": true
+        },
+        "meta": {
+          "requestId": "6ac6f91a-78c8-4ad7-83fc-519d93096cf0",
+          "generatedAt": "2026-10-27T02:38:55+00:00",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "cancellationRequiresReselectionDetail",
+      "fixture": {
+        "scenario": "cancellation",
+        "revision": "12",
+        "now": "2026-10-27T02:38:55+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-c2036b095b184f318106c2b3e2c5277a/options/demo-option-846b67ee349031e85d43e3ea"
+      },
+      "httpStatus": 409,
+      "elapsedMilliseconds": 31.84,
+      "response": {
+        "data": null,
+        "error": {
+          "code": "ROUTE_VERSION_CHANGED",
+          "message": "선택 경로를 이용할 수 없거나 재확인이 필요합니다. 다시 검색해 주세요.",
+          "retryable": true
+        },
+        "meta": {
+          "requestId": "a332fd48-606b-4b36-82ea-51b2137b1958",
+          "generatedAt": "2026-10-27T02:38:55+00:00",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "cancellationUnaffectedRouteRemainsUsable",
+      "fixture": {
+        "scenario": "cancellation",
+        "revision": "12",
+        "now": "2026-10-27T02:38:55+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-7a76189cf67d4536a2d9c9be3b8166e5/options/demo-option-0be60603b0f9cd1cebadf903/live"
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 28.96,
+      "response": {
+        "data": {
+          "routeSnapshotVersion": "demo-v-6ea15fb877367d728d9fd1ec",
+          "arrivals": [
+            {
+              "segmentId": "demo-leg-bus-001",
+              "routeId": "demo-route-002",
+              "boardStationId": "demo-stop-003",
+              "arrivalStatus": "available",
+              "etaSeconds": 300,
+              "expectedArrivalAt": "2026-10-27T02:43:55Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:38:55Z",
+                "fetchedAt": "2026-10-27T02:38:55Z",
+                "freshness": "fresh"
+              }
+            }
+          ],
+          "serviceChanges": {
+            "coverageStatus": "available",
+            "items": [],
+            "dataQuality": {
+              "sourceId": "demo-fixture",
+              "sourceUpdatedAt": "2026-10-27T02:38:55Z",
+              "fetchedAt": "2026-10-27T02:38:55Z",
+              "freshness": "fresh"
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "2dd01f10-a0cb-4c60-be02-a7b763e26645",
+          "generatedAt": "2026-10-27T02:38:55Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "detourBaselineSearch",
+      "fixture": {
+        "scenario": "normal",
+        "revision": "13",
+        "now": "2026-10-27T02:39:14+00:00"
+      },
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/route-searches",
+        "json": {
+          "originStationId": "demo-stop-001",
+          "destinationId": "demo-destination-003",
+          "departAt": "<current controlled fixture time; use current aware ISO time in real requests>"
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 48.03,
+      "response": {
+        "data": {
+          "routeSearchId": "demo-search-6b3c5029271942fcb0f3b1abbdb24708",
+          "originStationId": "demo-stop-001",
+          "destinationId": "demo-destination-003",
+          "expiresAt": "2026-10-27T02:49:14Z",
+          "routeOptions": [
+            {
+              "routeOptionId": "demo-option-846b67ee349031e85d43e3ea",
+              "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+              "journeyStatus": "ready",
+              "routeNames": [
+                "시연 1번",
+                "시연 2번"
+              ],
+              "transferCount": 1,
+              "totalDurationSeconds": null,
+              "walkingDurationSeconds": null
+            }
+          ]
+        },
+        "error": null,
+        "meta": {
+          "requestId": "47a6df7c-a164-4110-86fe-639c2cc8ba98",
+          "generatedAt": "2026-10-27T02:39:14Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "detourUnaffectedRouteSearch",
+      "fixture": {
+        "scenario": "normal",
+        "revision": "13",
+        "now": "2026-10-27T02:39:14+00:00"
+      },
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/route-searches",
+        "json": {
+          "originStationId": "demo-stop-003",
+          "destinationId": "demo-destination-003",
+          "departAt": "<current controlled fixture time; use current aware ISO time in real requests>"
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 27.87,
+      "response": {
+        "data": {
+          "routeSearchId": "demo-search-3882df59d18545518702953440128ba6",
+          "originStationId": "demo-stop-003",
+          "destinationId": "demo-destination-003",
+          "expiresAt": "2026-10-27T02:49:14Z",
+          "routeOptions": [
+            {
+              "routeOptionId": "demo-option-0be60603b0f9cd1cebadf903",
+              "routeSnapshotVersion": "demo-v-6ea15fb877367d728d9fd1ec",
+              "journeyStatus": "ready",
+              "routeNames": [
+                "시연 2번"
+              ],
+              "transferCount": 0,
+              "totalDurationSeconds": null,
+              "walkingDurationSeconds": null
+            }
+          ]
+        },
+        "error": null,
+        "meta": {
+          "requestId": "cce8f983-e37b-4c15-963c-91c2e92405ed",
+          "generatedAt": "2026-10-27T02:39:14Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "detourRequiresReselectionLive",
+      "fixture": {
+        "scenario": "detour",
+        "revision": "14",
+        "now": "2026-10-27T02:39:15+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6b3c5029271942fcb0f3b1abbdb24708/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 409,
+      "elapsedMilliseconds": 40.41,
+      "response": {
+        "data": null,
+        "error": {
+          "code": "ROUTE_VERSION_CHANGED",
+          "message": "선택 경로를 이용할 수 없거나 재확인이 필요합니다. 다시 검색해 주세요.",
+          "retryable": true
+        },
+        "meta": {
+          "requestId": "5728d1e5-5fd5-4e2c-acdb-df93f6fb6506",
+          "generatedAt": "2026-10-27T02:39:15+00:00",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "detourRequiresReselectionDetail",
+      "fixture": {
+        "scenario": "detour",
+        "revision": "14",
+        "now": "2026-10-27T02:39:15+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6b3c5029271942fcb0f3b1abbdb24708/options/demo-option-846b67ee349031e85d43e3ea"
+      },
+      "httpStatus": 409,
+      "elapsedMilliseconds": 43.66,
+      "response": {
+        "data": null,
+        "error": {
+          "code": "ROUTE_VERSION_CHANGED",
+          "message": "선택 경로를 이용할 수 없거나 재확인이 필요합니다. 다시 검색해 주세요.",
+          "retryable": true
+        },
+        "meta": {
+          "requestId": "566d1e9e-837c-49e0-9a62-3d79b160589c",
+          "generatedAt": "2026-10-27T02:39:15+00:00",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "detourUnaffectedRouteRemainsUsable",
+      "fixture": {
+        "scenario": "detour",
+        "revision": "14",
+        "now": "2026-10-27T02:39:15+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-3882df59d18545518702953440128ba6/options/demo-option-0be60603b0f9cd1cebadf903/live"
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 28.7,
+      "response": {
+        "data": {
+          "routeSnapshotVersion": "demo-v-6ea15fb877367d728d9fd1ec",
+          "arrivals": [
+            {
+              "segmentId": "demo-leg-bus-001",
+              "routeId": "demo-route-002",
+              "boardStationId": "demo-stop-003",
+              "arrivalStatus": "available",
+              "etaSeconds": 300,
+              "expectedArrivalAt": "2026-10-27T02:44:15Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:39:15Z",
+                "fetchedAt": "2026-10-27T02:39:15Z",
+                "freshness": "fresh"
+              }
+            }
+          ],
+          "serviceChanges": {
+            "coverageStatus": "available",
+            "items": [],
+            "dataQuality": {
+              "sourceId": "demo-fixture",
+              "sourceUpdatedAt": "2026-10-27T02:39:15Z",
+              "fetchedAt": "2026-10-27T02:39:15Z",
+              "freshness": "fresh"
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "ba1c49c2-0a58-4056-817a-cf7ef60e5389",
+          "generatedAt": "2026-10-27T02:39:15Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "timetable_changeBaselineSearch",
+      "fixture": {
+        "scenario": "normal",
+        "revision": "15",
+        "now": "2026-10-27T02:39:34+00:00"
+      },
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/route-searches",
+        "json": {
+          "originStationId": "demo-stop-001",
+          "destinationId": "demo-destination-003",
+          "departAt": "<current controlled fixture time; use current aware ISO time in real requests>"
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 50.13,
+      "response": {
+        "data": {
+          "routeSearchId": "demo-search-42347c10a99a4ffaacb54ac4a7f7a020",
+          "originStationId": "demo-stop-001",
+          "destinationId": "demo-destination-003",
+          "expiresAt": "2026-10-27T02:49:34Z",
+          "routeOptions": [
+            {
+              "routeOptionId": "demo-option-846b67ee349031e85d43e3ea",
+              "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+              "journeyStatus": "ready",
+              "routeNames": [
+                "시연 1번",
+                "시연 2번"
+              ],
+              "transferCount": 1,
+              "totalDurationSeconds": null,
+              "walkingDurationSeconds": null
+            }
+          ]
+        },
+        "error": null,
+        "meta": {
+          "requestId": "d279e1f2-6999-458a-b749-4a799ce178b5",
+          "generatedAt": "2026-10-27T02:39:34Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "timetable_changeUnaffectedRouteSearch",
+      "fixture": {
+        "scenario": "normal",
+        "revision": "15",
+        "now": "2026-10-27T02:39:34+00:00"
+      },
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/route-searches",
+        "json": {
+          "originStationId": "demo-stop-003",
+          "destinationId": "demo-destination-003",
+          "departAt": "<current controlled fixture time; use current aware ISO time in real requests>"
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 29.78,
+      "response": {
+        "data": {
+          "routeSearchId": "demo-search-6716762c7efd484c86d6490cd4fbab7a",
+          "originStationId": "demo-stop-003",
+          "destinationId": "demo-destination-003",
+          "expiresAt": "2026-10-27T02:49:34Z",
+          "routeOptions": [
+            {
+              "routeOptionId": "demo-option-0be60603b0f9cd1cebadf903",
+              "routeSnapshotVersion": "demo-v-6ea15fb877367d728d9fd1ec",
+              "journeyStatus": "ready",
+              "routeNames": [
+                "시연 2번"
+              ],
+              "transferCount": 0,
+              "totalDurationSeconds": null,
+              "walkingDurationSeconds": null
+            }
+          ]
+        },
+        "error": null,
+        "meta": {
+          "requestId": "672c78a6-e5ff-468f-b097-80c1addd1f9b",
+          "generatedAt": "2026-10-27T02:39:34Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "timetable_changeRequiresReselectionLive",
+      "fixture": {
+        "scenario": "timetable_change",
+        "revision": "16",
+        "now": "2026-10-27T02:39:35+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-42347c10a99a4ffaacb54ac4a7f7a020/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 409,
+      "elapsedMilliseconds": 58.19,
+      "response": {
+        "data": null,
+        "error": {
+          "code": "ROUTE_VERSION_CHANGED",
+          "message": "선택 경로를 이용할 수 없거나 재확인이 필요합니다. 다시 검색해 주세요.",
+          "retryable": true
+        },
+        "meta": {
+          "requestId": "5fb7f2d1-f8ab-4722-a59f-83177afe23d5",
+          "generatedAt": "2026-10-27T02:39:35+00:00",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "timetable_changeRequiresReselectionDetail",
+      "fixture": {
+        "scenario": "timetable_change",
+        "revision": "16",
+        "now": "2026-10-27T02:39:35+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-42347c10a99a4ffaacb54ac4a7f7a020/options/demo-option-846b67ee349031e85d43e3ea"
+      },
+      "httpStatus": 409,
+      "elapsedMilliseconds": 40.73,
+      "response": {
+        "data": null,
+        "error": {
+          "code": "ROUTE_VERSION_CHANGED",
+          "message": "선택 경로를 이용할 수 없거나 재확인이 필요합니다. 다시 검색해 주세요.",
+          "retryable": true
+        },
+        "meta": {
+          "requestId": "bbef06fd-f443-4cbc-8c55-53b82513b704",
+          "generatedAt": "2026-10-27T02:39:35+00:00",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "timetable_changeUnaffectedRouteRemainsUsable",
+      "fixture": {
+        "scenario": "timetable_change",
+        "revision": "16",
+        "now": "2026-10-27T02:39:35+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6716762c7efd484c86d6490cd4fbab7a/options/demo-option-0be60603b0f9cd1cebadf903/live"
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 34.07,
+      "response": {
+        "data": {
+          "routeSnapshotVersion": "demo-v-6ea15fb877367d728d9fd1ec",
+          "arrivals": [
+            {
+              "segmentId": "demo-leg-bus-001",
+              "routeId": "demo-route-002",
+              "boardStationId": "demo-stop-003",
+              "arrivalStatus": "available",
+              "etaSeconds": 300,
+              "expectedArrivalAt": "2026-10-27T02:44:35Z",
+              "operationStatus": "unknown",
+              "dataQuality": {
+                "sourceId": "demo-fixture",
+                "sourceUpdatedAt": "2026-10-27T02:39:35Z",
+                "fetchedAt": "2026-10-27T02:39:35Z",
+                "freshness": "fresh"
+              }
+            }
+          ],
+          "serviceChanges": {
+            "coverageStatus": "available",
+            "items": [],
+            "dataQuality": {
+              "sourceId": "demo-fixture",
+              "sourceUpdatedAt": "2026-10-27T02:39:35Z",
+              "fetchedAt": "2026-10-27T02:39:35Z",
+              "freshness": "fresh"
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "6e32e9c3-34c8-4f4f-9b63-a63115306812",
+          "generatedAt": "2026-10-27T02:39:35Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "coreDataBaselineSearch",
+      "fixture": {
+        "scenario": "normal",
+        "revision": "17",
+        "now": "2026-10-27T02:40:04+00:00"
+      },
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/route-searches",
+        "json": {
+          "originStationId": "demo-stop-001",
+          "destinationId": "demo-destination-003",
+          "departAt": "<current controlled fixture time; use current aware ISO time in real requests>"
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 44.56,
+      "response": {
+        "data": {
+          "routeSearchId": "demo-search-b81e341cb8814c69885107812e270fec",
+          "originStationId": "demo-stop-001",
+          "destinationId": "demo-destination-003",
+          "expiresAt": "2026-10-27T02:50:04Z",
+          "routeOptions": [
+            {
+              "routeOptionId": "demo-option-846b67ee349031e85d43e3ea",
+              "routeSnapshotVersion": "demo-v-d074b56efe04a2919499b6c8",
+              "journeyStatus": "ready",
+              "routeNames": [
+                "시연 1번",
+                "시연 2번"
+              ],
+              "transferCount": 1,
+              "totalDurationSeconds": null,
+              "walkingDurationSeconds": null
+            }
+          ]
+        },
+        "error": null,
+        "meta": {
+          "requestId": "bde4c294-820b-4224-9782-2155b732a154",
+          "generatedAt": "2026-10-27T02:40:04Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "coreDataUnavailableIs503",
+      "fixture": {
+        "scenario": "core_unavailable",
+        "revision": "18",
+        "now": "2026-10-27T02:40:05+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-b81e341cb8814c69885107812e270fec/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 503,
+      "elapsedMilliseconds": 18.6,
+      "response": {
+        "data": null,
+        "error": {
+          "code": "TRANSPORT_DATA_UNAVAILABLE",
+          "message": "핵심 경로 자료를 확인할 수 없습니다.",
+          "retryable": true
+        },
+        "meta": {
+          "requestId": "7d9d5bd9-df43-4405-becf-7bbe4d453c23",
+          "generatedAt": "2026-10-27T02:40:05+00:00",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "expiryTakesPriorityOverUnavailableCore",
+      "fixture": {
+        "scenario": "core_unavailable",
+        "revision": "18",
+        "now": "2026-10-27T02:40:05+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/demo-search-6e4d37f7015241ec92e8d86435bbc63b/options/demo-option-846b67ee349031e85d43e3ea/live"
+      },
+      "httpStatus": 410,
+      "elapsedMilliseconds": 8.17,
+      "response": {
+        "data": null,
+        "error": {
+          "code": "ROUTE_SEARCH_EXPIRED",
+          "message": "검색 유효기간이 지났습니다. 다시 검색해 주세요.",
+          "retryable": false
+        },
+        "meta": {
+          "requestId": "e4586964-8b46-4cfa-bab9-d00360a142ab",
+          "generatedAt": "2026-10-27T02:40:05+00:00",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "missingSearchIs404",
+      "fixture": {
+        "scenario": "core_unavailable",
+        "revision": "18",
+        "now": "2026-10-27T02:40:05+00:00"
+      },
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/route-searches/missing/options/missing/live"
+      },
+      "httpStatus": 404,
+      "elapsedMilliseconds": 7.87,
+      "response": {
+        "data": null,
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "등록된 대상을 찾을 수 없습니다.",
+          "retryable": false
+        },
+        "meta": {
+          "requestId": "6cfb4752-af77-490b-9a5c-974cff82b9f4",
+          "generatedAt": "2026-10-27T02:40:05+00:00",
+          "dataMode": "demo"
+        }
+      }
+    }
+  ]
+}

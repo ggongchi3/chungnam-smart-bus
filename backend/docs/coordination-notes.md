@@ -48,3 +48,11 @@
 - B: 상세는 서버 스냅샷을 기준으로 구간 순서를 표시한다. 손상되거나 검증하지 못한 저장 자료는503이며 실제 경로 변경409와 구분한다. 이 보완이 라이브/안내/인쇄의 공통 선택 검사에도 적용되며 전체 회귀 테스트를 통과했다.
 - 공통 관리자: 새로운 오류 코드나 외부 필드를 도입하지 않았다. 내부 JSON 저장 형식과 기존 정상 스냅샷은 호환된다. 공개 OpenAPI를 바꿀 필드는 없으며, 요청 스키마가 이미 명시한 문자열 departAt을 엄격히 적용한다.
 - A/B 화면·라운팅·뒤로가기/새로고침·오류 표시는 여전히 미구현이므로 실제 브라우저 공동 확인은 대기다. 프론트 코드 변경·다른 담당자에 대한 메시지 전송은 하지 않았다.
+
+## 2026-10-27 · v2 계획서 5단계 인수인계
+
+- B: `backend/docs/stage5-integration.md`와 `stage5-http-examples.json`에 정상·미수신·stale/unknown·운행 상태·변경409·만료410·핵심불가503을 정리했다. sourceUpdatedAt은 원천, fetchedAt은 수집, generatedAt은 응답 시각이며 서로 대체하지 않는다. arrivalStatus와 operationStatus도 별도 의미로 표시한다.
+- B: 30초 활성 화면 조회·이탈 시 중지·5초 요청 제한·GET 일시 연결 실패/5xx만1초 후1회 재시도·4xx/POST 무재시도는 기존 기준 그대로다. 구현 대상 `frontend/src/features/live-info/`, `frontend/src/shared/api/`를 직접 수정하지 않았다. 실제 UI/공동 브라우저 검증은 대기다.
+- 공통 관리자: 공개 API8개·JSON 필드·오류 코드는 유지했다. 변경 범위는 실제 선택한 경유 구간으로 판단하고 미래/종료 알림은 현재 경로를 막지 않는다. 적용 시작 미확인/잘못된 기간은 현재 결행으로 확정하지 않고 재확인을 요구한다. 항목/적용 ID 집합의 순서는 버전 의미가 아니다.
+- 백엔드 제공자 구현자: 내부 ProviderState.arrivals는 `(routeId,boardStationId)`별 ArrivalObservation(예상 시각·operation_status·source_updated_at·fetched_at·source_id)을 사용한다. 기존 기본 필드는 호환을 위해 유지한다. 관측 맵이 없으면 ETA를 만들지 않는다. 명시적 not_running 현재 증거가 fresh이면409, 단순 ETA/수집 갱신은 버전을 바꾸지 않는다. 실제 외부 제공자 연결 완료를 뜻하지 않는다.
+- 공통 자료: data-sources.md의 외부기관/키/범위 미확인 상태는 유지했다. 합성 정류장·목적지·노선 원본은 바꾸지 않았다. 타 파트/공통 원본 수정과 담당자 메시지 전송은 없다.

@@ -58,6 +58,8 @@ backend/.venv/Scripts/python -m backend.demo scenario --name normal
 
 두 명령을 실제 실행했다. 같은 방식으로 `arrivals_missing`, `source_missing`, `source_future`, `changes_unknown`, `cancellation`, `detour`, `timetable_change`, `core_unavailable`을 선택한다. 모든 시나리오의 API 동작은 주입 제공자로 자동 테스트했다. 실제 HTTP smoke는 normal 시나리오로 실행했다.
 
+5단계에서 `operation_running`, `operation_not_running`, `arrivals_missing_running`을 추가해 총 13개 합성 시나리오를 제공한다. 명시적 운행 상태는 시연 1번 노선에만 적용한다. 새 시나리오의 API 동작은 주입 제공자 자동 테스트 및 5단계 HTTP 도구로 검증했으며 공용 scenario.json은 바꾸지 않았다.
+
 합성 도착 원천 시각은 시나리오를 처음 읽었을 때 고정된다. 30초 폴링이 원천 갱신 시각을 갱신하지 않는다. 91초부터 stale이며, 재발행하려면 `scenario --name normal`을 다시 실행한다. 도착 이벤트는 발행 시각 +300초이며 지난 이벤트로 새로운 도착을 만들어내지 않는다. 시나리오 재발행·단순 ETA 변경은 경로 버전을 바꾸지 않는다.
 
 초기화는 `python -m backend.seed`이며, 재실행해도 기존 행은 덮어쓰지 않고 누락된 합성 행만 추가한다. 서버 시작도 같은 적재를 수행한다. 실행 DB를 지우는 reset 명령은 제공하지 않는다. 완전히 새로운 독립 실행 DB가 필요하면 `BUS_DATABASE_URL=sqlite:///backend/.local/new-demo.sqlite3`처럼 **기존에 없는 새 파일 경로**를 지정해 seed한다. 이 별도 명령은 안내이며 실검증은 `.local/tests/`의 새 DB 생성·재개방 테스트로 수행했다.
@@ -102,6 +104,21 @@ backend/.venv/Scripts/python -m pytest backend/tests/test_stage4.py -q -p no:cac
 두 명령을 실제 실행했다. 전용 테스트 **39개**, 전체 테스트 **161개**, 실제 Uvicorn **21개 검색·상세 HTTP 사례**와 CORS/OpenAPI가 통과했다. 시장1·병원2·터미널 환승 합계4, 후보 정렬·제한·명시 환승·출발 시각 경계·스냅샷 저장/재시작·손상 거부를 확인했다. HTTP 도구는 독립 메모리 DB의 자식 서버를 사용해 실행 DB·시연 상태를 보존한다.
 
 요청·응답과 A→B 6개 필드는 [4단계 연동 안내](docs/stage4-integration.md)와 [실제 HTTP 기록](docs/stage4-http-examples.json)에 있다. 응답 기록의 검색 ID는 그 검증 실행에서만 유효하므로 새로운 검색 결과를 사용한다. 실제 A/B 화면의 선택→상세 연결은 대기다.
+
+### 5단계 도착·운행 변경·시간·버전 검증 (2026-10-27)
+
+도착과 운행 변경의 원천/수집/응답 시각을 분리하고 서버 현재 시각으로 각 항목 최신성을 다시 계산한다. 도착 예정 시각·운행 상태는 `(routeId, boardStationId)`별 명시적 제공 관측값을 사용한다. 서비스가 수집 시각에 임의로 300초를 더하지 않으며 미수신을 결행으로 해석하지 않는다.
+
+변경 범위에는 선택한 버스 구간의 실제 중간 정류장을 포함한다. 경로 밖 변경이나 적용이 미래/종료된 변경은 현재 경로를 막지 않는다. 변경 항목·적용 대상 ID 집합의 순서만 바뀌거나 ETA만 갱신돼도 버전은 유지한다. 시작 시각이 미확인인 변경은 현재 결행으로 확정하지 않고 재확인을 요구한다. 제공자 전체 실패는 핵심 자료 503, 하위 도착/변경만 실패하면 항목별 unavailable/unknown의 200이다. 없는 검색/옵션·만료 우선순위도 보존한다.
+
+```powershell
+backend/.venv/Scripts/python -m backend.tools.verify_stage5
+backend/.venv/Scripts/python -m pytest backend/tests/test_stage5.py -q -p no:cacheprovider
+```
+
+두 명령을 실제 실행했다. 전용 테스트 **45개**, 전체 **206개**, 실제 Uvicorn **36개 HTTP 사례**를 통과했다. 주입 시각으로 0/90/91/599/600초를 재현했으며 실제로 10분을 기다리지 않았다. HTTP 도구의 제어 파일은 `.local/`의 매 실행 전용 폴더에만 생성하고 메모리 DB를 사용한다. 정상 앱의 공개 API는 8개 그대로이고 실행 DB·공용 시연 상태는 보존했다.
+
+B 담당자의 30초 조회·5초 제한·GET 재시도·오류/최신성 표시는 [5단계 연동 안내](docs/stage5-integration.md), 상태별 실제 JSON은 [HTTP 사례](docs/stage5-http-examples.json)를 참조한다. 실제 B 화면의 타이머·요청 취소·표시 검증은 대기다.
 
 ## API와 연동
 

@@ -8,6 +8,7 @@ from backend.api.errors import ServiceError, changed, not_found, unavailable
 from backend.models import schemas as s
 from backend.models.snapshots import SavedRouteOption
 from backend.models.tables import DestinationAccess, RouteSearch
+from backend.integrations.providers import ArrivalObservation
 from backend.services import catalog, routing
 from backend.services.ai import fixed_guidance
 from backend.services.time import quality
@@ -91,28 +92,33 @@ def checked_detail(session, search_id, option_id, state, now, data_mode, expecte
     return detail
 
 
-def live_info(detail, state, now, for_print=False):
+def live_info(detail, state, now, for_print=False, *, session=None):
     arrivals = []
-    q = quality(state.source_updated_at, state.fetched_at, now)
     for segment in detail.segments:
         if segment.type != 'bus':
             continue
-        # Fixed synthetic event, not a new 5-minute arrival on every poll.
-        expected = state.fetched_at + timedelta(seconds=300) if state.arrivals_available and state.fetched_at else None
+        observation = state.arrivals.get((segment.routeId, segment.boardStation.stationId))
+        if not isinstance(observation, ArrivalObservation):
+            observation = ArrivalObservation(None)
+        q = quality(observation.source_updated_at, observation.fetched_at, now, observation.source_id)
+        # Facts come from the provider. Collection/response times never create ETA.
+        expected = observation.expected_arrival_at if state.arrivals_available else None
         available = expected is not None and now <= expected
         arrivals.append(s.Arrival(segmentId=segment.segmentId, routeId=segment.routeId,
             boardStationId=segment.boardStation.stationId, arrivalStatus='available' if available else 'unavailable',
             etaSeconds=max(0, int((expected - now).total_seconds())) if available and not for_print else None,
-            expectedArrivalAt=expected if available else None, operationStatus='unknown', dataQuality=q))
+            expectedArrivalAt=expected if available else None,
+            operationStatus=observation.operation_status, dataQuality=q))
     routes = {p.routeId for p in detail.segments if p.type == 'bus'}
-    stations = {ref.stationId for p in detail.segments if p.type == 'bus' for ref in (p.boardStation, p.alightStation)}
-    changes = state.changes.model_copy(update={'items': [c for c in state.changes.items
-        if routes.intersection(c.affectedRouteIds) or stations.intersection(c.affectedStationIds)]}, deep=True)
+    legs = [(p.routeId, p.boardSequence, p.alightSequence) for p in detail.segments if p.type == 'bus']
+    stations = (routing.route_station_ids(session, legs) if session is not None else
+        {ref.stationId for p in detail.segments if p.type == 'bus' for ref in (p.boardStation, p.alightStation)})
+    changes = routing.scoped_changes(state, now, routes, stations)
     return s.LiveData(routeSnapshotVersion=detail.routeSnapshotVersion, arrivals=arrivals, serviceChanges=changes)
 
 
-def print_guide(detail, state, now):
-    snapshot = live_info(detail, state, now, for_print=True)
+def print_guide(detail, state, now, *, session=None):
+    snapshot = live_info(detail, state, now, for_print=True, session=session)
     return s.PrintData(printGuideId='demo-print-' + uuid4().hex, generatedAt=now, routeDetail=detail.model_copy(deep=True),
         liveInfoSnapshot=snapshot, guidance=fixed_guidance(detail), notice=s.NOTICE +
         ' · 생성 시각과 원천 갱신 시각을 구분해 주세요. 도착·운행 변경 정보는 확인 불가하거나 오래될 수 있습니다.')
