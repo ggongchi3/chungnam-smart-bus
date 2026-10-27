@@ -63,6 +63,13 @@ class DestinationData(Model):
     destinations: list[Destination]
 
 
+class DestinationQuery(BaseModel):
+    """GET filters; extra query parameters remain ignored for compatibility."""
+    originStationId: Identifier
+    query: Annotated[str, StringConstraints(strip_whitespace=True, max_length=100)] = ''
+    category: Category | None = None
+
+
 class Quality(Model):
     sourceId: str | None
     sourceUpdatedAt: AwareDatetime | None

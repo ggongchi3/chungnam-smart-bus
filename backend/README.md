@@ -77,6 +77,19 @@ backend/.venv/Scripts/python -m pytest backend/tests/test_stage2.py -q --basetem
 
 테이블별 PK·FK·nullable·고유 조건은 [DB 명세](docs/database-schema.md), 실제 DB 검증 기록은 [2단계 결과](docs/stage2-verification-20261027.json), A/B용 정상·빈 결과·오류 및 AI 입출력 예시는 [2단계 인수인계 JSON](docs/stage2-handoff-examples.json)에 있다. 응답 기록의 시각·검색 ID는 당시 실행값이다. 새 요청은 기존 `backend.tools.request_examples`처럼 현재 시각을 생성한다. 실제 A/B·AI 담당자와의 공동 확인은 대기 중이다.
 
+### 3단계 정류장·목적지 조회 검증 (2026-10-27)
+
+`GET /api/v1/stations/{stationId}`와 `GET /api/v1/destinations`는 SQLite 자료를 조회한다. 조회 조건은 DestinationQuery 모델에서 검증하고 기존 파라미터·응답·ID는 유지했다. 병원/시장/터미널 이름·별칭·분류, 교집합, 공백 제거 후 100자 경계와 오류를 검증했다.
+
+```powershell
+backend/.venv/Scripts/python -m backend.tools.verify_stage3
+backend/.venv/Scripts/python -m pytest backend/tests/test_stage3.py -q --basetemp=backend/.test-tmp -p no:cacheprovider
+```
+
+두 명령을 실제 실행했다. 전용 테스트 **44개**, 전체 테스트 **122개**를 통과했으며, 실제 Uvicorn 서버의 **21개 HTTP GET 사례**와 로컬 CORS/OpenAPI도 통과했다. 검증 도구는 비어 있는 8000 포트에 독립 메모리 DB를 사용하는 자식 서버를 띄웠다가 종료한다. 기존 서버가 있다면 종료하지 않고 실행이 중단된다. 실행 DB·시연 상태는 변경하지 않는다.
+
+A 담당자가 사용할 요청·응답·8000/5173 프록시 기준은 [3단계 연동 안내](docs/stage3-integration.md), 실제 HTTP 기록은 [조회 응답 예시](docs/stage3-http-examples.json)에 있다. 프론트엔드 A 화면은 아직 없어 실제 브라우저 공동 검증은 대기다.
+
 ## API와 연동
 
 `api/routes.py`의 8개 경로와 `models/schemas.py`가 실제 요청·응답 스키마다. 생성된 명세는 `docs/openapi.json`이다. 성공/오류 모두 `data/error/meta`를 사용한다. FastAPI 입력 검증 오류는 422 대신 **400 INVALID_REQUEST**다. 기본 요청 ID는 서버가 생성하며 `X-Request-ID`에도 반환한다. 응답은 `Cache-Control: no-store`다.

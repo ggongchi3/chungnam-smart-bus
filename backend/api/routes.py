@@ -1,7 +1,6 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Request
-from pydantic import StringConstraints
 
 from backend.models import schemas as s
 from backend.services import ai, catalog, journeys
@@ -15,7 +14,6 @@ def session(request: Request):
 
 
 Session = Annotated[object, Depends(session)]
-QueryText = Annotated[str, StringConstraints(strip_whitespace=True, max_length=100)]
 
 
 def state(request):
@@ -37,11 +35,11 @@ async def station(stationId: s.Identifier, request: Request, db: Session):
 
 
 @router.get('/destinations', response_model=s.Envelope[s.DestinationData])
-async def destinations(request: Request, db: Session, originStationId: s.Identifier,
-                       query: Annotated[QueryText, Query()] = '', category: s.Category | None = None):
+async def destinations(request: Request, db: Session, params: Annotated[s.DestinationQuery, Query()]):
     now, provider = state(request)
     journeys.require_core(provider)
-    return response(request, s.DestinationData(destinations=catalog.destinations(db, originStationId, query, category)))
+    return response(request, s.DestinationData(destinations=catalog.destinations(
+        db, params.originStationId, params.query, params.category)))
 
 
 @router.post('/route-searches', response_model=s.Envelope[s.SearchData])

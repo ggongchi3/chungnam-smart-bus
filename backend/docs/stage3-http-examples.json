@@ -1,0 +1,626 @@
+{
+  "verifiedAt": "2026-10-27T01:57:11.821395+00:00",
+  "baseUrl": "http://127.0.0.1:8000",
+  "dataMode": "demo",
+  "notice": "시연 데이터 · 실제 운행 정보 아님",
+  "passedCases": 21,
+  "corsOrigins": [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
+  ],
+  "openapiChecked": true,
+  "frontendABrowserChecked": false,
+  "cases": [
+    {
+      "name": "station001",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/stations/demo-stop-001",
+        "query": {}
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 11.58,
+      "response": {
+        "data": {
+          "station": {
+            "stationId": "demo-stop-001",
+            "name": "시연 출발 정류장",
+            "directionLabel": "시연 병원 방향",
+            "region": null,
+            "coordinates": null
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "de5b479e-047c-4397-9231-839d821d9383",
+          "generatedAt": "2026-10-27T01:57:11.566979Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "station002",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/stations/demo-stop-002",
+        "query": {}
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 10.03,
+      "response": {
+        "data": {
+          "station": {
+            "stationId": "demo-stop-002",
+            "name": "시연 시장 앞 정류장",
+            "directionLabel": "시연 병원 방향",
+            "region": null,
+            "coordinates": null
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "d98fa111-761f-432f-8b99-1ff8c02f78ae",
+          "generatedAt": "2026-10-27T01:57:11.584011Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "station003",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/stations/demo-stop-003",
+        "query": {}
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 9.19,
+      "response": {
+        "data": {
+          "station": {
+            "stationId": "demo-stop-003",
+            "name": "시연 병원 앞 정류장",
+            "directionLabel": "시연 터미널 방향",
+            "region": null,
+            "coordinates": null
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "d48d3107-d67f-4828-a56e-77fab4656085",
+          "generatedAt": "2026-10-27T01:57:11.593754Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "station004",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/stations/demo-stop-004",
+        "query": {}
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 8.99,
+      "response": {
+        "data": {
+          "station": {
+            "stationId": "demo-stop-004",
+            "name": "시연 중간 정류장",
+            "directionLabel": "시연 터미널 방향",
+            "region": null,
+            "coordinates": null
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "e36aa0e9-3ad5-4cfc-8d23-ed687d283b4e",
+          "generatedAt": "2026-10-27T01:57:11.602742Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "station005",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/stations/demo-stop-005",
+        "query": {}
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 8.35,
+      "response": {
+        "data": {
+          "station": {
+            "stationId": "demo-stop-005",
+            "name": "시연 터미널 앞 정류장",
+            "directionLabel": "종점",
+            "region": null,
+            "coordinates": null
+          }
+        },
+        "error": null,
+        "meta": {
+          "requestId": "74dbbac3-97e5-456d-aa05-f67dc3f1245f",
+          "generatedAt": "2026-10-27T01:57:11.612090Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "allDestinations",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/destinations",
+        "query": {
+          "originStationId": "demo-stop-001"
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 15.42,
+      "response": {
+        "data": {
+          "destinations": [
+            {
+              "destinationId": "demo-destination-001",
+              "name": "시연 병원",
+              "category": "hospital",
+              "aliases": [
+                "시연 큰 병원"
+              ]
+            },
+            {
+              "destinationId": "demo-destination-002",
+              "name": "시연 시장",
+              "category": "market",
+              "aliases": [
+                "시연 장터"
+              ]
+            },
+            {
+              "destinationId": "demo-destination-003",
+              "name": "시연 터미널",
+              "category": "terminal",
+              "aliases": [
+                "시연 버스터미널"
+              ]
+            }
+          ]
+        },
+        "error": null,
+        "meta": {
+          "requestId": "2ac873f8-76a3-4ae7-ab9a-ce4595829953",
+          "generatedAt": "2026-10-27T01:57:11.626806Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "hospitalAlias",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/destinations",
+        "query": {
+          "originStationId": "demo-stop-001",
+          "query": " 시연 큰 병원 "
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 14.83,
+      "response": {
+        "data": {
+          "destinations": [
+            {
+              "destinationId": "demo-destination-001",
+              "name": "시연 병원",
+              "category": "hospital",
+              "aliases": [
+                "시연 큰 병원"
+              ]
+            }
+          ]
+        },
+        "error": null,
+        "meta": {
+          "requestId": "dd6c539f-60e5-4b99-96bb-746323fd1182",
+          "generatedAt": "2026-10-27T01:57:11.645787Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "hospitalCategory",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/destinations",
+        "query": {
+          "originStationId": "demo-stop-001",
+          "category": "hospital"
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 13.38,
+      "response": {
+        "data": {
+          "destinations": [
+            {
+              "destinationId": "demo-destination-001",
+              "name": "시연 병원",
+              "category": "hospital",
+              "aliases": [
+                "시연 큰 병원"
+              ]
+            }
+          ]
+        },
+        "error": null,
+        "meta": {
+          "requestId": "1beb4dfc-548e-404f-ae52-9ca35568edb7",
+          "generatedAt": "2026-10-27T01:57:11.660219Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "marketAlias",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/destinations",
+        "query": {
+          "originStationId": "demo-stop-001",
+          "query": " 시연 장터 "
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 13.13,
+      "response": {
+        "data": {
+          "destinations": [
+            {
+              "destinationId": "demo-destination-002",
+              "name": "시연 시장",
+              "category": "market",
+              "aliases": [
+                "시연 장터"
+              ]
+            }
+          ]
+        },
+        "error": null,
+        "meta": {
+          "requestId": "a642737d-8dc9-4e51-a666-27cb3e3ae77f",
+          "generatedAt": "2026-10-27T01:57:11.673587Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "marketCategory",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/destinations",
+        "query": {
+          "originStationId": "demo-stop-001",
+          "category": "market"
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 13.01,
+      "response": {
+        "data": {
+          "destinations": [
+            {
+              "destinationId": "demo-destination-002",
+              "name": "시연 시장",
+              "category": "market",
+              "aliases": [
+                "시연 장터"
+              ]
+            }
+          ]
+        },
+        "error": null,
+        "meta": {
+          "requestId": "7903717b-04b7-4803-b86b-38e00079fdb5",
+          "generatedAt": "2026-10-27T01:57:11.686069Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "terminalAlias",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/destinations",
+        "query": {
+          "originStationId": "demo-stop-001",
+          "query": " 시연 버스터미널 "
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 12.59,
+      "response": {
+        "data": {
+          "destinations": [
+            {
+              "destinationId": "demo-destination-003",
+              "name": "시연 터미널",
+              "category": "terminal",
+              "aliases": [
+                "시연 버스터미널"
+              ]
+            }
+          ]
+        },
+        "error": null,
+        "meta": {
+          "requestId": "ce337ecd-9804-4043-bb19-5e83fca8a969",
+          "generatedAt": "2026-10-27T01:57:11.699174Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "terminalCategory",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/destinations",
+        "query": {
+          "originStationId": "demo-stop-001",
+          "category": "terminal"
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 13.18,
+      "response": {
+        "data": {
+          "destinations": [
+            {
+              "destinationId": "demo-destination-003",
+              "name": "시연 터미널",
+              "category": "terminal",
+              "aliases": [
+                "시연 버스터미널"
+              ]
+            }
+          ]
+        },
+        "error": null,
+        "meta": {
+          "requestId": "6aac8d62-7ed2-4ced-b02b-046b009e06ac",
+          "generatedAt": "2026-10-27T01:57:11.712939Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "intersection",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/destinations",
+        "query": {
+          "originStationId": "demo-stop-001",
+          "query": "장터",
+          "category": "market"
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 12.85,
+      "response": {
+        "data": {
+          "destinations": [
+            {
+              "destinationId": "demo-destination-002",
+              "name": "시연 시장",
+              "category": "market",
+              "aliases": [
+                "시연 장터"
+              ]
+            }
+          ]
+        },
+        "error": null,
+        "meta": {
+          "requestId": "ef809934-c54f-4a94-b291-02fa3954c708",
+          "generatedAt": "2026-10-27T01:57:11.725682Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "emptyIntersection",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/destinations",
+        "query": {
+          "originStationId": "demo-stop-001",
+          "query": "장터",
+          "category": "hospital"
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 12.45,
+      "response": {
+        "data": {
+          "destinations": []
+        },
+        "error": null,
+        "meta": {
+          "requestId": "22bf0a99-a0f8-46d6-9efd-9357625141e0",
+          "generatedAt": "2026-10-27T01:57:11.738969Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "emptyResult",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/destinations",
+        "query": {
+          "originStationId": "demo-stop-001",
+          "query": "없는목적지"
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 12.87,
+      "response": {
+        "data": {
+          "destinations": []
+        },
+        "error": null,
+        "meta": {
+          "requestId": "5599e36f-2c36-474c-a513-57362c73c023",
+          "generatedAt": "2026-10-27T01:57:11.752851Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "trimmed100",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/destinations",
+        "query": {
+          "originStationId": "demo-stop-001",
+          "query": " 가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가 "
+        }
+      },
+      "httpStatus": 200,
+      "elapsedMilliseconds": 14.63,
+      "response": {
+        "data": {
+          "destinations": []
+        },
+        "error": null,
+        "meta": {
+          "requestId": "0b989ff0-d3be-4910-8de7-4ae16f1a342a",
+          "generatedAt": "2026-10-27T01:57:11.766196Z",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "invalidLength",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/destinations",
+        "query": {
+          "originStationId": "demo-stop-001",
+          "query": "가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가"
+        }
+      },
+      "httpStatus": 400,
+      "elapsedMilliseconds": 7.18,
+      "response": {
+        "data": null,
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "입력 형식과 허용 범위를 확인해 주세요.",
+          "retryable": false
+        },
+        "meta": {
+          "requestId": "eb7501cb-8c63-4237-809f-bbcfc4a3f9b7",
+          "generatedAt": "2026-10-27T01:57:11.775262+00:00",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "invalidCategory",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/destinations",
+        "query": {
+          "originStationId": "demo-stop-001",
+          "category": "invalid"
+        }
+      },
+      "httpStatus": 400,
+      "elapsedMilliseconds": 6.17,
+      "response": {
+        "data": null,
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "입력 형식과 허용 범위를 확인해 주세요.",
+          "retryable": false
+        },
+        "meta": {
+          "requestId": "23d09796-c0bf-4e88-8aed-818669822007",
+          "generatedAt": "2026-10-27T01:57:11.784445+00:00",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "missingOrigin",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/destinations",
+        "query": {}
+      },
+      "httpStatus": 400,
+      "elapsedMilliseconds": 5.74,
+      "response": {
+        "data": null,
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "입력 형식과 허용 범위를 확인해 주세요.",
+          "retryable": false
+        },
+        "meta": {
+          "requestId": "50f89b34-561b-48b9-8d7c-665a69cef35b",
+          "generatedAt": "2026-10-27T01:57:11.790120+00:00",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "missingStation",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/stations/not-registered",
+        "query": {}
+      },
+      "httpStatus": 404,
+      "elapsedMilliseconds": 6.45,
+      "response": {
+        "data": null,
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "등록된 대상을 찾을 수 없습니다.",
+          "retryable": false
+        },
+        "meta": {
+          "requestId": "89c51166-a1fb-4854-b8e6-44d1acd03555",
+          "generatedAt": "2026-10-27T01:57:11.796664+00:00",
+          "dataMode": "demo"
+        }
+      }
+    },
+    {
+      "name": "unknownOrigin",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/destinations",
+        "query": {
+          "originStationId": "not-registered"
+        }
+      },
+      "httpStatus": 404,
+      "elapsedMilliseconds": 8.46,
+      "response": {
+        "data": null,
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "등록된 대상을 찾을 수 없습니다.",
+          "retryable": false
+        },
+        "meta": {
+          "requestId": "6d26ed76-0d52-4e79-8267-eeb3cdc68904",
+          "generatedAt": "2026-10-27T01:57:11.805079+00:00",
+          "dataMode": "demo"
+        }
+      }
+    }
+  ]
+}

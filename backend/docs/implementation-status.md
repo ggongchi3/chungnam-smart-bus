@@ -1,5 +1,45 @@
 # 백엔드 구현·검증 상태
 
+## 2026-10-27 · v2 계획서 3단계 실행 결과
+
+요청 범위: **정류장·목적지 조회 API**. v2 계획서의 3단계 본문과 추가 체크리스트 8개 항목을 현재 API 계약 및 실제 사용처와 대조했다. 시작 상태는 `codex/backend-implementation`, 커밋 `0bb90c2`, Git 변경 없음이다. 기존 1·2단계 및 경로/AI/인쇄 기능을 보존했다.
+
+| v2 3단계 항목 | 결과 |
+| --- | --- |
+| 정류장 ID 조회 | 완료. 등록 5개 정류장의 이름·방향·문자열 ID·region/coordinates null을 검증 |
+| 목적지 이름·별칭·분류·교집합 | 완료. 병원/시장/터미널의 이름/별칭/분류가 같은 ID를 반환하고 교집합·빈 결과를 확인 |
+| 출발 정류장·분류·query 최대 100자 | 완료. DestinationQuery 모델로 정리; 공백 제거 후 100자 허용/101자 거부, 기존 미사용 query 인자 무시 동작 보존 |
+| 200 빈 배열·400·404 구분 | 완료. FastAPI 입력 오류 포함 400 INVALID_REQUEST, 미등록 404 NOT_FOUND, 일치 없음 200 destinations=[] |
+| lowerCamelCase·ID·null·응답 봉투 | 완료. Pydantic 응답 검증, UTF-8, requestId/헤더 일치·generatedAt의 시간대·dataMode 확인 |
+| 주요 장소·별칭의 ID 일치 | 완료. 3개 목적지와 분류, 이름·별칭 검색, 동명 장소의 개별 ID 보존 확인 |
+| 8000/5173·프록시·로컬 origin | 백엔드 완료, A 설정 확인 대기. 두 로컬 origin의 GET/OPTIONS·오류 응답 CORS를 검증하고 접두사 유지 프록시 안내 준비 |
+| A 실제 화면 첫 조회 | 대기. frontend는 자리 표시자뿐이며 실제 브라우저 연동 완료로 표시하지 않음. 실행 가능한 검증 도구·정상/빈 결과/오류 자료 준비 |
+
+변경 파일:
+
+- `backend/models/schemas.py`: DestinationQuery 입력 모델 추가. 출발 ID·query 공백/길이·category를 한 모델로 검증한다.
+- `backend/api/routes.py`: 목적지 조회 라우터에서 같은 모델을 사용한다. 서비스의 DB 조회·외부 응답·API 주소는 유지했다.
+- `backend/tests/test_stage3.py`: 정류장 5개, 이름/별칭/분류, 교집합, 100/101자, 400/404/빈 결과, 실제 DB 변경 반영, 동명 ID 보존, CORS·OpenAPI 등 전용 테스트 44개.
+- `backend/tools/verify_stage3.py`: 독립 메모리 SQLite DB의 Uvicorn 자식 서버 또는 지정한 demo 서버에 GET 요청을 보내 검증한다. 기본 실행은 기존 실행 DB·시나리오를 변경하지 않고 생성한 서버만 종료한다.
+- `backend/docs/stage3-integration.md`, `stage3-http-examples.json`: A용 주소·입력/출력·프록시·오류 처리와 실제 HTTP 21개 기록.
+- `backend/docs/stage3-test-results.xml`, `stage3-regression-results.xml`, `stage3-workspace-audit.json`: 전용/전체 테스트와 범위 증거.
+- `backend/README.md`, `backend/docs/coordination-notes.md`, 이 문서: 실행 안내·담당자 확인 대기 기록.
+
+실제로 실행한 명령:
+
+```text
+backend/.venv/Scripts/python -m pytest backend/tests/test_stage3.py -q --basetemp=backend/.test-tmp -p no:cacheprovider --junitxml=backend/docs/stage3-test-results.xml
+  → 44 passed, 1 warning, 11.45초
+backend/.venv/Scripts/python -m backend.tools.verify_stage3
+  → Uvicorn 127.0.0.1:8000, 실제 HTTP 조회21개 + CORS/OpenAPI 통과
+backend/.venv/Scripts/python -m pytest backend/tests -q --basetemp=backend/.test-tmp -p no:cacheprovider --junitxml=backend/docs/stage3-regression-results.xml
+  → 122 passed, 1 warning, 30.06초
+```
+
+실제 HTTP 21개 중 가장 오래 걸린 요청은 이번 환경에서 15.42ms였다. 부하 환경 성능 보장은 아니다. 생성된 OpenAPI는 기존 파일과 내용이 동일하여 계약 필드·경로 변경이 없음을 확인했다. 경고는 기존 Starlette/anyio BlockingPortal 폐기 예정 알림 1개다. TestClient·실제 HTTP 실행은 앞서 확인한 Windows 샌드박스의 로컬 소켓 제한을 피하기 위해 권한이 허용된 실행에서 진행했다.
+
+프론트엔드 화면·브라우저 프록시·화면 표시의 공동 검증은 미수행이다. 프론트 코드를 대신 작성하거나 다른 담당자에게 메시지를 보내지 않았다. 실제 교통 API 미연결 상태도 유지한다. 이번 변경은 backend 내부뿐이며 Git commit/tag/push/PR/배포는 수행하지 않았다. 상세 변경 범위는 `stage3-workspace-audit.json`을 참조한다.
+
 ## 2026-10-27 · v2 계획서 2단계 실행 결과
 
 요청 범위: `backend-development-plan-v2(1).hwp`의 **DB와 시연 데이터 준비**. 첨부 파일을 직접 추출해 2단계 본문·DB 세부안·추가 체크리스트(2단계 9개 항목)를 확인했다. 과거 '계획서 작성만' 문구는 이번 실행 요청에 적용하지 않았다. 이번 시작 상태는 `codex/backend-implementation`, 커밋 `2a4b91e`, Git 변경 없음이다. 아래 2026-10-26 기록의 코드는 이미 저장소에 있었으므로 보존했다.
