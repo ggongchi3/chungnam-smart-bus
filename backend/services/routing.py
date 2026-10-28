@@ -6,6 +6,8 @@ from sqlalchemy import select
 
 from backend.models import schemas as s
 from backend.models.tables import DestinationAccess, Route, RouteStop, Station, TransferConnection
+from backend.integrations.providers import ArrivalObservation, normalize_changes
+from backend.services.time import quality
 
 
 def digest(value):
@@ -39,7 +41,9 @@ def build_candidates(session, origin, destination_id):
                     candidates[(tuple(legs), access.station_id)] = (legs, access)
     def count(legs):
         return sum(sum(a < p.sequence <= b for p in stops if p.route_id == route) for route, a, b in legs)
-    return sorted(candidates.values(), key=lambda item: (len(item[0]) - 1, count(item[0]), tuple(item[0]), item[1].station_id))[:3]
+    # Availability is checked by the search service before taking the public
+    # top three. Detail checks also need every path, regardless of current rank.
+    return sorted(candidates.values(), key=lambda item: (len(item[0]) - 1, count(item[0]), tuple(item[0]), item[1].station_id))
 
 
 def station_ref(session, station_id):
@@ -67,17 +71,53 @@ def segments_for(session, legs, access, destination_name):
     return result
 
 
+def route_station_ids(session, legs):
+    station_ids = set()
+    for route_id, board, alight in legs:
+        station_ids.update(session.scalars(select(RouteStop.station_id).where(
+            RouteStop.route_id == route_id, RouteStop.sequence >= board, RouteStop.sequence <= alight)).all())
+    return station_ids
+
+
+def change_key(change):
+    return json.dumps(change.model_dump(mode='json', exclude={'dataQuality'}), sort_keys=True, ensure_ascii=False)
+
+
+def scoped_changes(state, now, route_ids, station_ids):
+    changes = normalize_changes(state.changes, now)
+    items = [c for c in changes.items if route_ids.intersection(c.affectedRouteIds)
+             or station_ids.intersection(c.affectedStationIds)]
+    return changes.model_copy(update={'items': sorted(items, key=change_key)}, deep=True)
+
+
+def change_period(change, now):
+    if change.validFrom is not None and change.validUntil is not None and change.validUntil <= change.validFrom:
+        return 'unknown'
+    if change.validFrom is not None and now < change.validFrom:
+        return 'inactive'
+    if change.validUntil is not None and now >= change.validUntil:
+        return 'inactive'
+    # An unknown start is not evidence that a cancellation is currently active.
+    return 'unknown' if change.validFrom is None else 'active'
+
+
 def route_state(session, legs, access, destination_name, state, now):
     segments = segments_for(session, legs, access, destination_name)
     route_ids = {leg[0] for leg in legs}
-    station_ids = {p.station_id for p in session.scalars(select(RouteStop).where(RouteStop.route_id.in_(route_ids))).all()}
-    changes = [c for c in state.changes.items
-               if (route_ids.intersection(c.affectedRouteIds) or station_ids.intersection(c.affectedStationIds))
-               and (c.validFrom is None or c.validFrom <= now) and (c.validUntil is None or now < c.validUntil)]
+    station_ids = route_station_ids(session, legs)
+    changes = [c for c in scoped_changes(state, now, route_ids, station_ids).items
+               if change_period(c, now) != 'inactive']
+    stopped = []
+    for bus in (p for p in segments if p.type == 'bus'):
+        observation = state.arrivals.get((bus.routeId, bus.boardStation.stationId))
+        if isinstance(observation, ArrivalObservation) and observation.operation_status == 'not_running':
+            stopped.append((bus.routeId, bus.boardStation.stationId,
+                quality(observation.source_updated_at, observation.fetched_at, now, observation.source_id).freshness))
     status = 'ready'
-    if any(c.type in ('cancellation', 'detour') and c.dataQuality.freshness == 'fresh' for c in changes):
+    if (any(c.type in ('cancellation', 'detour') and c.dataQuality.freshness == 'fresh'
+            and change_period(c, now) == 'active' for c in changes) or any(p[2] == 'fresh' for p in stopped)):
         status = 'unavailable'
-    elif changes:
+    elif changes or stopped:
         status = 'recheck_required'
     structure = [[p.route_id, p.sequence, p.station_id] for p in session.scalars(
         select(RouteStop).where(RouteStop.route_id.in_(route_ids)).order_by(RouteStop.route_id, RouteStop.sequence))]
@@ -85,7 +125,10 @@ def route_state(session, legs, access, destination_name, state, now):
              for t in session.scalars(select(TransferConnection)).all()
              if len(legs) == 2 and (t.from_route_id, t.from_sequence, t.to_route_id, t.to_sequence) ==
                  (legs[0][0], legs[0][2], legs[1][0], legs[1][1])]
-    version = 'demo-v-' + digest({'segments': [p.model_dump(mode='json') for p in segments],
+    version_data = {'segments': [p.model_dump(mode='json') for p in segments],
         'structure': structure, 'links': links,
-        'changes': [c.model_dump(mode='json', exclude={'dataQuality'}) for c in changes], 'status': status})
+        'changes': [c.model_dump(mode='json', exclude={'dataQuality'}) for c in changes], 'status': status}
+    if stopped:
+        version_data['stoppedOperations'] = sorted([p[0], p[1]] for p in stopped)
+    version = 'demo-v-' + digest(version_data)
     return segments, version, status

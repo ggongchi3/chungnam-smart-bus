@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException
 from fastapi.openapi.utils import get_openapi
+from pydantic import ValidationError
 
 from backend.api.errors import ServiceError
 from backend.config import Settings
@@ -27,10 +28,10 @@ def create_app(settings=None, clock=None, provider=None, ai_adapter=None):
 
     @asynccontextmanager
     async def lifespan(app):
-        database.initialize()
-        if settings.data_mode == 'demo':
-            seed(database)
         try:
+            database.initialize()
+            if settings.data_mode == 'demo':
+                seed(database)
             yield
         finally:
             database.engine.dispose()
@@ -54,8 +55,10 @@ def create_app(settings=None, clock=None, provider=None, ai_adapter=None):
         response.headers['Cache-Control'] = 'no-store'
         return response
 
-    def error_response(request, status, code, message, retryable=False):
-        return JSONResponse(status_code=status, content={
+    def error_response(request, status, code, message, retryable=False, headers=None):
+        response_headers = dict(headers or {})
+        response_headers.update({'X-Request-ID': request.state.request_id, 'Cache-Control': 'no-store'})
+        return JSONResponse(status_code=status, headers=response_headers, content={
             'data': None, 'error': {'code': code, 'message': message, 'retryable': retryable},
             'meta': {'requestId': request.state.request_id,
                      'generatedAt': app.state.clock().isoformat(), 'dataMode': settings.data_mode},
@@ -72,7 +75,11 @@ def create_app(settings=None, clock=None, provider=None, ai_adapter=None):
     @app.exception_handler(HTTPException)
     async def http_error(request: Request, exc: HTTPException):
         return error_response(request, exc.status_code, 'NOT_FOUND' if exc.status_code == 404 else 'INVALID_REQUEST',
-                              '요청 주소와 메서드를 확인해 주세요.')
+                              '요청 주소와 메서드를 확인해 주세요.', headers=exc.headers)
+
+    @app.exception_handler(ValidationError)
+    async def stored_data_error(request: Request, exc: ValidationError):
+        return error_response(request, 503, 'TRANSPORT_DATA_UNAVAILABLE', '자료를 검증할 수 없습니다.', True)
 
     @app.exception_handler(ResponseValidationError)
     async def response_error(request: Request, exc: ResponseValidationError):

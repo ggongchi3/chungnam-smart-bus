@@ -1,3 +1,4 @@
 .local/
 .test-tmp/
+.test-tmp-stage2/
 pip-*/

@@ -36,8 +36,8 @@ class Envelope(Model, Generic[T]):
 
 
 class Coordinates(Model):
-    latitude: float
-    longitude: float
+    latitude: Annotated[float, Field(allow_inf_nan=False)]
+    longitude: Annotated[float, Field(allow_inf_nan=False)]
 
 
 class Station(Model):
@@ -61,6 +61,13 @@ class Destination(Model):
 
 class DestinationData(Model):
     destinations: list[Destination]
+
+
+class DestinationQuery(BaseModel):
+    """GET filters; extra query parameters remain ignored for compatibility."""
+    originStationId: Identifier
+    query: Annotated[str, StringConstraints(strip_whitespace=True, max_length=100)] = ''
+    category: Category | None = None
 
 
 class Quality(Model):
@@ -123,6 +130,20 @@ class SearchRequest(Model):
     originStationId: Identifier
     destinationId: Identifier
     departAt: AwareDatetime
+
+    @field_validator('departAt', mode='before')
+    @classmethod
+    def iso_departure(cls, value):
+        # Pydantic otherwise accepts numeric epochs, including numeric strings,
+        # while our JSON/OpenAPI contract requires an ISO 8601 time string.
+        if isinstance(value, datetime):
+            return value
+        if not isinstance(value, str):
+            raise ValueError('departAt must be a timezone-aware ISO 8601 string')
+        parsed = datetime.fromisoformat(value)
+        if parsed.tzinfo is None:
+            raise ValueError('departAt must include a timezone')
+        return value
 
 
 class SearchData(Model):

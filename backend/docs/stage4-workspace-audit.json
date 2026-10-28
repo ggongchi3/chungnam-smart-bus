@@ -1,0 +1,31 @@
+{
+  "taskDate": "2026-10-27",
+  "branchAtStart": "codex/backend-implementation",
+  "commitAtStart": "0ca2cd30510001eae86da53e93bd1abe2540001e",
+  "statusAtStart": "clean",
+  "outsideBackendFileCount": 27,
+  "outsideBackendChanges": [],
+  "modifiedFiles": [
+    "backend/README.md",
+    "backend/docs/coordination-notes.md",
+    "backend/docs/implementation-status.md",
+    "backend/models/schemas.py",
+    "backend/services/journeys.py",
+    "backend/services/routing.py"
+  ],
+  "newFiles": [
+    "backend/docs/stage4-http-examples.json",
+    "backend/docs/stage4-integration.md",
+    "backend/docs/stage4-regression-results.xml",
+    "backend/docs/stage4-workspace-audit.json",
+    "backend/models/snapshots.py",
+    "backend/tests/test_stage4.py",
+    "backend/tools/verify_stage4.py"
+  ],
+  "deletedFiles": [],
+  "runtimeRowsUnchangedFromStage2": true,
+  "runtimeRowsSha256": "a81ba346c3cef97d76023f706da7236d236f3bc3cef089b9b6399299ecb0028c",
+  "compatibleExistingSearches": 2,
+  "compatibleExistingOptions": 2,
+  "remoteActions": []
+}
