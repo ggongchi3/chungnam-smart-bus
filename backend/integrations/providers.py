@@ -38,6 +38,10 @@ class TransportProvider(Protocol):
 
 
 def normalize_changes(changes, now):
+    # model_copy/model_construct can bypass Pydantic validation. Revalidate the
+    # data, not the existing instance, before trusting status, dates or items.
+    raw = changes.model_dump(mode='python', warnings=False) if isinstance(changes, s.ServiceChanges) else changes
+    changes = s.ServiceChanges.model_validate(raw)
     return changes.model_copy(update={
         'dataQuality': refresh_quality(changes.dataQuality, now),
         'items': [c.model_copy(update={'dataQuality': refresh_quality(c.dataQuality, now),

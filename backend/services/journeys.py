@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
+from math import isclose, isfinite
 
 from pydantic import ValidationError
 from sqlalchemy import select
@@ -17,6 +18,22 @@ from backend.services.time import quality
 def require_core(state):
     if not state.core_available:
         unavailable()
+
+
+def confirmed_duration(segments):
+    values = [p.durationSeconds for p in segments if p.type in ('bus', 'walk')]
+    return sum(values) if values and all(value is not None for value in values) else None
+
+
+def validated_expiry(search):
+    times = (search.created_at, search.expires_at)
+    if (any(type(value) not in (int, float) or not isfinite(value) for value in times)
+            or search.data_mode not in ('demo', 'live')):
+        unavailable()
+    expiry = search.created_at + 600
+    if search.expires_at <= search.created_at or not isclose(search.expires_at, expiry, rel_tol=0, abs_tol=1e-6):
+        unavailable()
+    return expiry
 
 
 def create_search(session, request, state, now, data_mode):
@@ -40,7 +57,8 @@ def create_search(session, request, state, now, data_mode):
         saved[option_id] = SavedRouteOption(detail=detail, legs=legs, accessStationId=access.station_id).model_dump(mode='json')
         options.append(s.RouteOption(routeOptionId=option_id, routeSnapshotVersion=version, journeyStatus=status,
             routeNames=[p.routeName for p in segments if p.type == 'bus'], transferCount=len(legs) - 1,
-            totalDurationSeconds=None, walkingDurationSeconds=None))
+            totalDurationSeconds=confirmed_duration(segments),
+            walkingDurationSeconds=confirmed_duration([p for p in segments if p.type == 'walk'])))
         if len(options) == 3:
             break
     session.add(RouteSearch(search_id=search_id, origin_station_id=request.originStationId,
@@ -54,7 +72,7 @@ def checked_detail(session, search_id, option_id, state, now, data_mode, expecte
     search = session.get(RouteSearch, search_id)
     if search is None:
         not_found()
-    if now.timestamp() >= search.expires_at:
+    if now.timestamp() >= validated_expiry(search):
         raise ServiceError(410, 'ROUTE_SEARCH_EXPIRED', '검색 유효기간이 지났습니다. 다시 검색해 주세요.')
     if not isinstance(search.snapshot, dict):
         unavailable()
@@ -71,6 +89,7 @@ def checked_detail(session, search_id, option_id, state, now, data_mode, expecte
     if (detail.routeSearchId != search_id or detail.routeOptionId != option_id or
             detail.originStationId != search.origin_station_id or detail.destinationId != search.destination_id or
             detail.computedAt.timestamp() != search.created_at or
+            detail.referenceDataQuality != quality(None, detail.computedAt, detail.computedAt) or
             option_id != 'demo-option-' + routing.digest([saved.legs, saved.accessStationId])):
         unavailable()
     legs = saved.legs

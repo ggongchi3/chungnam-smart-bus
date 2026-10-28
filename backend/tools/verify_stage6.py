@@ -23,7 +23,7 @@ GUIDANCE_PATH = '/api/v1/easy-guidance'
 PRINT_PATH = '/api/v1/print-guides'
 
 
-def exercise(base_url, control):
+def exercise(base_url, control, *, output=None):
     records = []
     with httpx.Client(base_url=base_url, timeout=5, trust_env=False) as client:
         def request(name, method, path, expected_status=200, expected_code=None, **kwargs):
@@ -163,12 +163,17 @@ def exercise(base_url, control):
               'actualAIConnected': False, 'fakeAIAdapterUsed': False, 'controlledFixtureClock': True,
               'realTenMinuteWaitPerformed': False, 'runtimeDatabaseChanged': False,
               'frontendBBrowserChecked': False, 'physicalPrintSuccessChecked': False, 'cases': records}
-    (ROOT / 'docs/stage6-http-examples.json').write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
+    target = (output or ROOT / 'docs/stage6-http-examples.json').resolve()
+    if not target.is_relative_to(ROOT):
+        raise ValueError('Verification output must stay inside backend/')
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
     print(f'Stage 6: {len(records)} real HTTP cases passed; all 8 public APIs, AI unconnected and print snapshots verified')
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output', type=Path, help='Save verification JSON inside backend/')
     parser.add_argument('--port', type=int, default=8000)
     parser.add_argument('--serve', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--control-file', type=Path, help=argparse.SUPPRESS)
@@ -209,7 +214,7 @@ def main():
                     if monotonic() >= deadline:
                         raise RuntimeError('Fixture server startup timed out')
                     sleep(0.1)
-            exercise(base_url, control)
+            exercise(base_url, control, output=args.output)
         finally:
             process.terminate()
             try:

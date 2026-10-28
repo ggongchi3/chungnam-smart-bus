@@ -36,8 +36,8 @@ class Envelope(Model, Generic[T]):
 
 
 class Coordinates(Model):
-    latitude: float
-    longitude: float
+    latitude: Annotated[float, Field(allow_inf_nan=False)]
+    longitude: Annotated[float, Field(allow_inf_nan=False)]
 
 
 class Station(Model):

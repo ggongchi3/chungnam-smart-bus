@@ -164,6 +164,15 @@ AI 채택 예산은 출력 검증 포함 1초다. 동시에 실행하는 AI 함�
 
 ## 테스트와 실행 가능한 예시
 
+2026-10-28 백엔드 단독 전체 점검에서 추가 회귀64개를 포함해 **316개 테스트**와 **백엔드 HTTP28개 사례**가 통과했다. 손상된 저장 메타데이터/제공자 모델·서버 자료 검증·오류 헤더·시작 실패 정리·확인된 도보 요약을 보완했다. 실제 다른 팀원 모듈이나 화면의 연동 검사는 하지 않았다. [전체 점검 보고서](docs/backend-audit-20261028.md)에 재현·수정·제약을 기록했다.
+
+```powershell
+backend/.venv/Scripts/python -m pytest backend/tests -q --basetemp=backend/.test-tmp -p no:cacheprovider --junitxml=backend/docs/backend-audit-tests-20261028.xml
+backend/.venv/Scripts/python -m backend.tools.verify_stage6 --output backend/docs/backend-audit-http-20261028.json
+```
+
+위 두 명령을 실제 실행했다. `--output`은 backend 내부에 별도 HTTP 기록을 저장하며 기존 단계별 기록은 그대로 유지한다. 백엔드 밖 파일·실행 DB·공용 시연 상태 보존을 최종 비교한다.
+
 서버를 실행한 상태에서 두 번째 터미널로 요청 예시를 실행한다. `departAt`과 검색 식별자는 스크립트가 매번 현재 값으로 만든다.
 
 ```powershell
