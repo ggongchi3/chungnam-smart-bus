@@ -120,6 +120,21 @@ backend/.venv/Scripts/python -m pytest backend/tests/test_stage5.py -q -p no:cac
 
 B 담당자의 30초 조회·5초 제한·GET 재시도·오류/최신성 표시는 [5단계 연동 안내](docs/stage5-integration.md), 상태별 실제 JSON은 [HTTP 사례](docs/stage5-http-examples.json)를 참조한다. 실제 B 화면의 타이머·요청 취소·표시 검증은 대기다.
 
+### 6단계 AI 중계·인쇄 준비 검증 (2026-10-28)
+
+실제 ai 모듈은 아직 없으며 백엔드의 주입 어댑터·출력 검증·실패 대체만 구현한다. worker 준비/시작 실패에도 슬롯을 복구하고 남은 채택 예산만 기다린다. 미지원 async/비JSON 출력은 대체 처리하고 입력·출력을 복사한다. 프로세스당 실행1개·대기열없음과 1초 채택 기준은 유지한다. 실제 동기 함수를 강제 중단하는 기능은 아니다.
+
+AI 해석 후 현재 등록 목록을 다시 확인해 변경된 이름을 사용하고 삭제된 ID는 대체한다. 쉬운 안내는 검증된 구간/허용 템플릿만 사용하며 확인된 도보 거리와 시간도 각각 보존한다. 인쇄는 같은 경로·구간·버전의 고정 문구와 실제 unavailable/stale/unknown 상태 안내를 제공하고 ETA 카운트다운은 null이다.
+
+```powershell
+backend/.venv/Scripts/python -m backend.tools.verify_stage6
+backend/.venv/Scripts/python -m pytest backend/tests/test_stage6.py -q -p no:cacheprovider
+```
+
+두 명령을 실제 실행했다. 전용 테스트 **46개**, 전체 **252개**, 실제 HTTP **28개 사례**를 통과했다. HTTP 도구는 AI 어댑터를 주입하지 않고 독립 메모리 DB·주입 시각으로 공개 API8개를 검증한다. 가짜 AI의 성공/오류/지연은 pytest에만 있다. 실제 AI가 연결된 것으로 표시하지 않는다. 실행 DB·공용 시연 상태를 바꾸거나 실제10분을 기다리지 않았다.
+
+[6단계 연동 안내](docs/stage6-integration.md)와 [실제 HTTP 기록](docs/stage6-http-examples.json)에 B/AI 담당자가 사용할 계약·응답을 정리했다. 실제 AI 모듈·B 화면·브라우저 음성/인쇄·팀원 PC 공동 검증은 대기다. HTML/CSS·window.print·프린터 제어·종이 출력 성공 판정은 포함하지 않는다.
+
 ## API와 연동
 
 `api/routes.py`의 8개 경로와 `models/schemas.py`가 실제 요청·응답 스키마다. 생성된 명세는 `docs/openapi.json`이다. 성공/오류 모두 `data/error/meta`를 사용한다. FastAPI 입력 검증 오류는 422 대신 **400 INVALID_REQUEST**다. 기본 요청 ID는 서버가 생성하며 `X-Request-ID`에도 반환한다. 응답은 `Cache-Control: no-store`다.

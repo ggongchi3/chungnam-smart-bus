@@ -117,8 +117,26 @@ def live_info(detail, state, now, for_print=False, *, session=None):
     return s.LiveData(routeSnapshotVersion=detail.routeSnapshotVersion, arrivals=arrivals, serviceChanges=changes)
 
 
-def print_guide(detail, state, now, *, session=None):
+def print_notice(snapshot, data_mode):
+    parts = [s.NOTICE] if data_mode == 'demo' else []
+    parts.append('생성 시각과 교통정보 원천 갱신 시각을 구분해 주세요.')
+    if any(a.arrivalStatus == 'unavailable' for a in snapshot.arrivals):
+        parts.append('도착 예정 정보를 확인할 수 없습니다.')
+    if any(a.dataQuality.freshness == 'stale' for a in snapshot.arrivals):
+        parts.append('도착 정보가 오래되었습니다.')
+    if any(a.dataQuality.freshness == 'unknown' for a in snapshot.arrivals):
+        parts.append('도착 정보 원천 시각을 확인할 수 없습니다.')
+    changes = snapshot.serviceChanges
+    if changes.coverageStatus == 'unknown':
+        parts.append('운행 변경 정보를 확인할 수 없습니다.')
+    elif changes.dataQuality.freshness == 'stale' or any(c.dataQuality.freshness == 'stale' for c in changes.items):
+        parts.append('운행 변경 정보가 오래되었습니다.')
+    elif changes.dataQuality.freshness == 'unknown' or any(c.dataQuality.freshness == 'unknown' for c in changes.items):
+        parts.append('운행 변경 정보 원천 시각을 확인할 수 없습니다.')
+    return ' · '.join(parts)
+
+
+def print_guide(detail, state, now, *, session=None, data_mode='demo'):
     snapshot = live_info(detail, state, now, for_print=True, session=session)
     return s.PrintData(printGuideId='demo-print-' + uuid4().hex, generatedAt=now, routeDetail=detail.model_copy(deep=True),
-        liveInfoSnapshot=snapshot, guidance=fixed_guidance(detail), notice=s.NOTICE +
-        ' · 생성 시각과 원천 갱신 시각을 구분해 주세요. 도착·운행 변경 정보는 확인 불가하거나 오래될 수 있습니다.')
+        liveInfoSnapshot=snapshot, guidance=fixed_guidance(detail, data_mode), notice=print_notice(snapshot, data_mode))

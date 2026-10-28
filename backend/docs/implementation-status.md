@@ -1,5 +1,59 @@
 # 백엔드 구현·검증 상태
 
+## 2026-10-28 · v2 계획서 6단계 실행 결과
+
+요청 범위: **AI 중계와 인쇄 데이터 API**. v2 계획서 6단계 본문·추가 체크리스트11개를 공통 계약과 대조했다. 시작 상태는 `codex/backend-implementation`, 커밋 `3033f85`, Git 변경 없음이다. ai/contracts·destination-interpretation·easy-guidance에는 여전히 temp만 있어 실제 공개 Python 모듈은 없으며, 다른 파트 원본을 고치거나 AI 선택 알고리즘을 대신 구현하지 않았다.
+
+| v2 6단계 항목 | 결과 |
+| --- | --- |
+| 실제 AI 공개 인터페이스·주입 어댑터 | 백엔드 완료, 실제 모듈 대기. 동기 interpret_destination/choose_guidance 계약 유지, ai 폴더 변경 없음 |
+| 미연결 unavailable·수동 대체·테스트 가짜 구분 | 완료. 기본 서버/HTTP 도구는 실제 미연결, 가짜 성공·오류·지연은 pytest에만 주입 |
+| text1~200·등록 후보·모호성 | 완료. 공백/길이·원래 허용 후보·현재 등록 목록을 모두 검사. matched도 사용자 확인 필요 |
+| 안내 구간·순서·누락/중복·template·버전 | 완료. 허용 JSON 형태/정확한 구간 개수/유형별 표현 검증. 임의 추가 사실 거부 |
+| 교통 사실의 서버 삽입 | 완료. 노선·정류장·개수·환승은 검증 상세만 사용. 거리/시간 확인 여부도 독립 보존 |
+| AI 오류·1초·작업 누적 방지 | 완료. 준비/시작 실패 슬롯 복구·남은 예산·JSON 출력 복사/검증·공유1슬롯/대기열없음·완료 후 복구 확인 |
+| 인쇄 만료·상태·기대 버전 재검사 | 완료. 기존 공통 검사 및 동일 버전의 detail/live/guidance 스냅샷 |
+| 미수신 ready 인쇄·이용 불가 거부 | 완료. 미수신/변경unknown은 상태 표시 후200, 버전/불가409·만료410·핵심자료503 유지 |
+| 생성시각·시연·동일 구간·카운트다운 제외 | 완료. etaSeconds=null, 절대 예정 시각/원천 시각 보존, 프린터 성공 필드 없음 |
+| B용 안내·음성 텍스트·인쇄 JSON | 자료 준비 완료, 화면/음성/인쇄 공동 확인 대기. UI·CSS·window.print 구현 안 함 |
+| 서비스 API8개·실제 연결 여부 구분 | 완료. 실제 HTTP28개 흐름, 실제 AI 미연결을 결과에 명시 |
+
+이번에 보완한 실제 문제:
+
+1. Thread.start 또는 준비 단계의 실패가 최초500과 잠긴 AI 슬롯을 남길 수 있었다. 실패를 대체하고 슬롯을 복구한다. 남은 채택 예산만 대기하고 시간초과 후 실제 작업 중단과 혼동하지 않는다.
+2. AI가 dict가 아닌 값·비JSON·async 코루틴을 반환하는 경우를 경계에서 정리한다. NaN/set/모델 객체는 채택하지 않고 코루틴은 실행하지 않은 채 닫는다. 입력과 출력도 분리 복사한다.
+3. 해석 대기 중 목적지 이름이 바뀌거나 등록이 삭제돼도 이전 후보가 응답될 수 있었다. 원래 허용 목록을 지킨 뒤 새 DB 세션에서 현재 등록 정보를 확인한다. 새 이름은 현재 값으로 반환하고 삭제된 ID는 unavailable로 대체한다. 이 재검증도 서비스 채택 예산 안에서 확인한다.
+4. 거리만 미확인인 도보에도 확인된 시간까지 미확인으로 안내하던 문구를 수정했다. 확인된 거리·시간만 각각 넣고 나머지는 확인 불가로 안내한다.
+5. 인쇄 notice를 실제 미수신·stale·unknown 상태로 만들고 서버 data_mode를 고정 안내/시연 표시에 전달한다. 인쇄는 AI를 다시 호출하지 않고 같은 검증 경로의 고정 텍스트를 사용한다.
+
+변경 파일:
+
+- `backend/integrations/ai.py`: 호출 슬롯·준비/worker 시작 실패 복구·남은 예산·동기 JSON 출력 경계·입출력 분리.
+- `backend/services/ai.py`: 출력 형태/후보/템플릿 검증 보강, 현재 등록 정보 재검증, 확인된 도보 사실 보존.
+- `backend/api/routes.py`: AI 해석 후 현재 후보를 새 세션에서 조회하는 콜백과 인쇄 data_mode 전달.
+- `backend/services/journeys.py`: 실제 관측 상태를 담은 인쇄 notice, 같은 버전/모드의 고정 안내.
+- `backend/tests/test_stage6.py`: 전용46개. 입력·허용 정보·오류/1초/공유 슬롯·재검증·복사·async/비JSON·인쇄 일관성 포함.
+- `backend/tools/verify_stage6.py`: 실제 AI 미연결 상태로8개API와 인쇄 흐름을 검증하는 독립 HTTP 도구.
+- `backend/docs/stage6-integration.md`, `stage6-http-examples.json`, `stage6-regression-results.xml`, `stage6-workspace-audit.json`: 연동·응답·회귀·범위 증거.
+- `backend/README.md`, `backend/docs/coordination-notes.md`, 이 문서: 실제 명령·책임 경계·공동 검증 대기 기록.
+
+최종 실제 실행:
+
+```text
+backend/.venv/Scripts/python -m pytest backend/tests/test_stage6.py -q -p no:cacheprovider
+  → 46 passed, 1 warning, 12.57초
+backend/.venv/Scripts/python -m pytest backend/tests -q --basetemp=backend/.test-tmp -p no:cacheprovider --junitxml=backend/docs/stage6-regression-results.xml
+  → 252 passed, 1 warning, 55.92초
+backend/.venv/Scripts/python -m backend.tools.verify_stage6
+  → 실제 HTTP28개, 공개 API8개, 실제 AI 미연결/인쇄 스냅샷 검증 통과
+```
+
+HTTP 도구의 fixture 시각은 주입한 테스트 시각이다. 실제10분을 기다리거나 실행 DB를 삭제하지 않았다. 테스트용 제어 파일은 `.local/stage6-http-<ID>/`에만 생성하며 공용 scenario.json을 바꾸지 않는다. 실제 AI의 성공을 시연한 것이 아니다. 가짜 어댑터는 테스트 파일 안에서만 사용했다. 경고는 기존 Starlette/anyio BlockingPortal 폐기 예정 알림1개다. HTTP/TestClient는 기존 Windows 샌드박스의 로컬 소켓 제한을 피하기 위해 권한이 허용된 실행에서 수행했다.
+
+남은 항목은 실제 AI 공개 모듈·같은 Python 환경의 연결, B/디자인 화면·브라우저 음성·인쇄 미리보기/취소·다른 PC 공동 검증이다. 어댑터1초는 결과 채택 예산이며 이미 실행 중인 동기 작업의 강제 중단을 보장하지 않는다. 멈춘 함수는 자체 취소 기능 또는 프로세스 재시작이 필요하다. 서버는 종이 출력 성공을 판정하지 않는다.
+
+변경은 backend 내부에 한정했고 frontend/ai/design 및 루트 공통 원본을 보존했다. 실제 교통 API·외부 AI·비밀키를 추가하지 않았다. commit/tag/push/PR/배포·다른 담당자 메시지 전송은 없다. 최종 파일·DB·OpenAPI 비교는 `stage6-workspace-audit.json`에 기록한다.
+
 ## 2026-10-27 · v2 계획서 5단계 실행 결과
 
 요청 범위: **도착·운행 변경·시간·버전 처리**. v2 계획서 5단계 본문과 추가 체크리스트 11개 항목을 공통 계약·실제 코드와 대조했다. 시작 상태는 `codex/backend-implementation`, 커밋 `62d4f2a`, Git 변경 없음이다. 일정일까지 기다리지 않고 백엔드 독립 작업을 수행했다.

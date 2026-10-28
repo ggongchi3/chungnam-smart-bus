@@ -68,7 +68,15 @@ async def interpretation(body: s.InterpretationRequest, request: Request, db: Se
     now, provider = state(request)
     journeys.require_core(provider)
     allowed = catalog.destinations(db, body.originStationId)
-    result = await ai.interpret(request.app.state.ai, body.text, allowed, request.app.state.settings.data_mode)
+
+    def current_candidates():
+        _, latest_provider = state(request)
+        journeys.require_core(latest_provider)
+        with request.app.state.database.session() as latest_db:
+            return catalog.destinations(latest_db, body.originStationId)
+
+    result = await ai.interpret(request.app.state.ai, body.text, allowed, request.app.state.settings.data_mode,
+                                reload_destinations=current_candidates)
     return response(request, result)
 
 
@@ -90,4 +98,5 @@ async def guidance(body: s.SelectionRequest, request: Request, db: Session):
 @router.post('/print-guides', response_model=s.Envelope[s.PrintData])
 async def print_guide(body: s.SelectionRequest, request: Request, db: Session):
     now, provider, detail = selected(request, db, body)
-    return response(request, journeys.print_guide(detail, provider, now, session=db))
+    return response(request, journeys.print_guide(detail, provider, now, session=db,
+                    data_mode=request.app.state.settings.data_mode))

@@ -1,0 +1,39 @@
+{
+  "taskDate": "2026-10-28",
+  "branchAtStart": "codex/backend-implementation",
+  "commitAtStart": "3033f85a5f035c36b74a0de3651b313c0511355e",
+  "statusAtStart": "clean",
+  "outsideBackendFileCount": 27,
+  "outsideBackendChanges": [],
+  "modifiedFiles": [
+    "backend/README.md",
+    "backend/api/routes.py",
+    "backend/docs/coordination-notes.md",
+    "backend/docs/implementation-status.md",
+    "backend/integrations/ai.py",
+    "backend/services/ai.py",
+    "backend/services/journeys.py"
+  ],
+  "newFiles": [
+    "backend/docs/stage6-http-examples.json",
+    "backend/docs/stage6-integration.md",
+    "backend/docs/stage6-regression-results.xml",
+    "backend/docs/stage6-workspace-audit.json",
+    "backend/tests/test_stage6.py",
+    "backend/tools/verify_stage6.py"
+  ],
+  "deletedFiles": [],
+  "runtimeRowsUnchangedFromStage2": true,
+  "runtimeRowsSha256": "a81ba346c3cef97d76023f706da7236d236f3bc3cef089b9b6399299ecb0028c",
+  "preservedSearches": 2,
+  "publicOpenapiUnchanged": true,
+  "publicServiceCount": 8,
+  "regressionTestsPassed": 252,
+  "httpCasesPassed": 28,
+  "actualAIConnected": false,
+  "fakeAIUsedOnlyInTests": true,
+  "realTenMinuteWaitPerformed": false,
+  "sharedScenarioWritten": false,
+  "physicalPrintSuccessChecked": false,
+  "remoteActions": []
+}
