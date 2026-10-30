@@ -21,4 +21,19 @@ python -m unittest discover -s ai/evaluation -t .
 | 입력 오류 | 빈 값, 200자 초과, 잘못된 형식, 중복 ID |
 | 안내 선택 | 직통·환승, proposal만 허용, 알 수 없는 유형, 중복 구간, 빈 버전 |
 
-`backendSideCases`는 AI가 잘못된 값을 반환했을 때 백엔드가 거부하는지 보는 사례로, 백엔드 연결 확인 단계에서 시험한다.
+## 백엔드 연결 확인
+
+[test_backend_integration.py](test_backend_integration.py)는 백엔드 코드를 바꾸지 않고 `create_app(ai_adapter=...)`에 어댑터를 주입해 공개 API로 확인한다. `backend/requirements.lock`이 설치된 Python 3.13 환경에서 실행하며, 의존성이 없으면 건너뛴다.
+
+```
+python -m unittest ai.evaluation.test_backend_integration -v
+```
+
+| 확인 내용 | 결과 기준 |
+| --- | --- |
+| 규칙 어댑터 연결 | 목적지 해석 matched / needs_confirmation / no_match, 안내 `ai_assisted`, 인쇄 안내의 버전 일치 |
+| 사실 값 보존 | 후보의 이름·분류는 백엔드 값, AI 유무와 관계없이 안내 문장 동일 |
+| AI 없음 | 해석 `unavailable`, 안내 `template_fallback` |
+| 잘못된 AI 출력(`backendSideCases`) | 목록 밖·중복 ID, 상태와 후보 수 불일치, NaN, 예외, 1초 초과 → 해석 `unavailable` / 버전 불일치, 구간 순서 변경·누락·추가, 허용 밖 템플릿, 예외, 1초 초과 → 안내 `template_fallback`. 모두 1.5초 안에 응답 |
+
+2026-10-30 macOS, Python 3.13.15, 잠금 파일 의존성에서 8개 통과. 같은 환경에서 백엔드 기존 테스트 316개도 통과했다. Windows 환경 재현은 팀 확인이 필요하다.

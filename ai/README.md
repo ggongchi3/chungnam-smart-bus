@@ -19,4 +19,4 @@ from backend.main import create_app
 app = create_app(ai_adapter=RuleBasedAIAdapter())
 ```
 
-현재 `backend/main.py`의 기본 `app`에는 어댑터가 연결되어 있지 않다. 실제 연결 방식은 백엔드 담당과 정한다.
+현재 `backend/main.py`의 기본 `app`에는 어댑터가 연결되어 있지 않다. 연결 확인은 [evaluation/test_backend_integration.py](evaluation/test_backend_integration.py)에서 했으며, 기본 앱에 연결하는 방식은 백엔드 담당과 정한다.
