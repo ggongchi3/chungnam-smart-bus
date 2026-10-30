@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "chungnam-smart-bus AI contract v0.1",
+  "$defs": {
+    "identifier": {"type": "string", "minLength": 1, "maxLength": 200},
+    "InterpretDestinationInput": {
+      "type": "object",
+      "required": ["text", "dataMode", "allowedDestinations"],
+      "properties": {
+        "text": {"type": "string", "minLength": 1, "maxLength": 200},
+        "dataMode": {"enum": ["demo", "live"]},
+        "allowedDestinations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["destinationId", "name", "aliases"],
+            "properties": {
+              "destinationId": {"$ref": "#/$defs/identifier"},
+              "name": {"type": "string", "minLength": 1},
+              "aliases": {"type": "array", "items": {"type": "string"}}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "InterpretDestinationOutput": {
+      "type": "object",
+      "required": ["status", "candidateDestinationIds", "reasonCode"],
+      "properties": {
+        "status": {"enum": ["matched", "needs_confirmation", "no_match", "unavailable"]},
+        "candidateDestinationIds": {"type": "array", "items": {"$ref": "#/$defs/identifier"}, "uniqueItems": true},
+        "reasonCode": {"enum": ["MATCHED", "USER_CONFIRMATION_REQUIRED", "NO_REGISTERED_MATCH", "AI_UNAVAILABLE"]}
+      },
+      "additionalProperties": false
+    },
+    "ChooseGuidanceInput": {
+      "type": "object",
+      "required": ["routeSnapshotVersion", "dataMode", "verifiedSegments"],
+      "properties": {
+        "routeSnapshotVersion": {"type": "string", "minLength": 1},
+        "dataMode": {"enum": ["demo", "live"]},
+        "verifiedSegments": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["segmentId", "type", "allowedTemplateIds"],
+            "properties": {
+              "segmentId": {"$ref": "#/$defs/identifier"},
+              "type": {"enum": ["bus", "walk", "transfer"]},
+              "allowedTemplateIds": {"type": "array", "items": {"type": "string"}}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "ChooseGuidanceOutput": {
+      "type": "object",
+      "required": ["status", "routeSnapshotVersion", "steps"],
+      "properties": {
+        "status": {"enum": ["ok", "unavailable"]},
+        "routeSnapshotVersion": {"type": "string"},
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["segmentId", "templateId"],
+            "properties": {
+              "segmentId": {"$ref": "#/$defs/identifier"},
+              "templateId": {"type": "string"}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
