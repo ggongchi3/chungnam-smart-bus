@@ -16,9 +16,13 @@ DEMO_PREFIX = '시연'
 # '의원'·'보건소'처럼 다른 종류의 장소일 수 있는 표현은 넣지 않는다.
 CATEGORY_TERMS = {
     '병원': ('병원', '종합병원', '대학병원'),
-    '시장': ('시장', '전통시장', '재래시장', '장터'),
-    '터미널': ('터미널', '버스터미널', '시외버스터미널', '고속버스터미널'),
+    '시장': ('시장', '전통시장', '재래시장', '장터', '장보러', '장보기', '장날'),
+    '터미널': ('터미널', '버스터미널', '시외버스터미널', '고속버스터미널', '시외버스', '고속버스'),
 }
+
+# 표현 바로 뒤에 오면 그 장소를 빼라는 뜻으로 본다('병원 말고 시장').
+PARTICLES = ('은', '는', '이', '가', '을', '를', '에', '으로', '로', '도')
+NEGATIONS = ('말고', '말구', '빼고', '아니고', '아니구', '아니라', '아닌')
 
 REASON_CODES = {
     'matched': 'MATCHED',
@@ -47,6 +51,19 @@ def core(term):
     if words and words[0] == DEMO_PREFIX:
         words = words[1:]
     return ''.join(words)
+
+
+def jamo(syllable):
+    """한글 음절 → (초성, 중성, 종성) 번호. 한글이 아니면 글자 자체."""
+    code = ord(syllable) - 0xAC00
+    if 0 <= code < 11172:
+        return code // 588, (code % 588) // 28, code % 28
+    return syllable, None, None
+
+
+def jamo_distance(left, right):
+    """같은 길이의 두 문자열에서 서로 다른 초성·중성·종성 수('벙원'↔'병원' = 1)."""
+    return sum(a != b for x, y in zip(left, right) for a, b in zip(jamo(x), jamo(y)))
 
 
 def result(status, ids=()):
@@ -93,20 +110,42 @@ def _terms(destinations):
     return terms
 
 
-def _match(text, terms):
-    """찾은 표현 중 더 긴 표현의 범위에 포함된 것은 버린다('큰 병원' 안의 '병원')."""
+def _hits(text, terms, fuzzy=False):
+    """(시작, 끝, 후보 ID 집합) 목록. fuzzy면 자모 1개 차이까지 찾는다."""
     hits = []
     for term, keys in terms.items():
+        if fuzzy:
+            hits += [(i, i + len(term), keys) for i in range(len(text) - len(term) + 1)
+                     if jamo_distance(text[i:i + len(term)], term) == 1]
+            continue
         start = text.find(term)
         while start != -1:
             hits.append((start, start + len(term), keys))
             start = text.find(term, start + 1)
+    # 더 긴 표현의 범위에 포함된 것은 버린다('큰 병원' 안의 '병원').
+    return [(start, end, keys) for start, end, keys in hits
+            if not any(s <= start and end <= e and (e - s) > (end - start) for s, e, _ in hits)]
+
+
+def _negated(text, end):
+    rest = text[end:]
+    for particle in ('', *PARTICLES):
+        if rest.startswith(particle) and rest[len(particle):].startswith(NEGATIONS):
+            return True
+    return False
+
+
+def _match(text, terms):
+    """(후보 ID 집합, 오타 추정 여부). 부정 표현이 붙은 장소는 뺀다."""
+    fuzzy = False
+    hits = _hits(text, terms)
+    if not hits:
+        hits, fuzzy = _hits(text, terms, fuzzy=True), True
     kept = set()
     for start, end, keys in hits:
-        covered = any(s <= start and end <= e and (e - s) > (end - start) for s, e, _ in hits)
-        if not covered:
+        if not _negated(text, end):
             kept |= keys
-    return kept
+    return kept, fuzzy
 
 
 def interpret(payload):
@@ -117,11 +156,12 @@ def interpret(payload):
         destinations = _valid_destinations(payload.get('allowedDestinations'))
         if type(text) is not str or not text.strip() or len(text) > MAX_TEXT_LENGTH or destinations is None:
             return result('unavailable')
-        matched = _match(compact(text), _terms(destinations))
+        matched, fuzzy = _match(compact(text), _terms(destinations))
         # allowedDestinations 순서를 유지해 같은 입력에 같은 출력을 낸다.
         ids = [d['destinationId'] for d in destinations if d['destinationId'] in matched]
         if not ids:
             return result('no_match')
-        return result('matched' if len(ids) == 1 else 'needs_confirmation', ids)
+        # 오타로 추정한 후보는 1개여도 확인이 필요한 결과로 돌려준다.
+        return result('matched' if len(ids) == 1 and not fuzzy else 'needs_confirmation', ids)
     except Exception:
         return result('unavailable')

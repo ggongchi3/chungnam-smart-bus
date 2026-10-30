@@ -67,6 +67,8 @@ class RuleBasedAdapterTest(BackendCase):
         cases = [('큰 병원에 가고 싶어요', 'matched', ['demo-destination-001']),
                  ('버스터미널', 'matched', ['demo-destination-003']),
                  ('병원이랑 시장', 'needs_confirmation', ['demo-destination-001', 'demo-destination-002']),
+                 ('병원 말고 시장', 'matched', ['demo-destination-002']),
+                 ('벙원', 'needs_confirmation', ['demo-destination-001']),  # 후보 1개 확인 요청
                  ('도서관', 'no_match', [])]
         for text, status, ids in cases:
             with self.subTest(text=text):
@@ -154,7 +156,7 @@ BAD_GUIDANCE = {
     '구간 순서 변경': lambda o: {**o, 'steps': o['steps'][::-1]},
     '구간 누락': lambda o: {**o, 'steps': o['steps'][:-1]},
     '구간 추가': lambda o: {**o, 'steps': o['steps'] + o['steps'][:1]},
-    '틀린 템플릿': lambda o: {**o, 'steps': [{**s, 'templateId': 'bus.short'} for s in o['steps']]},
+    '틀린 템플릿': lambda o: {**o, 'steps': [{**s, 'templateId': 'bus.split'} for s in o['steps']]},
     '시간초과': slow,
     '예외': boom,
 }

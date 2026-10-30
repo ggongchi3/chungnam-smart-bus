@@ -15,7 +15,7 @@ ADAPTER = RuleBasedAIAdapter()
 
 class CaseTest(unittest.TestCase):
     def test_every_case_passes(self):
-        for key, group, ok, expected, actual in run(CASES):
+        for key, group, ok, expected, actual, _ in run(CASES):
             with self.subTest(case=key, group=group):
                 self.assertTrue(ok, f'기대={expected} 실제={actual}')
 

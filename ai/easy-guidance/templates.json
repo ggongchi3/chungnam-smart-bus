@@ -1,6 +1,6 @@
 {
-  "version": "0.1",
-  "note": "문장은 백엔드가 검증한 값으로 슬롯을 채운다. AI는 templateId만 고른다. active만 선택 대상이며 proposal은 디자인 검토와 백엔드 허용 목록 반영 전까지 선택하지 않는다.",
+  "version": "0.2",
+  "note": "문장은 백엔드가 검증한 값으로 슬롯을 채운다. AI는 templateId만 고른다. active만 선택 대상이며 proposal은 디자인 검토와 백엔드 허용 목록 반영 전까지 선택하지 않는다. example은 합성 시연 데이터로 채운 예시다.",
   "templates": [
     {
       "templateId": "bus.basic",
@@ -8,6 +8,7 @@
       "status": "active",
       "slots": ["boardStation.name", "routeName", "stopCount", "alightStation.name"],
       "text": "{boardStation}에서 {routeName} 버스를 타세요. {stopCount}개 정류장을 지나 {alightStation}에서 내리세요.",
+      "example": "시연 출발 정류장에서 시연 1번 버스를 타세요. 2개 정류장을 지나 시연 병원 앞 정류장에서 내리세요.",
       "source": "backend/services/ai.py template_text와 동일"
     },
     {
@@ -16,6 +17,7 @@
       "status": "active",
       "slots": ["fromLabel", "toLabel", "distanceMeters?", "durationSeconds?"],
       "text": "{fromLabel}에서 {toLabel}까지 걸어가세요. (거리·시간은 확인된 값만, 없으면 '확인되지 않았습니다')",
+      "example": "시연 병원 앞 정류장에서 시연 병원까지 걸어가세요. 거리와 이동 시간은 확인되지 않았습니다.",
       "source": "backend/services/ai.py template_text와 동일"
     },
     {
@@ -24,15 +26,17 @@
       "status": "active",
       "slots": ["atStation.name"],
       "text": "{atStation}에서 다음 안내의 버스로 갈아타세요.",
+      "example": "시연 병원 앞 정류장에서 다음 안내의 버스로 갈아타세요.",
       "source": "backend/services/ai.py template_text와 동일. AI·디자인 검토 대기"
     },
     {
-      "templateId": "bus.short",
+      "templateId": "bus.split",
       "segmentType": "bus",
       "status": "proposal",
       "slots": ["boardStation.name", "routeName", "stopCount", "alightStation.name"],
-      "text": "{routeName} 버스를 타세요. {stopCount}정류장 뒤 {alightStation}에서 내리세요.",
-      "reviewNote": "승차 정류장이 현재 정류장일 때만 생략 가능. 경로 문구 기준(정류장 이름 생략 금지)과 충돌 여부를 디자인과 확인"
+      "text": "{boardStation}에서 {routeName} 버스를 타세요. / {stopCount}개 정류장을 지나면 {alightStation}입니다. 여기서 내리세요.",
+      "example": "시연 출발 정류장에서 시연 1번 버스를 타세요. / 2개 정류장을 지나면 시연 병원 앞 정류장입니다. 여기서 내리세요.",
+      "reviewNote": "한 단계에 한 행동 기준에 맞춰 타기·내리기를 두 줄로 나눈다. 정류장 이름은 생략하지 않는다. '/'는 화면 줄바꿈·음성 쉼 위치. 백엔드가 한 구간을 두 줄로 렌더링할 수 있어야 함"
     },
     {
       "templateId": "transfer.named",
@@ -40,7 +44,17 @@
       "status": "proposal",
       "slots": ["atStation.name", "nextRouteName"],
       "text": "{atStation}에서 내린 뒤, 같은 정류장에서 {nextRouteName} 버스로 갈아타세요.",
-      "reviewNote": "'다음 안내의 버스'보다 구체적. 백엔드에 nextRouteName 슬롯 추가 필요"
+      "example": "시연 병원 앞 정류장에서 내린 뒤, 같은 정류장에서 시연 2번 버스로 갈아타세요.",
+      "reviewNote": "'다음 안내의 버스'보다 구체적. 백엔드에 nextRouteName 슬롯(toSegmentId의 routeName) 추가 필요. '같은 정류장'은 시연의 동일 정류장 환승에서만 사용"
+    },
+    {
+      "templateId": "walk.short",
+      "segmentType": "walk",
+      "status": "proposal",
+      "slots": ["fromLabel", "toLabel"],
+      "text": "내린 곳에서 {toLabel}까지 걸어가세요.",
+      "example": "내린 곳에서 시연 병원까지 걸어가세요.",
+      "reviewNote": "바로 앞 구간이 bus일 때만 사용 가능. 거리·시간 미확인 문구를 뺄지(음성 길이 단축) 디자인·B와 결정 필요. 인쇄물에는 미확인 표시를 유지"
     }
   ]
 }

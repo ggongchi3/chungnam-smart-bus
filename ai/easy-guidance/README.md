@@ -11,7 +11,10 @@
 | templateId | 상태 | 비고 |
 | --- | --- | --- |
 | `bus.basic`, `walk.basic`, `transfer.basic` | active | 현재 백엔드 고정 문장과 동일 |
-| `bus.short` | proposal | 정류장 이름 생략 금지 기준과 충돌 여부 디자인 검토 필요 |
-| `transfer.named` | proposal | 갈아탈 노선명 슬롯을 백엔드에 추가해야 함 |
+| `bus.split` | proposal | 타기·내리기를 두 줄로 나눔(한 단계 한 행동). 백엔드의 두 줄 렌더링 필요 |
+| `transfer.named` | proposal | 갈아탈 노선명 명시. 백엔드에 `nextRouteName` 슬롯 추가 필요 |
+| `walk.short` | proposal | 음성 길이 단축. 미확인 문구 처리를 디자인·B와 결정 필요 |
+
+각 템플릿의 `example`은 합성 시연 데이터로 채운 문장이며, active 3개는 백엔드 실제 응답과 같은지 확인했다(시연 표시 접두 문구 제외).
 
 proposal을 active로 바꾸려면 디자인의 문구 검토, 백엔드의 허용 목록·슬롯 반영, 평가 사례 갱신이 모두 필요하다.

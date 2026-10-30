@@ -32,10 +32,11 @@
 | status | candidateDestinationIds | reasonCode | 화면 동작(백엔드·A 처리) |
 | --- | --- | --- | --- |
 | `matched` | 정확히 1개 | `MATCHED` | 후보 확인 후 사용자가 선택 |
-| `needs_confirmation` | 2개 이상 | `USER_CONFIRMATION_REQUIRED` | 후보 목록에서 사용자가 선택 |
+| `needs_confirmation` | 2개 이상, 또는 오타로 추정한 1개 이상 | `USER_CONFIRMATION_REQUIRED` | 후보 목록에서 사용자가 선택 |
 | `no_match` | 빈 배열 | `NO_REGISTERED_MATCH` | 일반 검색·주요 장소 선택 |
 | `unavailable` | 빈 배열 | `AI_UNAVAILABLE` | 일반 검색·주요 장소 선택 |
 
+- 화면·음성 문구 검토안은 [fallback-copy.md](fallback-copy.md)에 있다.
 - 후보 ID는 `allowedDestinations`의 부분집합이며 중복이 없고 입력 목록의 순서를 따른다.
 - `text`가 문자열이 아니거나, 공백만 있거나, 200자를 넘거나, 후보 목록 형식이 잘못되면(ID 중복 포함) `unavailable`이다.
 
@@ -74,7 +75,8 @@
 ## 백엔드와 확인할 사항
 
 1. **reasonCode 불일치**: 공통 계약은 `MATCHED / USER_CONFIRMATION_REQUIRED / NO_REGISTERED_MATCH / AI_UNAVAILABLE`인데, 현재 `backend/services/ai.py`는 공개 응답에서 matched·needs_confirmation 모두 `USER_CONFIRMATION_REQUIRED`, no_match는 `NO_MATCH`로 덮어쓴다. AI 모듈은 계약 문서의 코드를 반환한다. 어느 쪽으로 맞출지 결정 필요.
-2. **허용 템플릿이 유형별 1개**: 백엔드는 `<type>.basic`만 허용하고 문장도 고정으로 만든다. `templates.json`의 proposal(`bus.short`, `transfer.named`)을 쓰려면 백엔드의 허용 목록·슬롯 채우기 변경과 디자인 검토가 필요하다. `transfer.named`는 다음 노선명 슬롯도 필요하다.
+2. **허용 템플릿이 유형별 1개**: 백엔드는 `<type>.basic`만 허용하고 문장도 고정으로 만든다. `templates.json`의 proposal(`bus.split`, `transfer.named`, `walk.short`)을 쓰려면 백엔드의 허용 목록·슬롯 채우기 변경과 디자인 검토가 필요하다. `transfer.named`는 다음 노선명 슬롯도 필요하다.
 3. **폴더 이름**: `destination-interpretation`, `easy-guidance`는 하이픈 때문에 Python import가 불가하다. 지금은 `ai/adapter.py`가 파일 경로로 불러온다. 개발 기준안 2절대로 `destination_interpretation`, `easy_guidance`로 바꿀 시점을 정하면 `docs/structure.md` 등 공통 문서도 함께 갱신해야 한다.
-4. **Python 버전**: 백엔드는 3.13.2로 검증했다. AI 모듈은 표준 라이브러리만 사용하며 3.13 문법 범위로 작성했다.
-5. **category 미전달**: 입력에 Destination의 `category`가 없어 분류 표현은 이름·별칭의 핵심어로 연결한다. category를 함께 받으면 분류 매칭을 더 명확히 할 수 있다(선택).
+4. **needs_confirmation 후보 1개**: 오타 추정 결과는 후보가 1개여도 `needs_confirmation`으로 반환한다. 현재 백엔드 검증(후보 존재 여부만 확인)은 이를 허용하며, 공통 계약 문서 8절과 A의 화면 분기에 반영이 필요하다.
+5. **Python 버전**: 백엔드는 3.13.2로 검증했다. AI 모듈은 표준 라이브러리만 사용하며 3.13 문법 범위로 작성했다.
+6. **category 미전달**: 입력에 Destination의 `category`가 없어 분류 표현은 이름·별칭의 핵심어로 연결한다. category를 함께 받으면 분류 매칭을 더 명확히 할 수 있다(선택).

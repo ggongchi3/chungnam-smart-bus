@@ -5,10 +5,10 @@
 | 폴더·파일 | 내용 |
 | --- | --- |
 | [adapter.py](adapter.py) | 백엔드 `AIAdapter`에 주입하는 `RuleBasedAIAdapter` |
-| [contracts/](contracts/README.md) | 두 함수의 입출력 계약, JSON Schema, 백엔드와 확인할 사항 |
+| [contracts/](contracts/README.md) | 두 함수의 입출력 계약, JSON Schema, 백엔드와 확인할 사항, [결과별 화면·음성 문구안](contracts/fallback-copy.md) |
 | [destination-interpretation/](destination-interpretation/README.md) | 목적지 표현 해석 규칙 |
 | [easy-guidance/](easy-guidance/README.md) | 안내 템플릿 목록과 선택 규칙 |
-| [evaluation/](evaluation/README.md) | 평가 사례, 평가 스크립트, 테스트 |
+| [evaluation/](evaluation/README.md) | 평가 사례, 평가 스크립트, 테스트, 백엔드 연결 확인, [LLM 비교 실험 설계](evaluation/llm-experiment.md) |
 
 ## 백엔드 연결
 

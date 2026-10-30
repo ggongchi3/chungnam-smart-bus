@@ -32,7 +32,7 @@
     {"id": "i12", "group": "표현 변형", "set": "demo", "text": "버스터미널 어떻게 가요?", "status": "matched", "ids": ["demo-destination-003"]},
     {"id": "i13", "group": "표현 변형", "set": "demo", "text": "고속버스터미널", "status": "matched", "ids": ["demo-destination-003"]},
     {"id": "i14", "group": "모호한 표현", "set": "demo", "text": "병원이랑 시장", "status": "needs_confirmation", "ids": ["demo-destination-001", "demo-destination-002"]},
-    {"id": "i15", "group": "모호한 표현", "set": "demo", "text": "병원 말고 시장", "status": "needs_confirmation", "ids": ["demo-destination-001", "demo-destination-002"], "limitation": "부정 표현을 이해하지 못한다. 두 후보를 모두 보여 주고 사용자가 고르게 한다"},
+    {"id": "i15", "group": "부정 표현", "set": "demo", "text": "병원 말고 시장", "status": "matched", "ids": ["demo-destination-002"]},
     {"id": "i16", "group": "동명·유사 후보", "set": "ambiguous", "text": "병원", "status": "needs_confirmation", "ids": ["eval-destination-001", "eval-destination-002"]},
     {"id": "i17", "group": "동명·유사 후보", "set": "ambiguous", "text": "큰 병원", "status": "matched", "ids": ["eval-destination-002"]},
     {"id": "i18", "group": "동명·유사 후보", "set": "ambiguous", "text": "종합병원", "status": "needs_confirmation", "ids": ["eval-destination-001", "eval-destination-002"]},
@@ -44,7 +44,23 @@
     {"id": "i24", "group": "허용 목록 밖", "set": "withoutMarket", "text": "병원이랑 시장", "status": "matched", "ids": ["demo-destination-001"]},
     {"id": "i25", "group": "입력 오류", "set": "demo", "text": "", "status": "unavailable", "ids": []},
     {"id": "i26", "group": "입력 오류", "set": "demo", "text": "   ", "status": "unavailable", "ids": []},
-    {"id": "i27", "group": "입력 오류", "set": "demo", "textRepeat": ["병", 201], "status": "unavailable", "ids": []}
+    {"id": "i27", "group": "입력 오류", "set": "demo", "textRepeat": ["병", 201], "status": "unavailable", "ids": []},
+    {"id": "i28", "group": "구어체·사투리", "set": "demo", "text": "장 보러 가요", "status": "matched", "ids": ["demo-destination-002"]},
+    {"id": "i29", "group": "구어체·사투리", "set": "demo", "text": "오늘 장날이라 가봐야 혀", "status": "matched", "ids": ["demo-destination-002"]},
+    {"id": "i30", "group": "구어체·사투리", "set": "demo", "text": "고속버스 타러 가요", "status": "matched", "ids": ["demo-destination-003"]},
+    {"id": "i31", "group": "구어체·사투리", "set": "demo", "text": "병원 갈라고 하는디유", "status": "matched", "ids": ["demo-destination-001"]},
+    {"id": "i32", "group": "구어체·사투리", "set": "demo", "text": "장에 가요", "status": "no_match", "ids": [], "limitation": "한 글자 표현(장)은 연결하지 않는다"},
+    {"id": "i33", "group": "부정 표현", "set": "demo", "text": "시장은 말고 터미널", "status": "matched", "ids": ["demo-destination-003"]},
+    {"id": "i34", "group": "부정 표현", "set": "demo", "text": "병원이 아니라 시장이요", "status": "matched", "ids": ["demo-destination-002"]},
+    {"id": "i35", "group": "부정 표현", "set": "demo", "text": "병원 말고", "status": "no_match", "ids": []},
+    {"id": "i36", "group": "부정 표현", "set": "ambiguous", "text": "병원 말고 큰 병원", "status": "matched", "ids": ["eval-destination-002"]},
+    {"id": "i37", "group": "오타", "set": "demo", "text": "벙원", "status": "needs_confirmation", "ids": ["demo-destination-001"]},
+    {"id": "i38", "group": "오타", "set": "demo", "text": "시잔 가요", "status": "needs_confirmation", "ids": ["demo-destination-002"]},
+    {"id": "i39", "group": "오타", "set": "demo", "text": "터미날", "status": "needs_confirmation", "ids": ["demo-destination-003"]},
+    {"id": "i40", "group": "오타", "set": "demo", "text": "시청", "status": "no_match", "ids": []},
+    {"id": "i41", "group": "오타", "set": "demo", "text": "시간", "status": "no_match", "ids": []},
+    {"id": "i42", "group": "오타", "set": "demo", "text": "시정", "status": "needs_confirmation", "ids": ["demo-destination-002"], "limitation": "자모 1개 차이인 다른 단어도 오타로 볼 수 있다. 확인 필요 결과로 돌려 사용자가 거른다"},
+    {"id": "i43", "group": "오타", "set": "demo", "text": "병원이랑 시잔", "status": "matched", "ids": ["demo-destination-001"], "limitation": "정확히 맞는 표현이 하나라도 있으면 오타 추정을 하지 않는다"}
   ],
   "malformedInterpretation": [
     {"id": "m01", "payload": null},
@@ -68,10 +84,10 @@
       {"segmentId": "s4", "type": "walk", "allowedTemplateIds": ["walk.basic"]}]},
      "status": "ok", "templates": ["bus.basic", "transfer.basic", "bus.basic", "walk.basic"]},
     {"id": "g03", "group": "허용 템플릿", "payload": {"routeSnapshotVersion": "demo-v1", "dataMode": "demo", "verifiedSegments": [
-      {"segmentId": "s1", "type": "bus", "allowedTemplateIds": ["bus.short", "bus.basic"]}]},
+      {"segmentId": "s1", "type": "bus", "allowedTemplateIds": ["bus.split", "bus.basic"]}]},
      "status": "ok", "templates": ["bus.basic"]},
     {"id": "g04", "group": "허용 템플릿", "payload": {"routeSnapshotVersion": "demo-v1", "dataMode": "demo", "verifiedSegments": [
-      {"segmentId": "s1", "type": "bus", "allowedTemplateIds": ["bus.short"]}]},
+      {"segmentId": "s1", "type": "bus", "allowedTemplateIds": ["bus.split"]}]},
      "status": "unavailable", "templates": []},
     {"id": "g05", "group": "허용 템플릿", "payload": {"routeSnapshotVersion": "demo-v1", "dataMode": "demo", "verifiedSegments": [
       {"segmentId": "s1", "type": "bus", "allowedTemplateIds": []}]},
