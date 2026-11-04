@@ -42,4 +42,10 @@ python -m unittest ai.evaluation.test_backend_integration -v
 | AI 없음 | 해석 `unavailable`, 안내 `template_fallback` |
 | 잘못된 AI 출력(`backendSideCases`) | 목록 밖·중복 ID, 상태와 후보 수 불일치, NaN, 예외, 1초 초과 → 해석 `unavailable` / 버전 불일치, 구간 순서 변경·누락·추가, 허용 밖 템플릿, 예외, 1초 초과 → 안내 `template_fallback`. 모두 1.5초 안에 응답 |
 
-2026-10-30 macOS, Python 3.13.15, 잠금 파일 의존성에서 8개 통과. 같은 환경에서 백엔드 기존 테스트 316개도 통과했다. Windows 환경 재현은 팀 확인이 필요하다.
+공개 `reasonCode`(상태별 네 값, 백엔드가 산출)와 기본 앱 연결의 회귀 검증은 백엔드의 [backend/tests/test_ai_integration.py](../../backend/tests/test_ai_integration.py)에 있다.
+
+| 날짜 | 환경 | 결과 |
+| --- | --- | --- |
+| 2026-10-30 | macOS, Python 3.13.15, 잠금 파일 의존성 | 이 파일 8개 통과, 백엔드 기존 테스트 316개 통과 |
+| 2026-11-02 | Windows 11, Python 3.13.2 (백엔드 담당 실행) | 백엔드·AI 전체 344개 통과, 합성 평가 59/59. 상세는 [AI 연결 결과](../../backend/docs/ai-integration-20261102.md) |
+| 2026-11-04 | macOS 26.6.2 (arm64), Python 3.13.18, 잠금 파일 의존성 | 백엔드·AI 전체 344개 통과(`pytest backend/tests ai/evaluation`), 합성 평가 59/59, 이 파일 8개 통과 |
