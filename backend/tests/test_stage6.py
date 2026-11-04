@@ -354,8 +354,14 @@ def test_destination_deleted_while_ai_waits_is_no_longer_an_allowed_candidate(ma
     assert response.json()['data']=={'status':'unavailable','candidates':[],'reasonCode':'AI_UNAVAILABLE'}
 
 
-@pytest.mark.parametrize('distance,duration',[(None,120),(100,120)])
-def test_fixed_guidance_preserves_each_confirmed_walk_fact(env,distance,duration):
+@pytest.mark.parametrize('distance,duration,expected_time', [
+    (100, None, '확인되지 않았습니다.'),
+    (100, 59, '59초입니다.'),
+    (None, 60, '약 1분입니다.'),
+    (100, 90, '약 2분입니다.'),
+    (100, 420, '약 7분입니다.'),
+])
+def test_fixed_guidance_preserves_each_confirmed_walk_fact(env,distance,duration,expected_time):
     app,client,clock,_=env
     with app.state.database.session() as session:
         access=session.get(DestinationAccess,('demo-destination-001','demo-stop-003'))
@@ -369,11 +375,11 @@ def test_fixed_guidance_preserves_each_confirmed_walk_fact(env,distance,duration
     assert printed_data.routeDetail.segments[-1].distanceMeters==distance
     assert printed_data.routeDetail.segments[-1].durationSeconds==duration
     for text in (guidance.json()['data']['steps'][-1]['text'],printed_data.guidance.steps[-1].text):
-        compact=text.replace(' ','')
-        assert '120' in compact or '2분' in compact
+        assert f'이동 시간은 {expected_time}' in text
         if distance is not None:
-            assert '100' in compact
-        assert '거리와이동시간은확인되지않았습니다' not in compact
+            assert f'거리는 {distance}미터입니다.' in text
+        else:
+            assert '거리는 확인되지 않았습니다.' in text
 
 
 @pytest.mark.parametrize('endpoint',['destination-interpretations','easy-guidance'])

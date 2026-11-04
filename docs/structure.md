@@ -1,24 +1,29 @@
 # 전체 저장소 구조와 폴더 목적
 
-이 구조는 기술 스택에 종속되지 않는 초기 구분이다. 실행 코드·언어별 설정·외부 데이터 파일은 아직 없다. 선정 기술과 시연 범위는 [development-plan.md](development-plan.md)를 따른다. 5개 파트는 5명의 역할이며, 루트의 5개 영역과 일대일로 대응하는 뜻은 아니다. 프론트엔드는 하나의 앱이다.
+초기의 영역 구분을 유지하며 백엔드와 AI Python 구현을 추가했다. 2026-11-02 기준 기본 백엔드 앱에는 규칙 기반 AI 어댑터가 연결된다. 백엔드 실행 방법은 [backend/README.md](../backend/README.md), AI 계약·평가는 [ai/README.md](../ai/README.md)를 따른다. 5개 파트는 5명의 역할이며, 루트의 5개 영역과 일대일로 대응하는 뜻은 아니다. 프론트엔드는 하나의 앱이다.
 
-## 실제 파일 트리
+## 주요 파일 트리
 
-아래에는 기본 문서와 확장자 없는 일반 파일 `temp`를 모두 포함했다.
+아래는 주요 소스와 남아 있는 자리 표시자를 나타낸다. 백엔드의 나머지 구현·테스트·검증 기록과 로컬 생성물은 생략했다. `temp`는 확장자 없는 일반 자리 표시자 파일이다.
 
 ```text
 chungnam-smart-bus/
 ├── .gitignore
 ├── README.md
 ├── backend/
+│   ├── README.md
+│   ├── main.py
 │   ├── api/
-│   │   └── temp
+│   │   └── routes.py
 │   ├── integrations/
-│   │   └── temp
+│   │   ├── ai.py
+│   │   └── providers.py
 │   ├── models/
-│   │   └── temp
-│   └── services/
-│       └── temp
+│   │   └── schemas.py
+│   ├── services/
+│   │   └── ai.py
+│   ├── tests/
+│   └── docs/
 ├── frontend/
 │   ├── config/
 │   │   └── temp
@@ -44,14 +49,28 @@ chungnam-smart-bus/
 │           └── ui/
 │               └── temp
 ├── ai/
+│   ├── README.md
+│   ├── __init__.py
+│   ├── adapter.py
 │   ├── contracts/
-│   │   └── temp
-│   ├── destination-interpretation/
-│   │   └── temp
-│   ├── easy-guidance/
-│   │   └── temp
+│   │   ├── README.md
+│   │   ├── schemas.json
+│   │   └── fallback-copy.md
+│   ├── destination_interpretation/
+│   │   ├── README.md
+│   │   └── interpreter.py
+│   ├── easy_guidance/
+│   │   ├── README.md
+│   │   ├── selector.py
+│   │   └── templates.json
 │   └── evaluation/
-│       └── temp
+│       ├── README.md
+│       ├── __init__.py
+│       ├── cases.json
+│       ├── run_eval.py
+│       ├── test_ai.py
+│       ├── test_backend_integration.py
+│       └── llm-experiment.md
 ├── design/
 │   ├── assets/
 │   │   └── temp
@@ -97,9 +116,9 @@ chungnam-smart-bus/
 | `frontend/src/shared/` | 프론트엔드 A | 중복을 피할 공통 코드의 관리 경계 |
 | `frontend/src/shared/ui/` | 프론트엔드 A | 공통 버튼·카드·오류/로딩 표시 등; 디자인 기준과 접근성 적용 |
 | `frontend/src/shared/api/` | 프론트엔드 A | 단일 API 클라이언트, 공통 응답/오류 처리와 데이터 계약 반영 |
-| `ai/` | AI | 사진을 구현하기 위한 추가 제안 기능; 교통 사실 계산과 분리 |
-| `ai/destination-interpretation/` | AI | 자연어 표현을 등록된 목적지 후보 ID에 연결 |
-| `ai/easy-guidance/` | AI | 검증 구간에 맞는 쉬운 한국어 안내 템플릿·표현 선택 |
+| `ai/` | AI | 규칙 기반 어댑터와 추가 제안 기능; 교통 사실 계산과 분리 |
+| `ai/destination_interpretation/` | AI | 자연어 표현을 등록된 목적지 후보 ID에 연결 |
+| `ai/easy_guidance/` | AI | 검증 구간에 맞는 쉬운 한국어 안내 템플릿·표현 선택 |
 | `ai/contracts/` | AI | 목적지 후보·구간·허용 템플릿의 입출력 형식과 실패 상태 |
 | `ai/evaluation/` | AI | 모호한 표현, 미등록 ID, 사실 보존, 버전 불일치, 실패 대체 평가 자료 |
 | `design/` | 디자인 | 화면·출력물과 시각 기준의 원본 자료 |
@@ -122,14 +141,15 @@ chungnam-smart-bus/
 | `docs/roles.md` | 정확히 5명 역할·입출력·공통 항목 대표 관리자·접근성 |
 | `docs/api-contract.md` | 공개/내부 API 초안·A→B 데이터·AI 경계·실패 처리 |
 | `docs/data-sources.md` | 사진 확인 범위·필요 데이터·출처/키/제공 범위 미확인 사항 |
-| `docs/development-plan.md` | 시연 범위·선정 기술·합성 데이터·API 처리 수치·화면/음성/인쇄·개발 순서 |
-| `docs/structure.md` | 실제 전체 트리·폴더 목적·관리자 |
+| `docs/structure.md` | 주요 파일 트리·폴더 목적·관리자 |
 | `docs/verification.md` | 이번 초기 생성 결과의 구조·문서·Git 제외 규칙 점검 기록 |
 
-문서와 자리 표시자 외의 코드는 생성하지 않았다. `temp`의 내용은 모든 위치에서 다음 한 줄로 통일한다.
+AI 모듈은 Python 표준 import를 위해 하이픈 없는 `destination_interpretation`, `easy_guidance` 이름을 사용한다. 공개 어댑터는 `from ai.adapter import RuleBasedAIAdapter`로 가져온다.
+
+아직 구현하지 않은 최하위 폴더에 남아 있는 `temp`의 내용은 다음 한 줄로 통일한다.
 
 ```text
 Placeholder file. Remove after adding actual project files.
 ```
 
-실제 작업 파일을 추가하면 해당 최하위 폴더의 `temp`를 삭제한다. 실제 파일이 있는 `docs/`나 하위 폴더만 있는 상위 폴더에는 `temp`를 추가하지 않는다. 이 문서의 트리는 개발 기준안 추가 후 상태이며 후속 구조 변경 시 대표 관리자가 갱신한다.
+실제 작업 파일을 추가하면 해당 최하위 폴더의 `temp`를 삭제한다. 실제 파일이 있는 `docs/`나 하위 폴더만 있는 상위 폴더에는 `temp`를 추가하지 않는다. 후속 구조 변경 시 대표 관리자가 이 문서도 갱신한다.

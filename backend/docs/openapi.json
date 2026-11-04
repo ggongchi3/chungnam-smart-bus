@@ -1481,13 +1481,12 @@
             "title": "Candidates"
           },
           "reasonCode": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
+            "type": "string",
+            "enum": [
+              "MATCHED",
+              "USER_CONFIRMATION_REQUIRED",
+              "NO_REGISTERED_MATCH",
+              "AI_UNAVAILABLE"
             ],
             "title": "Reasoncode"
           }

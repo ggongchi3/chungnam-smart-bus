@@ -1,5 +1,11 @@
 # 백엔드 구현·검증 상태
 
+## 2026-11-02 · 실제 규칙 기반 AI 연결과 계약 정리
+
+`origin/ai/baseline`의 AI 구현을 기본 ASGI 앱에 연결했다. 공개 `reasonCode`는 `MATCHED / USER_CONFIRMATION_REQUIRED / NO_REGISTERED_MATCH / AI_UNAVAILABLE`로 통일하고, 오타 후보 1개도 `needs_confirmation`을 유지한다. AI 두 폴더는 언더바 Python 패키지로 전환했다. 어댑터 없는 팩터리의 실패 대체와 교통 사실의 백엔드 검증은 유지한다.
+
+백엔드·AI 전체 **344 passed**, 합성 평가 **59/59**, 실제 기본 Uvicorn 앱의 공개 API 8개 흐름과 오류·오타·후보 없음 검증을 통과했다. 구현 후 별도 코드 리뷰에서 수정이 필요한 결함은 발견하지 못했다. 결정·명령·검증 범위와 호환 영향은 [AI 연결 결과](ai-integration-20261102.md)에 있다. 아래 날짜별 기록은 당시 실행 이력이다.
+
 ## 2026-10-28 · 백엔드 단독 전체 오류 점검
 
 사용자 요청에 따라 지금까지의 백엔드를 단독 점검했다. 다른 팀원의 실제 프론트엔드/AI/디자인 연동은 검사하지 않았다. 시작 브랜치는 `codex/backend-implementation`, 커밋 `a0ff06c`, Git 변경 없음이다.

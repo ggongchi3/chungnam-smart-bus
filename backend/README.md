@@ -1,8 +1,8 @@
 # 백엔드 실행 안내
 
-합성 데이터 전용 FastAPI 시제품이다. **시연 데이터 · 실제 운행 정보 아님**. 서비스 API 8개와 DB·경로·최신성·AI 출력 검증·인쇄 준비 데이터를 구현했다. 실제 교통 API, AI 선택 모듈, 프론트 화면, 음성 재생, 브라우저 인쇄는 연결되지 않았다.
+합성 데이터 전용 FastAPI 시제품이다. **시연 데이터 · 실제 운행 정보 아님**. 서비스 API 8개와 DB·경로·최신성·AI 출력 검증·인쇄 준비 데이터를 구현했다. 기본 서버에는 외부 모델·네트워크를 호출하지 않는 규칙 기반 AI 어댑터가 연결되어 있다. 실제 교통 API, 프론트 화면, 음성 재생, 브라우저 인쇄는 연결되지 않았다.
 
-명령은 프로젝트 루트에서 실행한다. 검증 환경은 Windows, Python **3.13.2**, FastAPI **0.115.5**, Uvicorn **0.32.0**, Pydantic **2.9.2**, SQLAlchemy **2.0.36**, HTTPX **0.27.2**, pytest **8.3.3**이다. SQLite는 Python 내장 라이브러리이며 실제 버전은 `docs/runtime-versions.json`에 기록한다. 전체 간접 의존성까지 `requirements.lock`에 고정했다. AI 담당자의 Python 버전 합의는 대기 중이다.
+명령은 프로젝트 루트에서 실행한다. 검증 환경은 Windows, Python **3.13.2**, FastAPI **0.115.5**, Uvicorn **0.32.0**, Pydantic **2.9.2**, SQLAlchemy **2.0.36**, HTTPX **0.27.2**, pytest **8.3.3**이다. SQLite는 Python 내장 라이브러리이며 실제 버전은 `docs/runtime-versions.json`에 기록한다. 전체 간접 의존성까지 `requirements.lock`에 고정했다. 규칙 기반 AI 모듈은 표준 라이브러리만 사용한다.
 
 ## Windows PowerShell
 
@@ -156,7 +156,9 @@ backend/.venv/Scripts/python -m pytest backend/tests/test_stage6.py -q -p no:cac
 
 A는 `originStationId`, `destinationId`, `routeSearchId`, `routeOptionId`, `routeSnapshotVersion`, `dataMode`를 B에 넘긴다. B는 상세/live 버전을 대조하고 안내·인쇄 POST에는 `expectedRouteSnapshotVersion`을 사용한다. `meta.dataMode=demo`면 모든 화면에 **시연 데이터 · 실제 운행 정보 아님**을 표시한다. 안내 첫 문장과 인쇄 notice에도 같은 표시를 제공한다. 30초 폴링·5초 클라이언트 제한·GET 한 번 재시도 정책과 호환된다. 프론트 타이머·재시도 구현은 포함하지 않았다.
 
-AI는 `create_app(ai_adapter=...)`에 동기 함수 두 개를 가진 객체를 주입한다. `interpret_destination(payload)`, `choose_guidance(payload)`의 JSON 입출력은 공통 계약 8/9절을 따른다. 실제 모듈은 아직 없어 기본 응답은 `unavailable` / `template_fallback`이다. 별칭 해석이나 템플릿 선택 알고리즘을 백엔드에 대신 구현하지 않았다. 허용 템플릿은 `bus.basic`, `walk.basic`, `transfer.basic`이다. 후보 ID·구간·순서·버전을 검증하고 사실 값은 서버가 삽입한다. 모델이 만든 이유 문구는 사용하지 않고 서버 소유 reasonCode만 제공한다.
+기본 ASGI 앱 `backend.main:app`은 `create_app(ai_adapter=RuleBasedAIAdapter())`로 AI 담당자의 규칙 기반 어댑터를 연결한다. `ai/destination_interpretation/`, `ai/easy_guidance/`는 표준 Python import를 사용한다. 별도 서버를 만들 때는 `create_app(ai_adapter=...)`로 교체할 수 있고, `create_app()` 또는 `create_app(ai_adapter=None)`은 미연결 실패 대체를 유지한다. `interpret_destination(payload)`, `choose_guidance(payload)`의 JSON 입출력은 [AI 계약](../ai/contracts/README.md)과 공통 계약 8/9절을 따른다. 허용 템플릿은 `bus.basic`, `walk.basic`, `transfer.basic`이다. 후보 ID·구간·순서·버전을 검증하고 사실 값은 서버가 삽입한다.
+
+공개 `reasonCode`는 검증한 `status`에서 서버가 결정한다: `matched → MATCHED`, `needs_confirmation → USER_CONFIRMATION_REQUIRED`, `no_match → NO_REGISTERED_MATCH`, `unavailable → AI_UNAVAILABLE`. 어댑터가 보낸 이유 문구를 그대로 노출하지 않는다. 오타 추정은 후보가 1개여도 `needs_confirmation`이며 `matched`도 사용자가 후보를 확인하고 선택한다. 미연결·오류·시간초과 시에는 `unavailable` / `template_fallback`으로 대체한다.
 
 AI 채택 예산은 출력 검증 포함 1초다. 동시에 실행하는 AI 함수는 프로세스당 최대 1개이며 대기열이 없다. 시간초과는 **결과 채택 중단**으로 실제 함수를 강제 종료하지 않는다. 작업이 끝나기 전에는 추가 AI 호출도 대체 처리한다. 무기한 멈춘 어댑터는 프로세스를 재시작하거나 어댑터 자체 중단 기능이 필요하다. 다중 worker를 실행하면 이 제한은 프로세스별로 적용된다.
 

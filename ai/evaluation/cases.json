@@ -1,0 +1,122 @@
+{
+  "version": "0.1",
+  "note": "모든 목적지는 합성 시연 데이터다. demo 목록은 backend/integrations/demo-data.json과 같다. ambiguous 목록은 동명·유사 후보를 시험하기 위한 평가 전용 합성 목록이다.",
+  "destinationSets": {
+    "demo": [
+      {"destinationId": "demo-destination-001", "name": "시연 병원", "aliases": ["시연 큰 병원"]},
+      {"destinationId": "demo-destination-002", "name": "시연 시장", "aliases": ["시연 장터"]},
+      {"destinationId": "demo-destination-003", "name": "시연 터미널", "aliases": ["시연 버스터미널"]}
+    ],
+    "ambiguous": [
+      {"destinationId": "eval-destination-001", "name": "시연 병원", "aliases": []},
+      {"destinationId": "eval-destination-002", "name": "시연 큰 병원", "aliases": []},
+      {"destinationId": "eval-destination-003", "name": "시연 시장", "aliases": []}
+    ],
+    "withoutMarket": [
+      {"destinationId": "demo-destination-001", "name": "시연 병원", "aliases": ["시연 큰 병원"]},
+      {"destinationId": "demo-destination-003", "name": "시연 터미널", "aliases": ["시연 버스터미널"]}
+    ]
+  },
+  "interpretation": [
+    {"id": "i01", "group": "표현 변형", "set": "demo", "text": "병원", "status": "matched", "ids": ["demo-destination-001"]},
+    {"id": "i02", "group": "표현 변형", "set": "demo", "text": "큰 병원에 가고 싶어요", "status": "matched", "ids": ["demo-destination-001"]},
+    {"id": "i03", "group": "표현 변형", "set": "demo", "text": "시연병원", "status": "matched", "ids": ["demo-destination-001"]},
+    {"id": "i04", "group": "표현 변형", "set": "demo", "text": "  시연   병원 ", "status": "matched", "ids": ["demo-destination-001"]},
+    {"id": "i05", "group": "표현 변형", "set": "demo", "text": "병원!!", "status": "matched", "ids": ["demo-destination-001"]},
+    {"id": "i06", "group": "표현 변형", "set": "demo", "text": "종합병원 가는 버스", "status": "matched", "ids": ["demo-destination-001"]},
+    {"id": "i07", "group": "표현 변형", "set": "demo", "text": "시장 가요", "status": "matched", "ids": ["demo-destination-002"]},
+    {"id": "i08", "group": "표현 변형", "set": "demo", "text": "장터", "status": "matched", "ids": ["demo-destination-002"]},
+    {"id": "i09", "group": "표현 변형", "set": "demo", "text": "전통시장", "status": "matched", "ids": ["demo-destination-002"]},
+    {"id": "i10", "group": "표현 변형", "set": "demo", "text": "재래시장 가는 버스", "status": "matched", "ids": ["demo-destination-002"]},
+    {"id": "i11", "group": "표현 변형", "set": "demo", "text": "터미널", "status": "matched", "ids": ["demo-destination-003"]},
+    {"id": "i12", "group": "표현 변형", "set": "demo", "text": "버스터미널 어떻게 가요?", "status": "matched", "ids": ["demo-destination-003"]},
+    {"id": "i13", "group": "표현 변형", "set": "demo", "text": "고속버스터미널", "status": "matched", "ids": ["demo-destination-003"]},
+    {"id": "i14", "group": "모호한 표현", "set": "demo", "text": "병원이랑 시장", "status": "needs_confirmation", "ids": ["demo-destination-001", "demo-destination-002"]},
+    {"id": "i15", "group": "부정 표현", "set": "demo", "text": "병원 말고 시장", "status": "matched", "ids": ["demo-destination-002"]},
+    {"id": "i16", "group": "동명·유사 후보", "set": "ambiguous", "text": "병원", "status": "needs_confirmation", "ids": ["eval-destination-001", "eval-destination-002"]},
+    {"id": "i17", "group": "동명·유사 후보", "set": "ambiguous", "text": "큰 병원", "status": "matched", "ids": ["eval-destination-002"]},
+    {"id": "i18", "group": "동명·유사 후보", "set": "ambiguous", "text": "종합병원", "status": "needs_confirmation", "ids": ["eval-destination-001", "eval-destination-002"]},
+    {"id": "i19", "group": "후보 없음", "set": "demo", "text": "도서관", "status": "no_match", "ids": []},
+    {"id": "i20", "group": "후보 없음", "set": "demo", "text": "아무 데나", "status": "no_match", "ids": []},
+    {"id": "i21", "group": "후보 없음", "set": "demo", "text": "시연", "status": "no_match", "ids": []},
+    {"id": "i22", "group": "후보 없음", "set": "demo", "text": "의원", "status": "no_match", "ids": [], "limitation": "의원은 병원과 다른 장소일 수 있어 연결하지 않는다"},
+    {"id": "i23", "group": "허용 목록 밖", "set": "withoutMarket", "text": "시장", "status": "no_match", "ids": []},
+    {"id": "i24", "group": "허용 목록 밖", "set": "withoutMarket", "text": "병원이랑 시장", "status": "matched", "ids": ["demo-destination-001"]},
+    {"id": "i25", "group": "입력 오류", "set": "demo", "text": "", "status": "unavailable", "ids": []},
+    {"id": "i26", "group": "입력 오류", "set": "demo", "text": "   ", "status": "unavailable", "ids": []},
+    {"id": "i27", "group": "입력 오류", "set": "demo", "textRepeat": ["병", 201], "status": "unavailable", "ids": []},
+    {"id": "i28", "group": "구어체·사투리", "set": "demo", "text": "장 보러 가요", "status": "matched", "ids": ["demo-destination-002"]},
+    {"id": "i29", "group": "구어체·사투리", "set": "demo", "text": "오늘 장날이라 가봐야 혀", "status": "matched", "ids": ["demo-destination-002"]},
+    {"id": "i30", "group": "구어체·사투리", "set": "demo", "text": "고속버스 타러 가요", "status": "matched", "ids": ["demo-destination-003"]},
+    {"id": "i31", "group": "구어체·사투리", "set": "demo", "text": "병원 갈라고 하는디유", "status": "matched", "ids": ["demo-destination-001"]},
+    {"id": "i32", "group": "구어체·사투리", "set": "demo", "text": "장에 가요", "status": "no_match", "ids": [], "limitation": "한 글자 표현(장)은 연결하지 않는다"},
+    {"id": "i33", "group": "부정 표현", "set": "demo", "text": "시장은 말고 터미널", "status": "matched", "ids": ["demo-destination-003"]},
+    {"id": "i34", "group": "부정 표현", "set": "demo", "text": "병원이 아니라 시장이요", "status": "matched", "ids": ["demo-destination-002"]},
+    {"id": "i35", "group": "부정 표현", "set": "demo", "text": "병원 말고", "status": "no_match", "ids": []},
+    {"id": "i36", "group": "부정 표현", "set": "ambiguous", "text": "병원 말고 큰 병원", "status": "matched", "ids": ["eval-destination-002"]},
+    {"id": "i37", "group": "오타", "set": "demo", "text": "벙원", "status": "needs_confirmation", "ids": ["demo-destination-001"]},
+    {"id": "i38", "group": "오타", "set": "demo", "text": "시잔 가요", "status": "needs_confirmation", "ids": ["demo-destination-002"]},
+    {"id": "i39", "group": "오타", "set": "demo", "text": "터미날", "status": "needs_confirmation", "ids": ["demo-destination-003"]},
+    {"id": "i40", "group": "오타", "set": "demo", "text": "시청", "status": "no_match", "ids": []},
+    {"id": "i41", "group": "오타", "set": "demo", "text": "시간", "status": "no_match", "ids": []},
+    {"id": "i42", "group": "오타", "set": "demo", "text": "시정", "status": "needs_confirmation", "ids": ["demo-destination-002"], "limitation": "자모 1개 차이인 다른 단어도 오타로 볼 수 있다. 확인 필요 결과로 돌려 사용자가 거른다"},
+    {"id": "i43", "group": "오타", "set": "demo", "text": "병원이랑 시잔", "status": "matched", "ids": ["demo-destination-001"], "limitation": "정확히 맞는 표현이 하나라도 있으면 오타 추정을 하지 않는다"}
+  ],
+  "malformedInterpretation": [
+    {"id": "m01", "payload": null},
+    {"id": "m02", "payload": {"text": "병원", "dataMode": "demo", "allowedDestinations": "demo-destination-001"}},
+    {"id": "m03", "payload": {"text": 3, "dataMode": "demo", "allowedDestinations": []}},
+    {"id": "m04", "payload": {"text": "병원", "dataMode": "demo", "allowedDestinations": [
+      {"destinationId": "demo-destination-001", "name": "시연 병원", "aliases": []},
+      {"destinationId": "demo-destination-001", "name": "시연 시장", "aliases": []}]}},
+    {"id": "m05", "payload": {"text": "병원", "dataMode": "demo", "allowedDestinations": [
+      {"destinationId": "demo-destination-001", "name": "시연 병원", "aliases": "큰 병원"}]}}
+  ],
+  "guidance": [
+    {"id": "g01", "group": "정상 직통", "payload": {"routeSnapshotVersion": "demo-v1", "dataMode": "demo", "verifiedSegments": [
+      {"segmentId": "s1", "type": "bus", "allowedTemplateIds": ["bus.basic"]},
+      {"segmentId": "s2", "type": "walk", "allowedTemplateIds": ["walk.basic"]}]},
+     "status": "ok", "templates": ["bus.basic", "walk.basic"]},
+    {"id": "g02", "group": "정상 1회 환승", "payload": {"routeSnapshotVersion": "demo-v1", "dataMode": "demo", "verifiedSegments": [
+      {"segmentId": "s1", "type": "bus", "allowedTemplateIds": ["bus.basic"]},
+      {"segmentId": "s2", "type": "transfer", "allowedTemplateIds": ["transfer.basic"]},
+      {"segmentId": "s3", "type": "bus", "allowedTemplateIds": ["bus.basic"]},
+      {"segmentId": "s4", "type": "walk", "allowedTemplateIds": ["walk.basic"]}]},
+     "status": "ok", "templates": ["bus.basic", "transfer.basic", "bus.basic", "walk.basic"]},
+    {"id": "g03", "group": "허용 템플릿", "payload": {"routeSnapshotVersion": "demo-v1", "dataMode": "demo", "verifiedSegments": [
+      {"segmentId": "s1", "type": "bus", "allowedTemplateIds": ["bus.split", "bus.basic"]}]},
+     "status": "ok", "templates": ["bus.basic"]},
+    {"id": "g04", "group": "허용 템플릿", "payload": {"routeSnapshotVersion": "demo-v1", "dataMode": "demo", "verifiedSegments": [
+      {"segmentId": "s1", "type": "bus", "allowedTemplateIds": ["bus.split"]}]},
+     "status": "unavailable", "templates": []},
+    {"id": "g05", "group": "허용 템플릿", "payload": {"routeSnapshotVersion": "demo-v1", "dataMode": "demo", "verifiedSegments": [
+      {"segmentId": "s1", "type": "bus", "allowedTemplateIds": []}]},
+     "status": "unavailable", "templates": []},
+    {"id": "g06", "group": "잘못된 구간", "payload": {"routeSnapshotVersion": "demo-v1", "dataMode": "demo", "verifiedSegments": [
+      {"segmentId": "s1", "type": "taxi", "allowedTemplateIds": ["bus.basic"]}]},
+     "status": "unavailable", "templates": []},
+    {"id": "g07", "group": "잘못된 구간", "payload": {"routeSnapshotVersion": "demo-v1", "dataMode": "demo", "verifiedSegments": [
+      {"segmentId": "s1", "type": "bus", "allowedTemplateIds": ["bus.basic"]},
+      {"segmentId": "s1", "type": "walk", "allowedTemplateIds": ["walk.basic"]}]},
+     "status": "unavailable", "templates": []},
+    {"id": "g08", "group": "잘못된 구간", "payload": {"routeSnapshotVersion": "demo-v1", "dataMode": "demo", "verifiedSegments": []},
+     "status": "unavailable", "templates": []},
+    {"id": "g09", "group": "버전", "payload": {"routeSnapshotVersion": "", "dataMode": "demo", "verifiedSegments": [
+      {"segmentId": "s1", "type": "bus", "allowedTemplateIds": ["bus.basic"]}]},
+     "status": "unavailable", "templates": []},
+    {"id": "g10", "group": "입력 오류", "payload": {"routeSnapshotVersion": "demo-v1", "dataMode": "test", "verifiedSegments": [
+      {"segmentId": "s1", "type": "bus", "allowedTemplateIds": ["bus.basic"]}]},
+     "status": "unavailable", "templates": []},
+    {"id": "g11", "group": "입력 오류", "payload": null, "status": "unavailable", "templates": []}
+  ],
+  "backendSideCases": {
+    "note": "아래는 AI 출력이 잘못됐을 때 백엔드가 거부하는지 보는 사례다. AI 모듈 단독으로는 재현할 수 없으므로 5단계(백엔드 연결 확인)에서 가짜 어댑터로 시험한다.",
+    "items": [
+      "목록 밖 후보 ID를 반환하면 unavailable로 대체",
+      "다른 routeSnapshotVersion을 반환하면 template_fallback",
+      "구간 누락·추가·순서 변경·틀린 templateId면 template_fallback",
+      "1초 예산 초과 시 결과를 채택하지 않음",
+      "어댑터 예외·비JSON 반환 시 대체 동작"
+    ]
+  }
+}

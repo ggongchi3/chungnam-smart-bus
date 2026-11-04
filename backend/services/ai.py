@@ -33,8 +33,8 @@ async def interpret(boundary, text, destinations, data_mode, *, reload_destinati
         if monotonic() - started > boundary.budget:
             return fallback
         # Never expose model-generated explanations; backend owns reason codes.
-        reasons = {'matched': 'USER_CONFIRMATION_REQUIRED', 'needs_confirmation': 'USER_CONFIRMATION_REQUIRED',
-                   'no_match': 'NO_MATCH', 'unavailable': 'AI_UNAVAILABLE'}
+        reasons = {'matched': 'MATCHED', 'needs_confirmation': 'USER_CONFIRMATION_REQUIRED',
+                   'no_match': 'NO_REGISTERED_MATCH', 'unavailable': 'AI_UNAVAILABLE'}
         return s.InterpretationData(status=value.status, candidates=[allowed[k] for k in ids],
                                      reasonCode=reasons[value.status])
     except (ValidationError, TypeError, ValueError):
@@ -51,8 +51,14 @@ def template_text(segment):
         return f'{segment.fromLabel}에서 {segment.toLabel}까지 걸어가세요. 거리와 이동 시간은 확인되지 않았습니다.'
     distance = (f' 거리는 {segment.distanceMeters}미터입니다.' if segment.distanceMeters is not None
                 else ' 거리는 확인되지 않았습니다.')
-    duration = (f' 이동 시간은 {segment.durationSeconds}초입니다.' if segment.durationSeconds is not None
-                else ' 이동 시간은 확인되지 않았습니다.')
+    seconds = segment.durationSeconds
+    if seconds is None:
+        duration = ' 이동 시간은 확인되지 않았습니다.'
+    elif seconds < 60:
+        duration = f' 이동 시간은 {seconds}초입니다.'
+    else:
+        minutes = (seconds + 30) // 60
+        duration = f' 이동 시간은 약 {minutes}분입니다.'
     return f'{segment.fromLabel}에서 {segment.toLabel}까지 걸어가세요.' + distance + duration
 
 

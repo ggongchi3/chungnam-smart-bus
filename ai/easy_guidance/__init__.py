@@ -1,0 +1,1 @@
+"""Verified segment template selection."""
