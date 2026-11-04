@@ -87,6 +87,7 @@ chungnam-smart-bus/
 └── docs/
     ├── api-contract.md
     ├── data-sources.md
+    ├── development-plan.md
     ├── roles.md
     ├── structure.md
     └── verification.md
@@ -101,8 +102,8 @@ chungnam-smart-bus/
 | `backend/services/` | 백엔드 | 목적지 조회, 경로 계산/검증, 운행 정보 조합, AI 중계와 인쇄 스냅샷 준비 |
 | `backend/models/` | 백엔드 | 정류장·목적지·노선·경유 순서·이동 구간과 공통 데이터 모델 |
 | `backend/integrations/` | 백엔드 | 외부 제공자 어댑터, 내부 필드 매핑, 출처별 시간/실패 처리; 제공자 미정 |
-| `frontend/` | 프론트엔드 A | A와 B가 기능별로 개발하는 하나의 앱; 언어·프레임워크 미정 |
-| `frontend/config/` | 프론트엔드 A | 스택 확정 후 앱 설정과 시연 정류장 설정; 실제 키 저장 금지 |
+| `frontend/` | 프론트엔드 A | A와 B가 기능별로 개발하는 하나의 React + TypeScript + Vite 앱 |
+| `frontend/config/` | 프론트엔드 A | 선정 기술의 앱 설정과 시연 정류장 설정; 실제 키 저장 금지 |
 | `frontend/src/` | 프론트엔드 A | 단일 앱의 진입·기능·공통 코드 구분 |
 | `frontend/src/app/` | 프론트엔드 A | 앱 진입, 시작 화면, 현재 정류장, 화면 전환과 공통 화면 틀 |
 | `frontend/src/features/` | 프론트엔드 A | 기능별 경계; 아래 각 기능의 대표 관리자는 개별 지정 |
@@ -111,7 +112,7 @@ chungnam-smart-bus/
 | `frontend/src/features/journey-guide/` | 프론트엔드 B | 승차·하차·정류장 수·도보·환승 순서와 쉬운 안내 |
 | `frontend/src/features/live-info/` | 프론트엔드 B | 도착·운행 현황·변경·항목별 갱신 시각·미수신/오래됨 상태 |
 | `frontend/src/features/print-guide/` | 프론트엔드 B | 이동 안내표, 인쇄 레이아웃, 브라우저 인쇄/미리보기 |
-| `frontend/src/features/voice-guide/` | 프론트엔드 B | 음성 안내 재생·중지·실패 UI; 음성 기술 미정 |
+| `frontend/src/features/voice-guide/` | 프론트엔드 B | 음성 안내 재생·중지·실패 UI; Web Speech API, 실제 한국어 음성 가용성 확인 필요 |
 | `frontend/src/shared/` | 프론트엔드 A | 중복을 피할 공통 코드의 관리 경계 |
 | `frontend/src/shared/ui/` | 프론트엔드 A | 공통 버튼·카드·오류/로딩 표시 등; 디자인 기준과 접근성 적용 |
 | `frontend/src/shared/api/` | 프론트엔드 A | 단일 API 클라이언트, 공통 응답/오류 처리와 데이터 계약 반영 |

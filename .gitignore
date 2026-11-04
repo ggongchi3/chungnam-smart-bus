@@ -8,12 +8,15 @@ Desktop.ini
 *.swo
 *~
 
-# Dependencies and local environments; stack is not selected yet
+# Dependencies and local environments
 node_modules/
 .venv/
 venv/
 env/
 vendor/
+
+# Local SQLite runtime files
+backend/.local/
 
 # Build outputs
 build/
