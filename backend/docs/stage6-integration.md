@@ -1,6 +1,6 @@
 # 6단계 AI 중계·쉬운 안내·인쇄 준비 연동 안내
 
-2026-10-28 기준 v2 계획서의 6단계 연동 자료다. **시연 데이터 · 실제 운행 정보 아님**. ai 폴더에는 아직 자리 표시자만 있어 실제 AI 선택 모듈은 연결되지 않았다. 백엔드는 등록 후보·검증된 구간·허용 표현만 AI와 교환할 경계를 제공한다. 프론트엔드 B 화면도 미구현이므로 HTTP 검증과 실제 화면/음성/인쇄 공동 확인을 구분한다.
+v2 계획서의 6단계 연동 자료다. **시연 데이터 · 실제 운행 정보 아님**. 2026-11-02부터 기본 `backend.main:app`은 `RuleBasedAIAdapter`를 연결한다. 외부 모델·네트워크를 호출하지 않는 규칙 기반 선택이며, 백엔드는 등록 후보·검증된 구간·허용 표현만 교환한다. 프론트엔드 B 화면은 미구현이므로 API 검증과 실제 화면/음성/인쇄 공동 확인을 구분한다. 아래 `verify_stage6`의 기록은 기존 2026-10-28 미연결 대체 검증이다.
 
 ## 공개 API와 실패 대체
 
@@ -14,14 +14,16 @@
 
 실제 AI가 없으면 목적지 해석은 HTTP 200의 `status=unavailable`, `candidates=[]`, `reasonCode=AI_UNAVAILABLE`을 반환한다. UI는 일반 목적지 검색/주요 장소 선택으로 이어간다. AI 해석 성공으로 표시하거나 임의 목적지를 자동 확정하지 않는다. 쉬운 안내는 검증된 같은 경로의 `mode=template_fallback`으로 제공하므로 AI가 없어도 상세 안내가 계속 동작한다.
 
-AI 담당자가 나중에 제공할 동기 공개 인터페이스는 `interpret_destination(payload)`와 `choose_guidance(payload)`다. 실제 모듈은 합의한 입력/출력으로 어댑터에 연결해야 하며 ai 폴더 이름을 바꾸거나 백엔드가 선택 알고리즘을 대신 구현하지 않는다.
+AI 동기 공개 인터페이스는 `interpret_destination(payload)`와 `choose_guidance(payload)`다. `ai/adapter.py`가 `destination_interpretation`, `easy_guidance` 패키지를 표준 import로 연결한다. 어댑터 주입 없는 `create_app()`은 기존 미연결 대체를 유지하므로 실패 경로를 독립적으로 검증할 수 있다.
+
+공개 이유 코드는 `matched → MATCHED`, `needs_confirmation → USER_CONFIRMATION_REQUIRED`, `no_match → NO_REGISTERED_MATCH`, `unavailable → AI_UNAVAILABLE`로 [AI 계약](../../ai/contracts/README.md)과 일치한다. 서버가 검증한 상태로 이유 코드를 결정하며 AI의 원문 사유는 노출하지 않는다. 오타 추정은 후보가 1개여도 `needs_confirmation`으로 유지하고, `matched`도 사용자가 후보를 확인하고 선택한다.
 
 - 목적지 입력은 text/dataMode/allowedDestinations이고, 각 허용 후보에는 등록 destinationId/name/aliases만 보낸다. 출력 status/candidateDestinationIds/reasonCode를 검사하고 ID가 허용 목록의 부분집합인지 확인한다. 공개 candidates는 서버 DB 값으로 다시 구성한다.
 - AI 응답을 기다리는 동안 등록 정보가 바뀔 수 있어, 출력 직전에 원래 허용 목록과 현재 DB 목록을 모두 확인한다. 삭제된 ID는 unavailable로 대체하고 이름·별칭·분류는 현재 등록 값을 사용한다. matched도 사용자 확인을 생략한다는 뜻이 아니다.
 - 안내 입력은 routeSnapshotVersion/dataMode/verifiedSegments다. 각 구간은 segmentId/type/allowedTemplateIds를 가진다. 기본 허용 표현은 bus.basic/walk.basic/transfer.basic이다. 출력 status/routeSnapshotVersion/steps의 segmentId·순서·누락·추가·중복·유형별 templateId를 검사한다.
 - 실제 노선·정류장·승하차·정류장 수·환승 사실은 검증된 서버 경로에서 삽입한다. AI가 만든 새 장소·노선·도착 시각·자유 교통 사실을 채택하지 않는다. public steps는 segmentId/text이며 B는 일반 문자열로 사용한다.
 
-AI 오류·잘못된 출력·결과 채택 예산 1초 초과는 수동 검색 또는 고정 안내로 대체한다. 시간초과는 결과를 기다리거나 채택하는 것을 중단한다는 뜻이며 동기 Python 함수를 강제로 종료했다는 뜻이 아니다. 실행 중인 작업이 끝나기 전 새 작업을 무제한 쌓지 않는 제한을 둔다. 실제 AI 지연/중단 동작은 공개 모듈이 준비되면 AI 담당자와 다시 확인해야 한다.
+AI 오류·잘못된 출력·결과 채택 예산 1초 초과는 수동 검색 또는 고정 안내로 대체한다. 시간초과는 결과를 기다리거나 채택하는 것을 중단한다는 뜻이며 동기 Python 함수를 강제로 종료했다는 뜻이 아니다. 실행 중인 작업이 끝나기 전 새 작업을 무제한 쌓지 않는 제한을 둔다.
 
 어댑터는 동기 함수와 JSON으로 표현 가능한 dict 출력을 사용한다. 입력과 출력은 복사해 어댑터의 뒤늦은 변경이 서버 검증 자료를 바꾸지 않게 한다. NaN·set·모델 객체 등의 비JSON 출력과 미지원 async 함수는 실패 대체한다. 프로세스당 실행 슬롯은1개이고 대기열은 없다. worker 준비/시작이 실패해도 슬롯을 복구한다. 남은 채택 예산만 기다리며, 무기한 멈춘 실제 동기 함수는 어댑터 자체 취소 기능이나 서버 재시작이 필요하다.
 
@@ -75,6 +77,6 @@ HTTP 기록의 fixture.now와 API generatedAt은 **주입된 테스트 시각**�
 
 ## 별도 테스트와 공동 확인 대기
 
-1초 예산·AI 오류/잘못된 출력/목록 밖 ID·구간 누락/중복·잘못된 템플릿·가짜 AI 성공은 별도 pytest의 주입 어댑터로 검증한다. 이 HTTP 도구에서 실제 AI가 성공한 것으로 표시하지 않는다. 실제 ai 공개 함수·버전 환경이 준비되면 AI 담당자와 동일 계약으로 공동 확인해야 한다.
+1초 예산·AI 오류/잘못된 출력/목록 밖 ID·구간 누락/중복·잘못된 템플릿·가짜 AI 성공은 별도 pytest의 주입 어댑터로 검증한다. 이 HTTP 도구는 미연결 대체를 검증한다. 실제 규칙 어댑터와 기본 ASGI 앱 연결은 `backend/tests/test_ai_integration.py`, `ai/evaluation/test_backend_integration.py`에서 별도로 검증한다.
 
-B/디자인 담당자는 같은 버전의 상세·텍스트·인쇄 JSON으로 실제 화면·음성 재생/중지·인쇄 미리보기·취소·시연/미확인 표시를 확인해야 한다. 현재 frontend/ai는 준비되지 않아 공동 브라우저·음성·인쇄·팀원 PC 검증은 대기다. 다른 파트 파일 수정이나 메시지 전송은 하지 않았다.
+B/디자인 담당자는 같은 버전의 상세·텍스트·인쇄 JSON으로 실제 화면·음성 재생/중지·인쇄 미리보기·취소·시연/미확인 표시를 확인해야 한다. 프론트 화면이 준비되지 않아 공동 브라우저·음성·인쇄·팀원 PC 검증은 대기다.

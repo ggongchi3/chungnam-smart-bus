@@ -1,0 +1,1 @@
+"""Registered destination interpretation rules."""

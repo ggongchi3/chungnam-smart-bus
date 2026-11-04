@@ -230,7 +230,7 @@ B는 같은 `routeSnapshotVersion`으로 승차 버스·승하차 정류장·정
 
 ## 8. AI 목적지 표현 해석 — 추가 제안
 
-공개 요청 예시: `{originStationId, text}`. 백엔드는 텍스트 길이 등 입력을 검증하고 현재 정류장/시연 범위에 맞는 등록 후보만 구성한다. AI 통신은 논리 계약이며 별도 프로세스·함수·HTTP 중 무엇을 쓸지는 미정이다. HTTP를 선택할 때의 경로 제안은 `POST /internal/ai/v1/interpret-destination`이다.
+공개 요청 예시: `{originStationId, text}`. 백엔드는 텍스트 길이 등 입력을 검증하고 현재 정류장/시연 범위에 맞는 등록 후보만 구성한다. 현재 연결은 `ai.adapter.RuleBasedAIAdapter`의 동기 함수 `interpret_destination(payload)`를 호출한다. `backend.main:app`은 이 어댑터를 기본으로 연결하며 외부 모델·네트워크 없이 규칙 기반으로 동작한다. 테스트나 별도 앱에서 `create_app()`에 어댑터를 주입하지 않으면 기존 `unavailable` 대체 동작을 유지한다. 내부 HTTP 경로는 구현하지 않았다.
 
 AI 내부 요청 예시:
 
@@ -254,15 +254,24 @@ AI 내부 응답 예시:
 }
 ```
 
-status는 `matched | needs_confirmation | no_match | unavailable`이다. matched도 사용자가 화면에서 목적지를 확인하고 선택한다. 동명 장소·모호한 표현은 후보를 표시하고 확인받는다. 점수·확정 임계값은 미정이다.
+2026-11-02 기준 AI 내부 응답과 공개 응답의 상태별 이유 코드는 다음으로 통일한다.
 
-백엔드는 후보 ID가 allowedDestinations의 부분집합인지 검증하고 직접 보관한 Destination 값으로 공개 응답 candidates를 구성한다. AI가 반환한 새로운 장소·좌표·노선은 사용하지 않는다. no_match이면 일반 검색/주요 장소 선택, unavailable 또는 시간초과이면 같은 수동 경로로 대체한다. reasonCode의 상세 목록은 구현 전 합의한다.
+| status | 후보 개수 | reasonCode | 화면 동작 |
+| --- | --- | --- | --- |
+| `matched` | 정확히 1개 | `MATCHED` | 목적지를 확인하고 사용자가 선택 |
+| `needs_confirmation` | 1개 이상 | `USER_CONFIRMATION_REQUIRED` | 후보를 표시하고 사용자가 선택 |
+| `no_match` | 0개 | `NO_REGISTERED_MATCH` | 일반 검색·주요 장소 선택 |
+| `unavailable` | 0개 | `AI_UNAVAILABLE` | 일반 검색·주요 장소 선택 |
+
+`matched`도 목적지 자동 확정을 의미하지 않는다. 동명 장소·모호한 표현은 후보를 표시하고 확인받는다. 오타로 추정한 결과는 후보가 1개여도 `needs_confirmation`을 유지한다. 백엔드는 후보 수가 하나라는 이유로 이를 `matched`로 바꾸지 않는다. 기준선의 구체적인 매칭·오타 추정 규칙은 [AI 계약](../ai/contracts/README.md)과 [목적지 해석 모듈](../ai/destination_interpretation/README.md)을 따른다.
+
+백엔드는 후보 ID가 allowedDestinations의 부분집합인지 검증하고 직접 보관한 Destination 값으로 공개 응답 candidates를 구성한다. AI가 반환한 새로운 장소·좌표·노선은 사용하지 않는다. 공개 reasonCode는 백엔드가 검증된 status에서 위 표대로 결정하며, 어댑터가 반환한 이유 코드나 자유 문구를 그대로 노출하지 않는다. 기존 `NO_MATCH`는 공개 이유 코드로 사용하지 않는다. no_match이면 일반 검색/주요 장소 선택, unavailable 또는 시간초과이면 같은 수동 경로로 대체한다.
 
 ## 9. AI 쉬운 한국어 안내 — 추가 제안
 
 검증된 경로를 쉽게 설명하되 AI가 숫자·이름·노선·환승·도착 시각을 새로 만들지 않도록, 초기 계약은 **허용된 안내 템플릿 선택 + 백엔드의 사실 값 삽입** 방식으로 제안한다. 자유 서술로 교통 사실을 생성하는 기능은 초기 계약에 포함하지 않는다.
 
-공개 요청은 경로 식별자와 `expectedRouteSnapshotVersion`만 받는다. 클라이언트가 임의의 경로 사실을 만들어 AI에 직접 전달하지 않는다. 백엔드가 저장/검증한 RouteDetail을 읽어 내부 요청을 구성한다. HTTP를 선택할 경우의 내부 경로 제안은 `POST /internal/ai/v1/easy-guidance`다.
+공개 요청은 경로 식별자와 `expectedRouteSnapshotVersion`만 받는다. 클라이언트가 임의의 경로 사실을 만들어 AI에 직접 전달하지 않는다. 백엔드가 저장/검증한 RouteDetail을 읽어 내부 요청을 구성하고 같은 어댑터의 동기 함수 `choose_guidance(payload)`를 호출한다. 내부 HTTP 경로는 구현하지 않았다.
 
 AI 내부 요청 예시:
 
@@ -290,7 +299,7 @@ AI 내부 응답 예시:
 }
 ```
 
-AI 내부 status는 `ok | unavailable`이다. 모델·방식·표현 변형의 폭은 미정이며, 여러 허용 표현은 AI·디자인 담당이 함께 검토한다. `ai/contracts/`는 구체 스키마, `ai/easy-guidance/`는 검토한 템플릿과 선택 로직을 관리할 위치다.
+AI 내부 status는 `ok | unavailable`이다. 현재 규칙 기반 기준선은 구간 유형별 `bus.basic`, `walk.basic`, `transfer.basic`을 선택한다. 여러 허용 표현은 AI·디자인 담당이 함께 검토한다. `ai/contracts/`는 구체 스키마, `ai/easy_guidance/`는 템플릿과 선택 로직을 관리한다. Python 모듈 경로는 `ai.destination_interpretation`, `ai.easy_guidance`로 통일한다.
 
 백엔드는 버전, 구간 ID, 구간 순서, 누락·추가·중복, 구간 유형별 허용 템플릿을 검사한다. 검증된 정류장명·노선명·정류장 수는 백엔드가 템플릿 슬롯에 넣는다. 미확인 시간·도착 수치는 생략하거나 확인 불가 표현을 사용하며 AI가 채우지 않는다.
 

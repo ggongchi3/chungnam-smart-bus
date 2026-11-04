@@ -220,7 +220,7 @@ class InterpretationRequest(Model):
 class InterpretationData(Model):
     status: Literal['matched', 'needs_confirmation', 'no_match', 'unavailable']
     candidates: list[Destination]
-    reasonCode: str | None
+    reasonCode: Literal['MATCHED', 'USER_CONFIRMATION_REQUIRED', 'NO_REGISTERED_MATCH', 'AI_UNAVAILABLE']
 
 
 class Step(Model):

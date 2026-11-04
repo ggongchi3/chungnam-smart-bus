@@ -10,6 +10,8 @@ from starlette.exceptions import HTTPException
 from fastapi.openapi.utils import get_openapi
 from pydantic import ValidationError
 
+from ai.adapter import RuleBasedAIAdapter
+
 from backend.api.errors import ServiceError
 from backend.config import Settings
 from backend.database import Database
@@ -102,4 +104,4 @@ def create_app(settings=None, clock=None, provider=None, ai_adapter=None):
     return app
 
 
-app = create_app()
+app = create_app(ai_adapter=RuleBasedAIAdapter())

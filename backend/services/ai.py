@@ -33,8 +33,8 @@ async def interpret(boundary, text, destinations, data_mode, *, reload_destinati
         if monotonic() - started > boundary.budget:
             return fallback
         # Never expose model-generated explanations; backend owns reason codes.
-        reasons = {'matched': 'USER_CONFIRMATION_REQUIRED', 'needs_confirmation': 'USER_CONFIRMATION_REQUIRED',
-                   'no_match': 'NO_MATCH', 'unavailable': 'AI_UNAVAILABLE'}
+        reasons = {'matched': 'MATCHED', 'needs_confirmation': 'USER_CONFIRMATION_REQUIRED',
+                   'no_match': 'NO_REGISTERED_MATCH', 'unavailable': 'AI_UNAVAILABLE'}
         return s.InterpretationData(status=value.status, candidates=[allowed[k] for k in ids],
                                      reasonCode=reasons[value.status])
     except (ValidationError, TypeError, ValueError):
