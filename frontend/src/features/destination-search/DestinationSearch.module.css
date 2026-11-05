@@ -1,0 +1,61 @@
+.page {
+  display: grid;
+  gap: 24px;
+  padding: 24px 0;
+}
+
+.searchForm,
+.section,
+.aiPanel {
+  display: grid;
+  gap: 16px;
+}
+
+.searchForm label,
+.section h2,
+.aiPanel h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.searchRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+}
+
+.searchRow input {
+  width: 100%;
+  min-height: 64px;
+  padding: 12px 16px;
+  border: 2px solid #555;
+  border-radius: 8px;
+  background: #fff;
+  color: #111;
+  font: inherit;
+}
+
+.categoryList,
+.destinationList,
+.actionList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.aiPanel {
+  padding: 20px;
+  border: 2px solid #333;
+  border-radius: 8px;
+}
+
+.aiPanel p {
+  margin: 0;
+}
+
+@media (max-width: 560px) {
+  .searchRow {
+    grid-template-columns: 1fr;
+  }
+}

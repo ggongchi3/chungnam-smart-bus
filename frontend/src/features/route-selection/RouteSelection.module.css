@@ -1,0 +1,28 @@
+.page {
+  display: grid;
+  gap: 24px;
+  padding: 24px 0;
+}
+
+.routeList {
+  display: grid;
+  gap: 16px;
+}
+
+.routeCard {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border: 2px solid #444;
+  border-radius: 8px;
+}
+
+.routeCard h2,
+.routeCard p {
+  margin: 0;
+}
+
+.routeNames {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
