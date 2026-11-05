@@ -44,7 +44,7 @@ h1 {
 }
 
 h2 {
-  font-size: 1.25rem;
+  font-size: 32px;
   line-height: 1.35;
 }
 
@@ -98,6 +98,5 @@ p { line-height: 1.5; }
 .message-error { border-width: 2px; }
 
 @media (max-width: 560px) {
-  body { font-size: 20px; }
   .screen-header { display: grid; }
 }
