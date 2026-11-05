@@ -13,13 +13,18 @@ const REQUEST_TIMEOUT_MS = 5000
 const GET_RETRY_DELAY_MS = 1000
 
 export class ApiRequestError extends Error {
+  readonly code: string
+  readonly status: number
+
   constructor(
     message: string,
-    readonly code: string,
-    readonly status: number,
+    code: string,
+    status: number,
   ) {
     super(message)
     this.name = 'ApiRequestError'
+    this.code = code
+    this.status = status
   }
 }
 
