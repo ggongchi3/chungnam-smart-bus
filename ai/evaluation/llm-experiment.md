@@ -84,9 +84,11 @@ ai/adapter.py: class GeminiAIAdapter:
 | --- | --- | --- | --- | --- |
 | i13 | 고속버스터미널 | matched 터미널 | no_match | 낮음(일반 검색으로 넘어감) |
 | i22 | 의원 | no_match | matched 병원 | **높음** — 다른 종류의 장소를 병원으로 추정 |
-| i32 | 장에 가요 | no_match | matched 시장 | 기대값 재검토 필요. 사람이 봐도 시장일 가능성이 큼 |
+| i32 | 장에 가요 | no_match → **needs_confirmation 시장**(측정 후 변경) | matched 시장 | 낮음. 바뀐 정답 기준으로도 확인 없이 확정한 점만 다름 |
 | i37~39 | 벙원 / 시잔 가요 / 터미날 | needs_confirmation | matched | 중간 — 오타 추정을 확정으로 냄. 화면에서 사용자가 한 번 더 확인하므로 잘못 이동하지는 않음 |
-| i43 | 병원이랑 시잔 | matched 병원 | needs_confirmation 병원·시장 | 낮음. 기대값 재검토 필요 |
+| i43 | 병원이랑 시잔 | matched 병원 → **needs_confirmation 병원·시장**(측정 후 변경) | needs_confirmation 병원·시장 | 없음. 바뀐 정답 기준으로 정답 |
+
+측정 후 i32·i43의 정답을 바꾸고 규칙 기준선을 고쳤다(2026-11-06, [interpreter README](../destination_interpretation/README.md) 알려진 한계). 바뀐 정답으로 다시 세면 Gemini(15초)는 i43이 맞아 53/59에 해당한다. 새 사례 i44~i50은 Gemini로 아직 측정하지 않았다.
 
 관찰:
 - 허용 목록 밖 ID·형식 오류는 0건이었다(어댑터·백엔드 검증 통과).

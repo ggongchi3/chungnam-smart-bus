@@ -51,3 +51,4 @@ python -m unittest ai.evaluation.test_backend_integration -v
 | 2026-11-04 | macOS 26.6.2 (arm64), Python 3.13.18, 잠금 파일 의존성 | 백엔드·AI 전체 344개 통과(`pytest backend/tests ai/evaluation`), 합성 평가 59/59, 이 파일 8개 통과 |
 | 2026-11-05 | Windows 11, Python 3.12.10, 잠금 파일 의존성 (main `cf78085` 기준) | 백엔드·AI 전체 348개 통과(`pytest backend/tests ai/evaluation`, 도보 분 단위 확인 1개 추가), 합성 평가 59/59, 이 파일 9개 통과 |
 | 2026-11-06 | macOS 26.6.2 (arm64), Python 3.13.18, 잠금 파일 의존성 (main `71f47ef` 기준) | 백엔드·AI 전체 348개 통과, 합성 평가 59/59. 실제 Uvicorn 서버에 프론트엔드(PR #6 `client.ts`)와 같은 요청 형식으로 `POST /api/v1/destination-interpretations` 확인: `큰 병원` matched, `벙원` needs_confirmation(후보 1개), `시장 병원` needs_confirmation(후보 2개), `우체국` no_match — 화면 분기(`DestinationSearch.tsx`)가 쓰는 status·reasonCode와 일치. `frontend` `npm run build` 통과. 브라우저 화면 확인은 하지 않음 |
+| 2026-11-06 | 같은 환경, 정답 변경 후 | i32(`장에 가요` → 시장 확인 필요)·i43(`병원이랑 시잔` → 병원·시장 확인 필요) 정답 변경과 규칙 수정, 오탐 방지 사례 i44~i50 추가. 합성 평가 66/66, 백엔드·AI 전체 356개 통과 |
