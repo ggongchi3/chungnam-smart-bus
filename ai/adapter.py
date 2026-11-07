@@ -17,3 +17,18 @@ class RuleBasedAIAdapter:
 
     def choose_guidance(self, payload: dict) -> dict:
         return selector.choose(payload)
+
+
+class GeminiAIAdapter:
+    """비교 실험용. 기본 앱에 연결하지 않는다(ai/evaluation/llm-experiment.md).
+
+    목적지 해석만 Gemini를 부르고, 안내 선택은 규칙 기준선을 그대로 쓴다.
+        python ai/evaluation/run_eval.py --adapter ai.adapter:GeminiAIAdapter
+    """
+
+    def interpret_destination(self, payload: dict) -> dict:
+        from .destination_interpretation import llm_interpreter
+        return llm_interpreter.interpret(payload)
+
+    def choose_guidance(self, payload: dict) -> dict:
+        return selector.choose(payload)

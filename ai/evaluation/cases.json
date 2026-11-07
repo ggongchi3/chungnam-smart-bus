@@ -49,7 +49,7 @@
     {"id": "i29", "group": "구어체·사투리", "set": "demo", "text": "오늘 장날이라 가봐야 혀", "status": "matched", "ids": ["demo-destination-002"]},
     {"id": "i30", "group": "구어체·사투리", "set": "demo", "text": "고속버스 타러 가요", "status": "matched", "ids": ["demo-destination-003"]},
     {"id": "i31", "group": "구어체·사투리", "set": "demo", "text": "병원 갈라고 하는디유", "status": "matched", "ids": ["demo-destination-001"]},
-    {"id": "i32", "group": "구어체·사투리", "set": "demo", "text": "장에 가요", "status": "no_match", "ids": [], "limitation": "한 글자 표현(장)은 연결하지 않는다"},
+    {"id": "i32", "group": "구어체·사투리", "set": "demo", "text": "장에 가요", "status": "needs_confirmation", "ids": ["demo-destination-002"], "note": "띄어 쓴 낱말 '장에'는 시장으로 추정한다. 한 글자 추정이라 확인을 요청한다 (2026-11-06 정답 변경, 이전: no_match)"},
     {"id": "i33", "group": "부정 표현", "set": "demo", "text": "시장은 말고 터미널", "status": "matched", "ids": ["demo-destination-003"]},
     {"id": "i34", "group": "부정 표현", "set": "demo", "text": "병원이 아니라 시장이요", "status": "matched", "ids": ["demo-destination-002"]},
     {"id": "i35", "group": "부정 표현", "set": "demo", "text": "병원 말고", "status": "no_match", "ids": []},
@@ -60,7 +60,14 @@
     {"id": "i40", "group": "오타", "set": "demo", "text": "시청", "status": "no_match", "ids": []},
     {"id": "i41", "group": "오타", "set": "demo", "text": "시간", "status": "no_match", "ids": []},
     {"id": "i42", "group": "오타", "set": "demo", "text": "시정", "status": "needs_confirmation", "ids": ["demo-destination-002"], "limitation": "자모 1개 차이인 다른 단어도 오타로 볼 수 있다. 확인 필요 결과로 돌려 사용자가 거른다"},
-    {"id": "i43", "group": "오타", "set": "demo", "text": "병원이랑 시잔", "status": "matched", "ids": ["demo-destination-001"], "limitation": "정확히 맞는 표현이 하나라도 있으면 오타 추정을 하지 않는다"}
+    {"id": "i43", "group": "오타", "set": "demo", "text": "병원이랑 시잔", "status": "needs_confirmation", "ids": ["demo-destination-001", "demo-destination-002"], "note": "정확히 맞는 표현 밖의 오타도 본다. '병원이랑 시장'(i14)과 같은 결과 (2026-11-06 정답 변경, 이전: matched 병원)"},
+    {"id": "i44", "group": "구어체·사투리", "set": "demo", "text": "정류장에 가요", "status": "no_match", "ids": [], "note": "붙여 쓴 '정류장에'는 시장 추정에 해당하지 않는다"},
+    {"id": "i45", "group": "구어체·사투리", "set": "demo", "text": "주차장에서 기다려요", "status": "no_match", "ids": [], "note": "붙여 쓴 '주차장에서'는 시장 추정에 해당하지 않는다"},
+    {"id": "i46", "group": "부정 표현", "set": "demo", "text": "장에 말고 병원", "status": "matched", "ids": ["demo-destination-001"], "note": "부정한 한 글자 추정은 뺀다"},
+    {"id": "i47", "group": "오타", "set": "demo", "text": "큰 병원 가요", "status": "matched", "ids": ["demo-destination-001"], "note": "나머지 부분 오타 확인이 정확한 결과를 흐리지 않는다"},
+    {"id": "i48", "group": "오타", "set": "demo", "text": "정류장 어디예요", "status": "no_match", "ids": [], "note": "띄어쓰기를 넘는 '장 어디'(→장어)를 장터의 오타로 보지 않는다 (이전 결과: needs_confirmation 시장)"},
+    {"id": "i49", "group": "오타", "set": "demo", "text": "장례식장 가요", "status": "no_match", "ids": [], "note": "낱말 중간의 '식장'을 시장의 오타로 보지 않는다 (이전 결과: needs_confirmation 시장)"},
+    {"id": "i50", "group": "오타", "set": "demo", "text": "병원 가는 정류장 어디예요", "status": "matched", "ids": ["demo-destination-001"], "note": "정확한 표현 밖 오타 확인이 정류장 문장에 시장을 더하지 않는다"}
   ],
   "malformedInterpretation": [
     {"id": "m01", "payload": null},
