@@ -26,6 +26,7 @@ export function RouteSelection({ destination, originStationId, onBack, onSelect 
 
   useEffect(() => {
     const controller = new AbortController()
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- A의 목적지 변경 시 로딩 초기화 동작을 유지한다.
     setLoading(true)
     setError('')
     void searchRoutes(originStationId, destination.destinationId, controller.signal)
