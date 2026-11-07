@@ -58,6 +58,7 @@ export function DestinationSearch({ originStationId, onBack, onSelect }: Destina
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- A의 진입 검색 상태 초기화와 status 분기를 보존한다.
     void runSearch('')
     return () => controllerRef.current?.abort()
     // Load all registered options when entering the search step.
