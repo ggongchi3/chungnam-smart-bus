@@ -37,7 +37,7 @@ export default function JourneyFeatures({ selection, detail, onRouteIssue }: {
     <LiveInfo state={live.state} detail={detail} onRefresh={live.refresh} />
     <PrintGuide selection={selection} detail={detail} enabled={enabled}
       onRouteIssue={onRouteIssue} onPreviewChange={setPreviewOpen} />
-    <VoiceGuide guidance={guidance} loading={guidanceLoading} error={guidanceError} enabled={enabled && !previewOpen}
+    <VoiceGuide guidance={guidance} detail={detail} loading={guidanceLoading} error={guidanceError} enabled={enabled && !previewOpen}
       onRetry={() => { setGuidanceError(false); setGuidanceLoading(true); setAttempt((value) => value + 1) }} />
   </>
 }

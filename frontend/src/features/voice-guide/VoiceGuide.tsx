@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import GuidanceText from './GuidanceText'
 import { createSpeechPlayer } from './speechPlayer'
+import { speechTexts } from './speechText'
 import type { SpeechState } from './speechPlayer'
 import type { GuidanceData } from './guidanceTypes'
+import type { RouteDetail } from '../journey-guide/journeyTypes'
 
-export default function VoiceGuide({ guidance, loading, error, enabled, onRetry }: {
-  guidance: GuidanceData | null; loading: boolean; error: boolean; enabled: boolean; onRetry: () => void
+export default function VoiceGuide({ guidance, detail, loading, error, enabled, onRetry }: {
+  guidance: GuidanceData | null; detail: RouteDetail; loading: boolean; error: boolean; enabled: boolean; onRetry: () => void
 }) {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
   const [status, setStatus] = useState<SpeechState>('idle')
@@ -39,7 +41,7 @@ export default function VoiceGuide({ guidance, loading, error, enabled, onRetry 
     <p>화면의 이동 안내를 한국어로 읽어 드립니다.</p>
     <div className="bus-feature__actions">
       <button className="button-primary" type="button" disabled={!enabled || !guidance || !koreanVoice || !supported || status === 'playing'}
-        onClick={() => { if (guidance && koreanVoice) playerRef.current?.play(guidance.steps.map((step) => step.text), koreanVoice) }}>▶ 안내 듣기</button>
+        onClick={() => { if (guidance && koreanVoice) playerRef.current?.play(speechTexts(guidance, detail), koreanVoice) }}>▶ 안내 듣기</button>
       <button type="button" disabled={status !== 'playing'} onClick={() => { playerRef.current?.stop(); setStatus('idle') }}>■ 중지</button>
       {error && <button type="button" onClick={onRetry}>안내 문장 다시 불러오기</button>}
     </div>

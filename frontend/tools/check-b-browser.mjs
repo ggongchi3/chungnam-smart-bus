@@ -9,6 +9,7 @@ import { createDemoSelection } from '../src/features/journey-guide/previewApi.ts
 import { loadJourney } from '../src/features/journey-guide/journeyApi.ts'
 import { loadLive } from '../src/features/live-info/liveApi.ts'
 import { loadGuidance } from '../src/features/voice-guide/guidanceApi.ts'
+import { speechTexts } from '../src/features/voice-guide/speechText.ts'
 import { preparePrint } from '../src/features/print-guide/printApi.ts'
 
 const packagePath = process.env.BUS_PLAYWRIGHT_PATH
@@ -152,10 +153,10 @@ try {
   await ready(test.page)
   await test.page.getByRole('button', { name: '▶ 안내 듣기' }).click()
   await test.page.getByText('음성 안내를 재생하고 있습니다.').waitFor()
-  assert.equal((await test.page.evaluate(() => window.__speechTest.spoken))[0], transfer.guidance.steps[0].text)
+  assert.equal((await test.page.evaluate(() => window.__speechTest.spoken))[0], speechTexts(transfer.guidance, transfer.detail)[0])
   await test.page.getByRole('button', { name: '■ 중지' }).click()
   assert.ok((await test.page.evaluate(() => window.__speechTest.cancelled)) > 0)
-  mark('음성 재생·중지와 서버 문장 일치 (음성 엔진 모의)')
+  mark('음성 재생·중지와 노선 번호 발음 처리 (음성 엔진 모의)')
   await test.page.evaluate(() => { window.__speechTest.fail = true })
   await test.page.getByRole('button', { name: '▶ 안내 듣기' }).click()
   await test.page.getByText('음성을 재생하지 못했습니다. 다시 듣거나 글 안내를 이용해 주세요.').waitFor()

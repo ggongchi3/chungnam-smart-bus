@@ -18,7 +18,7 @@ PrintPaper는 웹 카드나 음성 원고를 재사용하지 않는다. design/g
 - 실시간: 도착 예정, 운행 상태, 운행 변경을 구분한다. 도착 정보 미수신을 결행으로, 변경 조회 실패를 변경 없음으로 표시하지 않는다.
 - 조회: 상세 진입 후 30초 간격으로 조회하고 중복 요청을 막는다. 화면 숨김/이탈 시 취소·중단하고 복귀 시 즉시 갱신한다. 요청 제한은 5초, GET 연결 실패/5xx만 1초 뒤 한 번 재시도한다. POST/4xx는 자동 재시도하지 않는다.
 - 인쇄: POST /print-guides의 같은 버전 스냅샷만 사용한다. 서버의 전체 스냅샷 검증은 유지하며 종이에 도착 카운트다운을 넣지 않는다. 인쇄 직전 상세를 재조회하여 만료·변경 시 중단한다. 별도 iframe 문서만 인쇄하고 물리 출력 성공을 판정하지 않는다.
-- 음성: POST /easy-guidance의 같은 버전·구간 순서와 시연 표시를 검증한다. 한국어 재생·중지와 글 안내 대체를 제공한다. 숨김·경로 변경·인쇄 미리보기 진입·이탈 시 중지한다.
+- 음성: POST /easy-guidance의 같은 버전·구간 순서와 시연 표시를 검증한다. 브라우저 Web Speech API에서 제공하는 한국어 음성을 선택하며 기기 내 음성을 우선한다. 재생 직전에 버스 노선명 숫자만 발음용 한글로 바꾼다(1번 → 일번, 100번 → 백번, 1-1번 → 일 다시 일번). 정류장명·개수와 화면/인쇄의 서버 원본 문장은 바꾸지 않는다. 한국어 재생·중지와 글 안내 대체를 제공한다. 숨김·경로 변경·인쇄 미리보기 진입·이탈 시 중지한다.
 
 ## A에서 연결하기
 
@@ -54,7 +54,7 @@ npm run dev
 npm run build
 npm run lint
 $env:BUS_API_SMOKE='1'
-node --test tests/journeyApi.test.mjs tests/b-features.test.mjs
+node --test tests/journeyApi.test.mjs tests/b-features.test.mjs tests/speechText.test.mjs
 ```
 
 브라우저 검사는 node tools/check-b-browser.mjs 이다. 기존 Playwright 설치가 필요하다. BUS_PLAYWRIGHT_PATH에 index.mjs, 필요하면 BUS_CHROME_PATH에 Chrome 경로를 지정한다. 개인 브라우저와 분리된 임시 프로필을 사용하며 결과·스크린샷·인쇄 HTML/PDF는 Git 제외 폴더 qa.local에 저장한다. PDF 검사는 pypdf가 있는 Python으로 python tools/check-print-pdf.py 를 실행한다.
