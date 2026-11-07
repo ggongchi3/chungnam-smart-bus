@@ -1,0 +1,66 @@
+.bus-print-root {
+  width: min(900px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  border: 2px solid #555;
+  background: #f1f1f1;
+  color: #111;
+  color-scheme: light;
+  font: 24px/1.5 'Pretendard', 'Malgun Gothic', system-ui, sans-serif;
+}
+.bus-print-root::backdrop { background: rgb(0 0 0 / .5); }
+.bus-print-controls { padding: 24px; border-bottom: 1px solid #aaa; background: white; }
+.bus-print-controls h2 { margin: 0; font: 700 28px/1.4 'Malgun Gothic', sans-serif; color: #111; }
+.bus-print-controls p { margin: 16px 0 0; }
+.bus-print-scroll { padding: 24px; overflow: auto; }
+.bus-paper {
+  width: 80mm;
+  min-height: 180mm;
+  margin: 0 auto;
+  padding: 8mm 6mm;
+  box-sizing: border-box;
+  background: white;
+  color: black;
+  font: 10pt/1.5 'Pretendard', 'Malgun Gothic', sans-serif;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+  box-shadow: 0 2px 8px #aaa;
+}
+.bus-paper *, .bus-paper *::before, .bus-paper *::after { box-sizing: border-box; }
+.bus-paper p { margin: 0; }
+.bus-paper .journey-guide { width: 100%; max-width: none; margin: 0; padding: 0; border: 0; font: inherit; color: black; }
+.bus-paper .journey-guide__brand { gap: 2mm; font-size: 10pt; }
+.bus-paper .journey-guide__brand svg { width: 4mm; height: 5mm; }
+.bus-paper .journey-guide__notice { margin-top: 3mm !important; padding: 2mm 1mm; font-size: 8pt; border: .5pt solid black; }
+.bus-paper .journey-guide__destination { margin: 7mm 0; padding: 3.5mm 0; border-color: black; }
+.bus-paper .journey-guide__destination p { font-size: 8pt; }
+.bus-paper .journey-guide__destination h1 { margin: 2mm 0 0; font-size: 19pt; line-height: 1.5; font-weight: 800; }
+.bus-paper .journey-guide__segments { gap: 3.5mm; }
+.bus-paper .journey-guide h2 { margin: 0 0 2mm; font: 400 10pt/1.5 'Pretendard', 'Malgun Gothic', sans-serif; }
+.bus-paper .journey-guide__board { margin-bottom: 7mm; }
+.bus-paper .journey-guide__station { font-size: 17pt; }
+.bus-paper .journey-guide__bus, .bus-paper .journey-guide__alight { padding: 3.5mm 2mm; border-radius: 3mm; }
+.bus-paper .journey-guide__bus { border: .5pt solid black; }
+.bus-paper .journey-guide__route, .bus-paper .journey-guide__alight .journey-guide__station { font-size: 25pt; line-height: 1.5; font-weight: 900; }
+.bus-paper .journey-guide__alight { background: white; border: .5pt solid black; }
+.bus-paper .journey-guide__travel { gap: 2mm; padding: 3.5mm 0; font-size: 8pt; }
+.bus-paper .journey-guide__travel > span, .bus-paper .journey-guide__connection > span { color: black; font-size: 12pt; }
+.bus-paper .journey-guide__connection { font-size: 10pt; }
+.bus-paper .journey-guide__walk { padding: 3.5mm 0; font-size: 10pt; border-color: black; }
+.bus-paper .journey-guide__walk-meta { margin-top: 2mm !important; font-size: 8pt; color: black; }
+.bus-paper .journey-guide__footer { margin-top: 7mm; gap: 2mm; font-size: 8pt; color: black; }
+.bus-paper__wording, .bus-paper__live { margin-top: 5mm; padding-top: 3.5mm; border-top: .5pt solid black; }
+.bus-paper__wording h2, .bus-paper__live h2 { margin: 0 0 2mm; font: 700 10pt/1.5 'Malgun Gothic', sans-serif; color: black; }
+.bus-paper .bus-guidance-text { padding-left: 4mm; margin: 0; font-size: 8pt; }
+.bus-paper .bus-guidance-text li + li { margin-top: 2mm; }
+.bus-paper .bus-arrival, .bus-paper .bus-changes { margin-top: 3.5mm; padding-top: 2mm; font-size: 8pt; border-color: black; }
+.bus-paper .bus-live-view h3, .bus-paper .bus-live-view h4 { margin: 0 0 2mm; font-size: 10pt; }
+.bus-paper .bus-quality { margin-top: 2mm; padding-left: 2mm; border-color: black; font-size: 8pt; color: black; }
+.bus-paper .bus-change { margin: 2mm 0; padding: 2mm; border-color: black; }
+.bus-paper__footer { display: grid; gap: 2mm; margin-top: 7mm; font-size: 8pt; }
+@media print {
+  .bus-paper { box-shadow: none; color: black; background: white; }
+  .bus-paper h2, .bus-paper h3, .bus-paper h4 { break-after: avoid; }
+  .bus-paper .journey-guide__bus, .bus-paper .journey-guide__alight, .bus-paper .bus-arrival { break-inside: avoid; }
+}
