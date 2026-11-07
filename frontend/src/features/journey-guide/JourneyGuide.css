@@ -1,77 +1,30 @@
-﻿/* 인쇄 시안의 정보 순서·흑백·강조를 공유하되 화면의 글씨와 터치 영역은 크게 유지한다. */
-.journey-guide, .journey-message {
-  --guide-ink: #111;
-  --guide-muted: #545454;
-  --guide-line: #aaa;
-  font: 24px/1.5 'Pretendard', 'Malgun Gothic', system-ui, sans-serif;
-  text-align: left;
-  color: #111;
-  color-scheme: light;
-  overflow-wrap: anywhere;
-  word-break: keep-all;
-}
-
-.journey-preview {
-  --guide-ink: #111;
-  --guide-muted: #545454;
-  --guide-line: #aaa;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 40px 24px;
-  text-align: left;
-  font: 24px/1.5 'Pretendard', 'Malgun Gothic', system-ui, sans-serif;
-  color: var(--guide-ink);
-  background: #f4f4f4;
-  color-scheme: light;
-  overflow-wrap: anywhere;
-}
-
-.journey-preview *, .journey-preview *::before, .journey-preview *::after { box-sizing: border-box; }
-.journey-preview p { margin: 0; }
-.journey-preview h1, .journey-preview h2 { color: inherit; font-family: inherit; line-height: 1.5; letter-spacing: normal; }
-.journey-preview button, .journey-preview summary { min-height: 64px; font: inherit; cursor: pointer; }
-.journey-preview button { padding: 12px 20px; color: #111; background: #fff; border: 2px solid #555; border-radius: 10px; }
-.journey-preview button:hover { background: #eaeaea; }
-.journey-preview button[aria-pressed='true'] { color: #fff; background: #111; border-color: #111; }
-.journey-preview :is(button, summary):focus-visible { outline: 4px solid #111; outline-offset: 4px; }
-
-.journey-guide { max-width: 760px; margin: 0 auto; padding: 40px; background: #fff; border: 1px solid #d0d0d0; }
-.journey-guide__brand { display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 28px; font-weight: 600; }
-.journey-guide__notice { margin-top: 20px !important; padding: 12px; border: 1px solid #555; text-align: center; font-size: 20px; font-weight: 600; }
-.journey-guide__destination { margin: 32px 0 40px; padding: 24px 0; border-block: 1px solid var(--guide-line); text-align: center; }
-.journey-guide__destination h1 { margin: 12px 0 0; font-size: 48px; line-height: 1.35; font-weight: 800; }
-.journey-guide__segments { display: grid; gap: 32px; margin: 0; padding: 0; list-style: none; }
-.journey-guide h2 { margin: 0 0 16px; font-family: inherit; font-size: 24px; font-weight: 500; color: inherit; line-height: 1.5; letter-spacing: normal; }
-.journey-guide__station { font-size: 36px; font-weight: 800; line-height: 1.4; }
-.journey-guide__board { margin-bottom: 32px; }
-.journey-guide__bus { padding: 24px 20px; border: 1px solid var(--guide-line); border-radius: 20px; text-align: center; }
-.journey-guide__route { font-size: 64px; font-weight: 900; line-height: 1.35; }
-.journey-guide__travel { display: grid; gap: 8px; padding: 16px 0; text-align: center; }
-.journey-guide__travel > span, .journey-guide__connection > span { display: block; font-size: 32px; color: var(--guide-muted); }
-.journey-guide__alight { padding: 24px 20px; background: #ededed; border-radius: 20px; text-align: center; }
-.journey-guide__alight .journey-guide__station { font-size: 44px; }
-.journey-guide__connection { text-align: center; }
-.journey-guide__connection h2 { margin-top: 16px; }
-.journey-guide__walk { padding: 24px 0; border-block: 1px solid var(--guide-line); }
-.journey-guide__walk-meta { margin-top: 16px !important; color: var(--guide-muted); }
-.journey-guide__footer { display: grid; gap: 20px; margin-top: 40px; color: var(--guide-muted); }
-.journey-guide__empty, .journey-message { padding: 24px; }
-.journey-message { max-width: 760px; margin: 0 auto; border: 1px solid #aaa; background: #fff; }
-.journey-message h1 { margin: 0 0 16px; font-size: 32px; }
-.journey-message button { margin-top: 24px; }
-
-.journey-preview__source { max-width: 760px; margin: 0 auto 20px !important; font-size: 20px; color: var(--guide-muted); text-align: center; }
-.journey-devtools { max-width: 760px; margin: 32px auto 0; padding: 16px 20px; border: 1px dashed #777; background: #fff; font-size: 20px; }
-.journey-devtools summary { display: flex; align-items: center; text-decoration: underline; }
-.journey-devtools p { margin-block: 16px; }
-.journey-devtools__buttons { display: flex; flex-wrap: wrap; gap: 16px; }
-
-@media (max-width: 600px) {
-  .journey-preview { padding: 20px 12px; }
-  .journey-guide { padding: 28px 20px; }
-  .journey-guide__destination h1 { font-size: 38px; }
-  .journey-guide__station { font-size: 32px; }
-  .journey-guide__route { font-size: 52px; }
-  .journey-guide__alight .journey-guide__station { font-size: 36px; }
-  .journey-devtools__buttons button { width: 100%; }
+/* 웹은 A의 760px 화면/24px 본문/8px 모서리 기준. 인쇄는 PrintGuide.css로 분리한다. */
+.journey-standalone { width: min(calc(100% - 32px), 760px); min-height: 100vh; margin: 0 auto; padding: 24px 0 48px; }
+.journey-screen { display: grid; gap: 24px; padding: 24px 0; color: #111; font: inherit; text-align: left; overflow-wrap: anywhere; word-break: keep-all; }
+.journey-screen > .screen-header { margin-bottom: 0; }
+.journey-screen .screen-header .button { flex-shrink: 0; }
+.journey-guide { padding: 24px; border: 1px solid #555; border-radius: 8px; background: #fff; }
+.journey-guide p { margin: 0; }
+.journey-guide__summary { display: grid; gap: 8px; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #aaa; }
+.journey-guide__label { font-size: 16px; font-weight: 700; }
+.journey-guide h2 { margin: 0; font-size: 32px; font-weight: 700; line-height: 1.35; }
+.journey-guide__segments { display: grid; gap: 24px; margin: 0; padding: 0; list-style: none; }
+.journey-guide__segment { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 16px; }
+.journey-guide__step { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: 1px solid #333; border-radius: 50%; font-size: 20px; font-weight: 700; }
+.journey-guide__content { min-width: 0; }
+.journey-guide h3 { margin: 0 0 12px; font-size: 28px; line-height: 1.35; }
+.journey-guide__station { display: grid; grid-template-columns: 2em minmax(0, 1fr); gap: 12px; align-items: baseline; }
+.journey-guide__station > span { font-size: 20px; color: #545454; }
+.journey-guide__travel { margin: 8px 0 !important; font-size: 20px; color: #545454; }
+.journey-guide__segment--transfer .journey-guide__content { padding: 16px; border-radius: 8px; background: #f3f3f3; }
+.journey-guide__warning { margin-top: 24px !important; padding-top: 16px; border-top: 1px solid #aaa; font-size: 20px; }
+.journey-message { margin: 0; padding: 24px; border: 1px solid #555; border-radius: 8px; background: #fff; color: #111; overflow-wrap: anywhere; }
+.journey-message h2 { margin: 0 0 16px; }
+.journey-message .button { margin-top: 16px; }
+@media (max-width: 560px) {
+  .journey-guide { padding: 20px 16px; }
+  .journey-guide__segment { grid-template-columns: 32px minmax(0, 1fr); gap: 12px; }
+  .journey-guide__step { width: 32px; height: 32px; }
+  .journey-guide__station { grid-template-columns: 1fr; gap: 0; }
+  .journey-screen .screen-header .button { width: 100%; }
 }

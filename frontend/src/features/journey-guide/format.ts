@@ -9,3 +9,9 @@ export function formatTime(value: string | null | undefined) {
 export function formatDuration(seconds: number) {
   return seconds < 60 ? `${seconds}초` : `약 ${Math.round(seconds / 60)}분`
 }
+
+export function formatClock(value: string | null | undefined) {
+  if (!value || !Number.isFinite(Date.parse(value))) return '확인 불가'
+  return new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul',
+    hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(value))
+}

@@ -1,11 +1,12 @@
 .bus-feature {
-  max-width: 760px;
-  margin: 24px auto 0;
-  padding: 28px;
-  border: 1px solid #aaa;
+  width: 100%;
+  margin: 0;
+  padding: 24px;
+  border: 1px solid #555;
+  border-radius: 8px;
   background: #fff;
   color: #111;
-  font: 24px/1.5 'Pretendard', 'Malgun Gothic', system-ui, sans-serif;
+  font: inherit;
   text-align: left;
   overflow-wrap: anywhere;
   word-break: keep-all;
@@ -21,26 +22,30 @@
 .bus-feature button, .bus-print-root button {
   min-height: 64px;
   padding: 12px 20px;
-  border: 2px solid #555;
-  border-radius: 10px;
+  border: 2px solid #333;
+  border-radius: 8px;
   color: #111;
   background: #fff;
   cursor: pointer;
   font: inherit;
 }
-.bus-feature button:disabled, .bus-print-root button:disabled { cursor: wait; opacity: .55; }
-.bus-feature button:focus-visible, .bus-print-root button:focus-visible, .bus-feature summary:focus-visible { outline: 4px solid #111; outline-offset: 4px; }
+.bus-feature button:disabled, .bus-print-root button:disabled { cursor: not-allowed; opacity: .55; }
+.bus-feature button:focus-visible, .bus-print-root button:focus-visible, .bus-feature summary:focus-visible { outline: 4px solid var(--focus-color, #005fcc); outline-offset: 3px; }
+.bus-feature .button-primary, .bus-print-root .button-primary { background: #111; color: white; }
 .bus-feature__actions { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 20px; }
 .bus-arrival, .bus-changes { margin-top: 24px; padding-top: 24px; border-top: 1px solid #aaa; }
 .bus-arrival__estimate { font-weight: 800; }
 .bus-quality { margin-top: 16px; padding-left: 12px; border-left: 2px solid #777; }
 .bus-quality p { margin: 4px 0 0; }
 .bus-change { margin: 20px 0; padding: 16px; border: 1px solid #aaa; }
-.bus-transcript { margin-top: 24px; }
-.bus-transcript summary { min-height: 64px; cursor: pointer; display: flex; align-items: center; text-decoration: underline; }
+.bus-transcript, .bus-info-details { margin-top: 24px; }
+.bus-transcript summary, .bus-info-details summary { min-height: 64px; cursor: pointer; padding-block: 12px; text-decoration: underline; }
+.bus-info-details { font-size: 20px; }
+.bus-info-details h3 { margin-top: 16px; font-size: 20px; }
+.bus-quality-times { color: #545454; }
 .bus-guidance-text { margin: 16px 0 0; padding-left: 1.5em; }
 .bus-guidance-text li + li { margin-top: 16px; }
 @media (max-width: 600px) {
-  .bus-feature { padding: 24px 20px; }
+  .bus-feature { padding: 20px 16px; }
   .bus-feature__actions button { width: 100%; }
 }

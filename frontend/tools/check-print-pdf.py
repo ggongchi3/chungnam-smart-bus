@@ -15,7 +15,8 @@ for name in ("direct", "transfer"):
     assert abs(width - 80) < 0.2, (name, width)
     assert height >= 180, (name, height)
     text = " ".join((page.extract_text() or "").split())
-    assert "시연 데이터" in text and "안내표 생성 시각" in text, (name, text)
+    assert "시연 데이터" in text and "출력 시각" in text, (name, text)
+    assert "이동 안내 문장" not in text and "생성 시점의 운행 정보" not in text, (name, text)
     reports.append({"name": name, "pages": 1, "widthMm": round(width, 2), "heightMm": round(height, 2)})
 
 Path("qa.local/pdf-results.json").write_text(json.dumps(reports, ensure_ascii=False, indent=2), encoding="utf-8")

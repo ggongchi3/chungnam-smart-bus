@@ -38,7 +38,7 @@ export default function VoiceGuide({ guidance, loading, error, enabled, onRetry 
     <h2 id="bus-voice-title">음성 안내</h2>
     <p>화면의 이동 안내를 한국어로 읽어 드립니다.</p>
     <div className="bus-feature__actions">
-      <button type="button" disabled={!enabled || !guidance || !koreanVoice || !supported || status === 'playing'}
+      <button className="button-primary" type="button" disabled={!enabled || !guidance || !koreanVoice || !supported || status === 'playing'}
         onClick={() => { if (guidance && koreanVoice) playerRef.current?.play(guidance.steps.map((step) => step.text), koreanVoice) }}>▶ 안내 듣기</button>
       <button type="button" disabled={status !== 'playing'} onClick={() => { playerRef.current?.stop(); setStatus('idle') }}>■ 중지</button>
       {error && <button type="button" onClick={onRetry}>안내 문장 다시 불러오기</button>}
