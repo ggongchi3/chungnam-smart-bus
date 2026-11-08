@@ -76,9 +76,10 @@
 ## 연결 결정과 후속 검토
 
 1. **reasonCode 통일**: AI 계약과 공개 API 모두 위 표의 `MATCHED / USER_CONFIRMATION_REQUIRED / NO_REGISTERED_MATCH / AI_UNAVAILABLE`을 사용한다. 공개 코드는 백엔드가 검증한 상태로 산출한다.
-2. **허용 템플릿이 유형별 1개**: 백엔드는 `<type>.basic`만 허용하고 문장도 고정으로 만든다. `templates.json`의 proposal(`bus.split`, `transfer.named`, `walk.short`)을 쓰려면 백엔드의 허용 목록·슬롯 채우기 변경과 디자인 검토가 필요하다. `transfer.named`는 다음 노선명 슬롯도 필요하다.
+2. **허용 템플릿이 유형별 1개**: 백엔드는 `<type>.basic`만 허용하고 문장도 고정으로 만든다. `templates.json`의 proposal(`bus.split`, `transfer.named`, `walk.short`, `bus.print`)을 쓰려면 백엔드의 허용 목록·슬롯 채우기 변경과 디자인 검토가 필요하다. `transfer.named`는 다음 노선명 슬롯도 필요하다.
 3. **폴더 이름 전환 완료**: 이번 기본 앱 연결과 함께 `destination_interpretation`, `easy_guidance`로 바꾸고 `__init__.py`를 추가했다. `ai/adapter.py`는 파일 경로 로더 대신 표준 상대 import를 사용한다. 공개 어댑터 경로는 계속 `ai.adapter.RuleBasedAIAdapter`다.
 4. **needs_confirmation 후보 1개 유지**: 오타 추정 결과는 후보가 1개여도 `needs_confirmation`으로 반환하며 백엔드가 그대로 전달한다. 화면은 후보 수만으로 자동 확정하지 않고 `status`에 따라 확인을 요청한다.
 5. **Python 버전**: 백엔드는 3.13.2로 검증했다. AI 모듈은 표준 라이브러리만 사용하며 3.13 문법 범위로 작성했다.
 6. **category 미전달**: 입력에 Destination의 `category`가 없어 분류 표현은 이름·별칭의 핵심어로 연결한다. category를 함께 받으면 분류 매칭을 더 명확히 할 수 있다(선택).
-7. **도보 시간 단위(제안)**: `walk.basic`의 백엔드 문장은 확인된 값을 `이동 시간은 {durationSeconds}초입니다`로 읽는다. 지금 합성 데이터는 거리·시간이 모두 null이라 드러나지 않지만, 값이 들어오면 `420초`처럼 쉬운 안내로 듣기 어렵다. 1분 이상은 `약 7분`처럼 분 단위로 반올림해 표시·음성 안내하는 방식을 백엔드·디자인과 정한다. 원래 초 값은 응답 필드에 그대로 둔다.
+7. **도보 시간 단위(반영 완료, `3cd2fd2`)**: `walk.basic`의 백엔드 문장은 60초 미만이면 `이동 시간은 N초입니다`, 60초 이상이면 `(초+30)//60`으로 반올림해 `이동 시간은 약 N분입니다`로 읽는다(예: 420초 → 약 7분). 응답의 `durationSeconds` 필드는 초 그대로 둔다. 지금 합성 데이터는 값이 null이라 평가 사례에는 드러나지 않는다.
+8. **인쇄 안내표 슬롯(제안, 디자인 Print Guide 2026-11-05)**: 출력물(감열지 80mm, 인쇄 폭 68mm)에 **운행 방향(방면)**과 **하차 직전 정류장**이 들어간다. 둘 다 지금 백엔드 응답에 없으므로 `templates.json`에 proposal `bus.print`(슬롯 `direction`, `previousStation.name`)로 기록했다. 값은 백엔드가 실제 노선 순서로 채우고, AI는 값을 만들지 않는다.

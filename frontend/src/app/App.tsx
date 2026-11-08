@@ -1,3 +1,4 @@
+import JourneyGuideScreen from '../features/journey-guide/JourneyGuideScreen'
 import { useCallback, useEffect, useState } from 'react'
 import { getStation, ApiRequestError } from '../shared/api/client'
 import { ServiceNotice } from '../shared/ui/ServiceNotice'
@@ -27,6 +28,7 @@ export default function App() {
 
   useEffect(() => {
     const controller = new AbortController()
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- A의 화면 진입 로딩/재시도 초기화 동작을 유지한다.
     void loadStation(controller.signal)
     return () => controller.abort()
   }, [loadStation])
@@ -78,20 +80,7 @@ export default function App() {
         />
       )}
       {state.screen === 'journey-guide' && state.routeSelection && (
-        <main className={styles.panel}>
-          <p className="eyebrow">경로 선택 완료</p>
-          <h1>이동 안내로 이어집니다</h1>
-          <p>선택한 경로 정보를 프론트엔드 B의 상세 안내 화면에 전달했습니다.</p>
-          <dl className={styles.selectionSummary}>
-            <div><dt>목적지 ID</dt><dd>{state.routeSelection.destinationId}</dd></div>
-            <div><dt>경로 ID</dt><dd>{state.routeSelection.routeOptionId}</dd></div>
-            <div><dt>경로 버전</dt><dd>{state.routeSelection.routeSnapshotVersion}</dd></div>
-            <div><dt>정보 모드</dt><dd>{state.routeSelection.dataMode}</dd></div>
-          </dl>
-          <button className="button button-secondary" type="button" onClick={() => dispatch({ type: 'back-to-search' })}>
-            다른 경로 찾기
-          </button>
-        </main>
+        <JourneyGuideScreen selection={state.routeSelection} onReselect={() => dispatch({ type: 'back-to-search' })} />
       )}
     </div>
   )

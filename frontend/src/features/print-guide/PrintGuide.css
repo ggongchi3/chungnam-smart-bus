@@ -1,0 +1,65 @@
+.bus-print-root {
+  width: min(900px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid #555;
+  border-radius: 8px;
+  background: #f3f3f3;
+  color: #111;
+  color-scheme: light;
+  font: 24px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+.bus-print-root::backdrop { background: rgb(0 0 0 / .5); }
+.bus-print-controls { padding: 24px; border-bottom: 1px solid #aaa; background: white; }
+.bus-print-controls h2 { margin: 0; font-size: 28px; line-height: 1.4; font-weight: 700; color: #111; }
+.bus-print-controls p { margin: 16px 0 0; }
+.bus-print-scroll { padding: 24px; overflow: auto; }
+.bus-paper {
+  width: 80mm;
+  min-height: 180mm;
+  margin: 0 auto;
+  padding: 8mm 6mm;
+  box-sizing: border-box;
+  background: white;
+  color: black;
+  font: 10pt/1.5 'Pretendard', 'Malgun Gothic', sans-serif;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+  box-shadow: 0 2px 8px #ccc;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.bus-paper *, .bus-paper *::before, .bus-paper *::after { box-sizing: border-box; }
+.bus-paper p, .bus-paper h2, .bus-paper h3 { margin: 0; color: inherit; }
+.bus-paper__brand { display: flex; align-items: center; justify-content: center; gap: 2mm; font-size: 10pt; font-weight: 700; }
+.bus-paper__brand svg { width: 4mm; height: 5mm; }
+.bus-paper__demo { margin-top: 2mm !important; text-align: center; font-size: 8pt; }
+.bus-paper__destination { margin: 6mm 0; padding: 3.5mm 0; border-block: .5pt solid #aaa; text-align: center; }
+.bus-paper__destination > p { font-size: 8pt; }
+.bus-paper__destination h2 { margin-top: 2mm; font-size: 19pt; line-height: 1.5; font-weight: 800; }
+.bus-paper__segments { display: grid; gap: 3.5mm; margin: 0; padding: 0; list-style: none; }
+.bus-paper h3 { margin-bottom: 2mm; font-size: 10pt; font-weight: 400; line-height: 1.5; }
+.bus-paper__board { margin-bottom: 6mm; }
+.bus-paper__board > p { font-size: 17pt; font-weight: 800; }
+.bus-paper__bus, .bus-paper__alight { padding: 3.5mm 2mm; border-radius: 2.5mm; text-align: center; }
+.bus-paper__bus { border: .5pt solid #aaa; }
+.bus-paper__route, .bus-paper__alight > p { font-size: 25pt; line-height: 1.5; font-weight: 900; }
+.bus-paper__next-board { margin-top: 2mm !important; font-size: 10pt; }
+.bus-paper__alight { background: #ededed; }
+.bus-paper__travel { display: grid; gap: 1mm; padding: 2mm 0; font-size: 8pt; text-align: center; }
+.bus-paper__travel > span, .bus-paper__transfer > span { display: block; color: #777; font-size: 12pt; }
+.bus-paper__transfer { display: grid; gap: 1mm; text-align: center; font-size: 8pt; }
+.bus-paper__walk { font-size: 8pt; }
+.bus-paper__footer { display: grid; gap: 1mm; margin-top: 6mm; font-size: 8pt; color: #555; }
+.bus-paper__caution { margin-top: 1mm !important; }
+@media (max-width: 560px) {
+  .bus-print-controls { padding: 20px 16px; }
+  .bus-print-controls .bus-feature__actions button { width: 100%; }
+  .bus-print-scroll { padding: 16px 0; }
+}
+@media print {
+  .bus-paper { box-shadow: none; }
+  .bus-paper h3 { break-after: avoid; }
+  .bus-paper__bus, .bus-paper__alight { break-inside: avoid; }
+}

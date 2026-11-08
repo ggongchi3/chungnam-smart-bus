@@ -55,6 +55,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- 기존 A의 Context/훅 공개 경로를 유지한다.
 export function useAppState() {
   const value = useContext(AppStateContext)
   if (!value) throw new Error('useAppState는 AppStateProvider 안에서 사용해야 합니다.')

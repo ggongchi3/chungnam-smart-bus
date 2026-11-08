@@ -1,7 +1,9 @@
+/* Shared base styles for the kiosk flow. */
 :root {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #111;
   background: #fff;
+  color-scheme: light;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   line-height: 1.5;
@@ -12,7 +14,7 @@
   --focus-color: #005fcc;
 }
 
-* { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
   min-width: 320px;
@@ -26,8 +28,7 @@ input {
   font: inherit;
 }
 
-button:focus-visible,
-input:focus-visible {
+:is(button, input, summary):focus-visible {
   outline: 4px solid var(--focus-color);
   outline-offset: 3px;
 }
