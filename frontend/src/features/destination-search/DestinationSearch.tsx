@@ -165,7 +165,7 @@ export function DestinationSearch({ originStationId, onBack, onSelect }: Destina
                   </button>
                 ))}
               </div>
-              <button className="button button-secondary" type="button" onClick={clearInterpretation}>다른 곳 찾기</button>
+              <button className="button button-secondary" type="button" onClick={clearInterpretation}>✕ 다른 곳 찾기</button>
             </>
           )}
           {interpretation.status === 'no_match' && (
