@@ -23,6 +23,8 @@ chungnam-smart-bus/
 │   ├── services/
 │   │   └── ai.py
 │   ├── tests/
+│   ├── tools/
+│   │   └── verify_stage7.py
 │   └── docs/
 ├── frontend/
 │   ├── config/
@@ -77,7 +79,10 @@ chungnam-smart-bus/
 │   ├── guidelines/
 │   │   └── temp
 │   ├── kiosk-concept/
-│   │   └── temp
+│   │   ├── temp
+│   │   ├── 키오스크사이즈.png
+│   │   ├── 키오스크사이즈2.png
+│   │   └── 키오스크렌더링.jpg
 │   ├── print-guide/
 │   │   └── temp
 │   ├── screens/
@@ -89,6 +94,9 @@ chungnam-smart-bus/
     ├── data-sources.md
     ├── development-plan.md
     ├── roles.md
+    ├── stage7-feature-matrix.md
+    ├── stage7-integration-report.md
+    ├── stage7-reproduction.md
     ├── structure.md
     └── verification.md
 ```
@@ -145,6 +153,8 @@ chungnam-smart-bus/
 | `docs/verification.md` | 이번 초기 생성 결과의 구조·문서·Git 제외 규칙 점검 기록 |
 
 AI 모듈은 Python 표준 import를 위해 하이픈 없는 `destination_interpretation`, `easy_guidance` 이름을 사용한다. 공개 어댑터는 `from ai.adapter import RuleBasedAIAdapter`로 가져온다.
+
+`backend/tools/verify_stage7.py`는 메모리 DB·주입 시각·전용 제어 파일로 로컬 HTTP를 검증하는 도구다. 운영 앱으로 실행하거나 제어 파일을 외부에 공개하지 않는다. `backend/tests/test_stage7_ai.py`, `test_stage7_contract.py`는 이번 계약 회귀 테스트다. `design/kiosk-concept/temp`는 기존 파일을 보존했으며 이미지 3개는 화면 시안이 아닌 외형 자료다.
 
 아직 구현하지 않은 최하위 폴더에 남아 있는 `temp`의 내용은 다음 한 줄로 통일한다.
 

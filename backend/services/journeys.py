@@ -5,7 +5,7 @@ from math import isclose, isfinite
 from pydantic import ValidationError
 from sqlalchemy import select
 
-from backend.api.errors import ServiceError, changed, not_found, unavailable
+from backend.api.errors import ServiceError, changed, not_found, route_unavailable, unavailable
 from backend.models import schemas as s
 from backend.models.snapshots import SavedRouteOption
 from backend.models.tables import DestinationAccess, RouteSearch
@@ -100,8 +100,10 @@ def checked_detail(session, search_id, option_id, state, now, data_mode, expecte
         changed('경유 순서 또는 연결이 바뀌었습니다. 다시 검색해 주세요.')
     destination = catalog.destination(session, search.destination_id)
     segments, version, status = routing.route_state(session, legs, current, destination.name, state, now)
+    if status == 'unavailable':
+        route_unavailable()
     if status != 'ready':
-        changed('선택 경로를 이용할 수 없거나 재확인이 필요합니다. 다시 검색해 주세요.')
+        changed('선택 경로의 재확인이 필요합니다. 다시 검색해 주세요.')
     if version != detail.routeSnapshotVersion or (expected is not None and expected != version):
         changed()
     if segments != detail.segments:

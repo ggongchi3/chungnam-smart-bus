@@ -149,7 +149,7 @@ def test_change_applicability_uses_inclusive_start_exclusive_end(env,start,end,b
     responses = all_selected_responses(client,body,path)
     for response in responses:
         if blocked:
-            assert_error(response,409,'ROUTE_VERSION_CHANGED')
+            assert_error(response,409,'ROUTE_UNAVAILABLE')
         else:
             assert response.status_code==200,response.text
     if not blocked:
@@ -169,7 +169,7 @@ def test_change_route_and_station_scope_matches_selected_occurrences(env,routes,
     publish_changes(app,provider,clock,[change(clock,routes=routes,stations=stations)])
     for response in all_selected_responses(client,body,path):
         if blocked:
-            assert_error(response,409,'ROUTE_VERSION_CHANGED')
+            assert_error(response,409,'ROUTE_UNAVAILABLE')
         else:
             assert response.status_code==200,response.text
 
@@ -323,7 +323,7 @@ def test_fresh_explicit_not_running_blocks_selected_path_and_new_search(env):
     body,path=selection(client,clock)
     provider.scenario='operation_not_running'
     for response in all_selected_responses(client,body,path):
-        assert_error(response,409,'ROUTE_VERSION_CHANGED')
+        assert_error(response,409,'ROUTE_UNAVAILABLE')
     assert search(client,clock).json()['data']['routeOptions']==[]
 
 

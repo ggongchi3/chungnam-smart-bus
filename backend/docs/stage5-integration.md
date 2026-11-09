@@ -43,7 +43,8 @@ GET /api/v1/route-searches/{routeSearchId}/options/{routeOptionId}/live
 | 상황 | HTTP / 처리 |
 | --- | --- |
 | 도착 미수신, 변경 조회 불가, stale/unknown | 200 + 항목별 상태·품질. 경로 핵심 사실이 유효하면 계속 표시하되 확인 불가/오래됨 안내 |
-| 경로 변경·현재 이용 불가·기대 버전 불일치 | 409 ROUTE_VERSION_CHANGED. 기존 상세와 섞지 않고 새 검색/선택으로 확인 |
+| 경로 변경·재확인·기대 버전 불일치 | 409 ROUTE_VERSION_CHANGED. 기존 상세와 섞지 않고 새 검색/선택으로 확인 |
+| 확인된 결행·우회·운행 중단 | 409 ROUTE_UNAVAILABLE. 기존 안내 중단 후 재검색(2026-11-09 계약 오류 수정) |
 | now >= expiresAt | 410 ROUTE_SEARCH_EXPIRED. 정확히 600초부터 새 검색 |
 | 핵심 경로 검증 자료 확인 불가 | 503 TRANSPORT_DATA_UNAVAILABLE. 가능한 경로라고 확정하지 않음 |
 | 없는 검색/옵션 | 404 NOT_FOUND. 식별자를 다시 선택 |

@@ -46,6 +46,16 @@ def create_app(settings=None, clock=None, provider=None, ai_adapter=None):
         if settings.data_mode == 'demo' else UnconnectedLiveProvider())
     app.state.ai = AIBoundary(ai_adapter)
     app.include_router(router)
+
+    @app.middleware('http')
+    async def common_server_errors(request, call_next):
+        # Return the common 500 inside CORS. Starlette's outer error handler
+        # otherwise bypasses CORS and hides the error from an allowed frontend.
+        try:
+            return await call_next(request)
+        except Exception as exc:
+            return await internal_error(request, exc)
+
     app.add_middleware(CORSMiddleware, allow_origins=list(settings.cors_origins),
                        allow_methods=['GET', 'POST'], allow_headers=['Content-Type'])
 
