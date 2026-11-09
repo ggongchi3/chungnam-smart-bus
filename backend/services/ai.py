@@ -19,6 +19,10 @@ async def interpret(boundary, text, destinations, data_mode, *, reload_destinati
         ids = value.candidateDestinationIds
         if len(ids) != len(set(ids)) or not set(ids).issubset(allowed):
             return fallback
+        # Candidate order is part of the internal AI contract: choose a
+        # subsequence of the registered list, never introduce a model ranking.
+        if ids != [key for key in allowed if key in set(ids)]:
+            return fallback
         if (value.status in ('matched', 'needs_confirmation')) != bool(ids):
             return fallback
         if value.status == 'matched' and len(ids) != 1:

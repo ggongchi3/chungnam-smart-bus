@@ -1,0 +1,57 @@
+{
+  "verifiedAt": "2026-11-09T14:55:43.015382+00:00",
+  "automatedTests": {
+    "tests": 377,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "actualRuleAIHTTP": 55,
+  "freshLocalEnvironmentHTTP": 55,
+  "unconnectedAIHTTP": 28,
+  "ruleEvaluationPassed": 59,
+  "openapiMatchesStored": true,
+  "publicAPIs": [
+    "GET /api/v1/destinations",
+    "GET /api/v1/route-searches/{routeSearchId}/options/{routeOptionId}",
+    "GET /api/v1/route-searches/{routeSearchId}/options/{routeOptionId}/live",
+    "GET /api/v1/stations/{stationId}",
+    "POST /api/v1/destination-interpretations",
+    "POST /api/v1/easy-guidance",
+    "POST /api/v1/print-guides",
+    "POST /api/v1/route-searches"
+  ],
+  "runtimeFilesUnchanged": true,
+  "runtimeSHA256": {
+    "backend\\.local\\bus.sqlite3": "286fc5c07a65cbcc8ef3d31deb632d993ecfb983a47d9420d5cdcae4dbae9411",
+    "backend\\.local\\scenario.json": "994b34faeb3fb04f6949145dbdf3fd3195e4ba2e69e7d2d4ca5f965f6e9dca44"
+  },
+  "markdownLinksChecked": 12,
+  "missingMarkdownLinks": [],
+  "frontendFiles": [
+    "frontend\\config\\temp",
+    "frontend\\src\\app\\temp",
+    "frontend\\src\\features\\destination-search\\temp",
+    "frontend\\src\\features\\journey-guide\\temp",
+    "frontend\\src\\features\\live-info\\temp",
+    "frontend\\src\\features\\print-guide\\temp",
+    "frontend\\src\\features\\route-selection\\temp",
+    "frontend\\src\\features\\voice-guide\\temp",
+    "frontend\\src\\shared\\api\\temp",
+    "frontend\\src\\shared\\ui\\temp"
+  ],
+  "actualBrowserScenariosRun": 0,
+  "actualAudioHeard": false,
+  "actualPrintPreviewChecked": false,
+  "otherPCChecked": false,
+  "submissionURLChecked": false,
+  "packages": {
+    "fastapi": "0.115.5",
+    "uvicorn": "0.32.0",
+    "pydantic": "2.9.2",
+    "SQLAlchemy": "2.0.36",
+    "httpx": "0.27.2",
+    "pytest": "8.3.3"
+  },
+  "serverLogsMatchedHTTPCaseRequests": true
+}

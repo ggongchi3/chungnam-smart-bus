@@ -53,7 +53,8 @@ notice는 스냅샷의 실제 unavailable/stale/unknown 상태에 맞춰 생성�
 | --- | --- |
 | AI 미연결/실패 | 200 unavailable 또는 template_fallback. 수동 검색/고정 안내 유지 |
 | text·요청 필드 오류 | 400 INVALID_REQUEST. 입력 수정 |
-| 경로 버전 불일치·현재 이용 불가 | 409 ROUTE_VERSION_CHANGED. 기존 안내/인쇄를 중단하고 재검색·확인 |
+| 경로 버전 불일치·재확인 | 409 ROUTE_VERSION_CHANGED. 기존 안내/인쇄를 중단하고 재검색·확인 |
+| 확인된 결행·우회·운행 중단 | 409 ROUTE_UNAVAILABLE. 기존 안내/인쇄 중단 후 재검색(2026-11-09 계약 오류 수정) |
 | now >= expiresAt | 410 ROUTE_SEARCH_EXPIRED. 새 검색 |
 | 핵심 검증 자료 확인 불가 | 503 TRANSPORT_DATA_UNAVAILABLE. 경로가 유효하다고 추정하지 않음 |
 

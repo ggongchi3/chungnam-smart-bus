@@ -134,8 +134,8 @@ def exercise(base_url, control, *, output=None):
                    for a in source_missing.liveInfoSnapshot.arrivals)
 
         control.set(60, 'cancellation')
-        request('cancelledRouteCannotPrint', 'POST', PRINT_PATH, 409, 'ROUTE_VERSION_CHANGED', json=selected)
-        request('cancelledRouteCannotProduceGuidance', 'POST', GUIDANCE_PATH, 409, 'ROUTE_VERSION_CHANGED', json=selected)
+        request('cancelledRouteCannotPrint', 'POST', PRINT_PATH, 409, 'ROUTE_UNAVAILABLE', json=selected)
+        request('cancelledRouteCannotProduceGuidance', 'POST', GUIDANCE_PATH, 409, 'ROUTE_UNAVAILABLE', json=selected)
         control.set(599, 'normal')
         printed('age599PrintStillValid', selected)
         control.set(600)

@@ -46,7 +46,17 @@ class Control:
         self.value['now'] = (self.anchor + timedelta(seconds=offset)).isoformat()
         pending = self.path.with_suffix('.tmp')
         pending.write_text(json.dumps(self.value), encoding='utf-8')
-        pending.replace(self.path)
+        # Windows scanners/OneDrive may briefly hold the old fixture file open.
+        # Keep atomic replacement, but bound retries so verification cannot hang.
+        deadline = monotonic() + 1
+        while True:
+            try:
+                pending.replace(self.path)
+                break
+            except PermissionError:
+                if monotonic() >= deadline:
+                    raise
+                sleep(0.01)  # File-lock retry; never advances the fixture clock.
 
     def now(self):
         return datetime.fromisoformat(self.value['now'])
@@ -144,8 +154,8 @@ def exercise(base_url, control):
                    and a.operationStatus == ('running' if a.routeId == 'demo-route-001' else 'unknown')
                    for a in missing_running.arrivals)
         control.set(170, 'operation_not_running')
-        request('explicitNotRunningBlocksLive', 'GET', selected_path + '/live', 409, 'ROUTE_VERSION_CHANGED')
-        request('explicitNotRunningBlocksDetail', 'GET', selected_path, 409, 'ROUTE_VERSION_CHANGED')
+        request('explicitNotRunningBlocksLive', 'GET', selected_path + '/live', 409, 'ROUTE_UNAVAILABLE')
+        request('explicitNotRunningBlocksDetail', 'GET', selected_path, 409, 'ROUTE_UNAVAILABLE')
 
         control.set(599, 'normal')
         live('searchAge599StillValid', selected_path, version)
@@ -159,8 +169,9 @@ def exercise(base_url, control):
             path, before_version = select(scenario + 'BaselineSearch')
             unaffected_path, unaffected_version = select(scenario + 'UnaffectedRouteSearch', origin='003')
             control.set(offset + 1, scenario)
-            request(scenario + 'RequiresReselectionLive', 'GET', path + '/live', 409, 'ROUTE_VERSION_CHANGED')
-            request(scenario + 'RequiresReselectionDetail', 'GET', path, 409, 'ROUTE_VERSION_CHANGED')
+            code = 'ROUTE_UNAVAILABLE' if scenario in ('cancellation', 'detour') else 'ROUTE_VERSION_CHANGED'
+            request(scenario + 'RequiresReselectionLive', 'GET', path + '/live', 409, code)
+            request(scenario + 'RequiresReselectionDetail', 'GET', path, 409, code)
             unaffected = live(scenario + 'UnaffectedRouteRemainsUsable', unaffected_path, unaffected_version)
             assert all(a.routeId == 'demo-route-002' for a in unaffected.arrivals)
 

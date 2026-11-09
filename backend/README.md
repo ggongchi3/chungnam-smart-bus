@@ -4,6 +4,8 @@
 
 명령은 프로젝트 루트에서 실행한다. 검증 환경은 Windows, Python **3.13.2**, FastAPI **0.115.5**, Uvicorn **0.32.0**, Pydantic **2.9.2**, SQLAlchemy **2.0.36**, HTTPX **0.27.2**, pytest **8.3.3**이다. SQLite는 Python 내장 라이브러리이며 실제 버전은 `docs/runtime-versions.json`에 기록한다. 전체 간접 의존성까지 `requirements.lock`에 고정했다. 규칙 기반 AI 모듈은 표준 라이브러리만 사용한다.
 
+2026-11-09 7단계 검증: 전체 **377 passed·실패0·skip0**, 실제 규칙 AI를 연결한 격리 HTTP **55건**, 같은 PC의 새 가상환경에서도 HTTP **55건**을 통과했다. 확인된 이용 불가409·AI 후보 순서·500 CORS 오류를 수정했다. 프론트/화면 디자인이 없어 브라우저·음성·인쇄 미리보기는 차단이다. 최신 [통합 보고서](../docs/stage7-integration-report.md), [기능표](../docs/stage7-feature-matrix.md), [11/10 재현 절차](../docs/stage7-reproduction.md)를 따른다. 아래 날짜별 실행 기록은 당시 검증 범위이며 최신 전체 통합 완료를 뜻하지 않는다.
+
 ## Windows PowerShell
 
 ```powershell
@@ -120,7 +122,7 @@ backend/.venv/Scripts/python -m pytest backend/tests/test_stage5.py -q -p no:cac
 
 B 담당자의 30초 조회·5초 제한·GET 재시도·오류/최신성 표시는 [5단계 연동 안내](docs/stage5-integration.md), 상태별 실제 JSON은 [HTTP 사례](docs/stage5-http-examples.json)를 참조한다. 실제 B 화면의 타이머·요청 취소·표시 검증은 대기다.
 
-### 6단계 AI 중계·인쇄 준비 검증 (2026-10-28)
+### 6단계 AI 중계·인쇄 준비 검증 (2026-10-28 당시 기록)
 
 실제 ai 모듈은 아직 없으며 백엔드의 주입 어댑터·출력 검증·실패 대체만 구현한다. worker 준비/시작 실패에도 슬롯을 복구하고 남은 채택 예산만 기다린다. 미지원 async/비JSON 출력은 대체 처리하고 입력·출력을 복사한다. 프로세스당 실행1개·대기열없음과 1초 채택 기준은 유지한다. 실제 동기 함수를 강제 중단하는 기능은 아니다.
 
@@ -152,7 +154,7 @@ backend/.venv/Scripts/python -m pytest backend/tests/test_stage6.py -q -p no:cac
 
 `departAt`은 현재 시각에서 절댓값 120초까지 허용한다. `query`는 공백 제거 후 100자, `text`는 공백 제거 후 1~200자다. 검색 유효기간은 600초이고 `now >= expiresAt`부터 410이다. 시간 비교는 UTC, 응답은 시간대 포함 ISO 8601이다. 클라이언트가 Asia/Seoul로 표시한다.
 
-기존 계약에 완료된 unavailable 전용 오류 코드가 없으므로, 경로 이용 불가·재확인·변경은 기존 **409 ROUTE_VERSION_CHANGED**와 재선택 메시지를 사용한다. 오류 우선순위는 검색 없음 404 → 만료 410 → 옵션 없음 404 → 핵심 자료 없음 503 → 모드/경로/상태/기대 버전 불일치 409다. 상세/live도 저장된 버전이 바뀌면 재검색이 필요하다.
+공통 계약에 따라 확인된 결행·우회·운행 중단은 **409 ROUTE_UNAVAILABLE**, 재확인·경로/기대 버전 변경은 **409 ROUTE_VERSION_CHANGED**를 반환한다. 2026-11-09에 기존의 오류 코드 통합 문제를 수정했다. 오류 우선순위는 검색 없음 404 → 만료 410 → 옵션 없음 404 → 핵심 자료 없음 503 → 모드/경로/상태/기대 버전 검사 409다. 상세/live/안내/인쇄 모두 같은 기준을 사용한다.
 
 A는 `originStationId`, `destinationId`, `routeSearchId`, `routeOptionId`, `routeSnapshotVersion`, `dataMode`를 B에 넘긴다. B는 상세/live 버전을 대조하고 안내·인쇄 POST에는 `expectedRouteSnapshotVersion`을 사용한다. `meta.dataMode=demo`면 모든 화면에 **시연 데이터 · 실제 운행 정보 아님**을 표시한다. 안내 첫 문장과 인쇄 notice에도 같은 표시를 제공한다. 30초 폴링·5초 클라이언트 제한·GET 한 번 재시도 정책과 호환된다. 프론트 타이머·재시도 구현은 포함하지 않았다.
 
