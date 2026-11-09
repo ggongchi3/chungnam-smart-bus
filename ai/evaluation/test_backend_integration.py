@@ -88,6 +88,16 @@ class RuleBasedAdapterTest(BackendCase):
                 self.assertEqual(data['mode'], 'ai_assisted')
                 self.assertTrue(data['steps'])
 
+    def test_bus_steps_keep_voice_phrase(self):
+        # 프론트 음성 안내(speechText.ts)는 bus 문장에서 '{노선명} 버스를 타세요'를 찾아 발음만 바꾼다.
+        for destination in ('001', '002', '003'):
+            printed = self.client.post('/api/v1/print-guides', json=self.selection(destination)).json()['data']
+            steps = {s['segmentId']: s['text'] for s in printed['guidance']['steps']}
+            for segment in printed['routeDetail']['segments']:
+                if segment['type'] == 'bus':
+                    with self.subTest(destination=destination, segment=segment['segmentId']):
+                        self.assertIn(f"{segment['routeName']} 버스를 타세요", steps[segment['segmentId']])
+
     def test_print_guide_uses_same_version(self):
         body = self.selection('003')
         printed = self.client.post('/api/v1/print-guides', json=body).json()['data']
