@@ -1,0 +1,209 @@
+.frame {
+  --canvas: #fff;
+  --foreground: #111;
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 560px;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--foreground);
+  background: var(--canvas);
+}
+
+.header {
+  display: flex;
+  min-height: 120px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 clamp(24px, 3.7vw, 40px);
+  color: #fff;
+  background: #252525;
+}
+
+.station {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  display: block;
+  width: 52px;
+  height: 43px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.stationName {
+  overflow: hidden;
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clock {
+  flex: 0 0 auto;
+  font-size: 36px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.content {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 0 clamp(24px, 3.7vw, 40px);
+  background: var(--canvas);
+}
+
+.footer {
+  display: flex;
+  min-height: 120px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px clamp(24px, 3.7vw, 40px);
+  border-top: 2px solid #ececec;
+  background: #fff;
+}
+
+.footerButton {
+  display: inline-flex;
+  min-width: 260px;
+  min-height: 80px;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 8px 20px;
+  border: 2px solid #e5e5e5;
+  border-radius: 8px;
+  color: #4f4f4f;
+  background: #fff;
+  font: inherit;
+  font-size: 28px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.footerButton img {
+  display: block;
+  width: 60px;
+  height: 60px;
+  flex: 0 0 auto;
+}
+
+.footerButton:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.frame[data-contrast='high'] {
+  --canvas: #252525;
+  --foreground: #fff;
+}
+
+.frame[data-contrast='high'] .footer {
+  border-top-color: #fff;
+  background: #252525;
+}
+
+.frame[data-contrast='high'] .footerButton {
+  border-color: #fff;
+  color: #fff;
+  background: #424242;
+}
+
+.frame[data-contrast='high'] .content :global(p),
+.frame[data-contrast='high'] .content :global(label),
+.frame[data-contrast='high'] .content :global(li),
+.frame[data-contrast='high'] .content :global(span),
+.frame[data-contrast='high'] .content :global(strong),
+.frame[data-contrast='high'] .content :global(dt),
+.frame[data-contrast='high'] .content :global(dd) {
+  color: #fff;
+}
+
+.frame[data-contrast='high'] .content :global(h1),
+.frame[data-contrast='high'] .content :global(h2),
+.frame[data-contrast='high'] .content :global(h3) {
+  color: #ff0;
+}
+
+.frame[data-contrast='high'] .content :global(.button-primary) {
+  border-color: #ff0;
+  color: #111;
+  background: #ff0;
+}
+
+.frame[data-contrast='high'] .content :global(.button-primary *) {
+  color: #111;
+}
+
+.frame[data-contrast='high'] .content :global(.button-secondary),
+.frame[data-contrast='high'] .content :global(input) {
+  border-color: #fff;
+  color: #fff;
+  background: #424242;
+}
+
+.frame[data-contrast='high'] .content :global(main),
+.frame[data-contrast='high'] .content :global(main section),
+.frame[data-contrast='high'] .content :global(main article),
+.frame[data-contrast='high'] .content :global(.message),
+.frame[data-contrast='high'] .content :global(.service-notice),
+.frame[data-contrast='high'] .content :global(.journey-guide),
+.frame[data-contrast='high'] .content :global(.journey-message),
+.frame[data-contrast='high'] .content :global(.bus-feature) {
+  border-color: #fff;
+  color: #fff;
+  background: #252525;
+}
+
+@media (max-width: 700px) {
+  .header {
+    min-height: 84px;
+    gap: 12px;
+  }
+
+  .station {
+    gap: 8px;
+  }
+
+  .logo {
+    width: 36px;
+    height: 30px;
+  }
+
+  .stationName {
+    font-size: clamp(16px, 4vw, 22px);
+  }
+
+  .clock {
+    font-size: 20px;
+  }
+
+  .footer {
+    min-height: 96px;
+    gap: 12px;
+  }
+
+  .footerButton {
+    min-width: 0;
+    min-height: 64px;
+    flex: 1 1 0;
+    gap: 8px;
+    padding: 6px 10px;
+    font-size: 18px;
+  }
+
+  .footerButton img {
+    width: 40px;
+    height: 40px;
+  }
+}

@@ -28,6 +28,14 @@ input {
   font: inherit;
 }
 
+button:not(:disabled) {
+  transition: filter 120ms ease;
+}
+
+button:not(:disabled):active {
+  filter: brightness(0.78);
+}
+
 :is(button, input, summary):focus-visible {
   outline: 4px solid var(--focus-color);
   outline-offset: 3px;

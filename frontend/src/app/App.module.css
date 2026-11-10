@@ -1,20 +1,56 @@
-.appShell {
-  width: min(100% - 32px, 760px);
-  min-height: 100vh;
-  margin: 0 auto;
-  padding: 24px 0 48px;
-}
-
-.panel {
+.startScreen {
   display: grid;
-  gap: 24px;
-  padding: 24px 0;
+  min-height: 100%;
+  align-content: center;
+  justify-items: center;
+  padding: 40px 0 170px;
+  text-align: center;
 }
 
-.stationName {
+.startBus {
+  display: block;
+  width: clamp(180px, 34vw, 360px);
+  height: auto;
+  margin: 0 0 clamp(64px, 8vh, 100px);
+  object-fit: contain;
+}
+
+.startScreen h1 {
+  max-width: 900px;
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 70px;
   font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.startDescription {
+  margin: 24px 0 0;
+  color: #4f4f4f;
+  font-size: clamp(24px, 3.7vw, 40px);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.startScreen .startButton {
+  width: 100%;
+  min-height: 168px;
+  margin-top: clamp(72px, 8vh, 100px);
+  border: 0;
+  border-radius: 20px;
+  color: #fff;
+  background: linear-gradient(180deg, #3586fc 0%, #004fcf 100%);
+  box-shadow:
+    0 3px 7px -3px rgb(0 0 0 / 30%),
+    0 6px 12px -2px rgb(50 50 93 / 25%);
+  font-size: clamp(32px, 4.4vw, 48px);
+  font-weight: 700;
+}
+
+.startScreen .startButton:active {
+  background: #4f4f4f;
+  filter: none;
 }
 
 .selectionSummary {

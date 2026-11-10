@@ -1,7 +1,9 @@
 import JourneyGuideScreen from '../features/journey-guide/JourneyGuideScreen'
-import { useCallback, useEffect, useState } from 'react'
-import { getStation, ApiRequestError } from '../shared/api/client'
+import { useCallback, useEffect } from 'react'
+import startBusImage from '../../../design/assets/images/첫화면버스.png'
+import { getStation } from '../shared/api/client'
 import { ServiceNotice } from '../shared/ui/ServiceNotice'
+import { KioskFrame } from '../shared/ui/KioskFrame'
 import { DestinationSearch } from '../features/destination-search/DestinationSearch'
 import { RouteSelection } from '../features/route-selection/RouteSelection'
 import { useAppState } from './AppState'
@@ -9,20 +11,13 @@ import styles from './App.module.css'
 
 export default function App() {
   const { state, dispatch } = useAppState()
-  const [stationLoading, setStationLoading] = useState(true)
-  const [stationError, setStationError] = useState('')
 
   const loadStation = useCallback(async (signal?: AbortSignal) => {
-    setStationLoading(true)
-    setStationError('')
     try {
       const result = await getStation(state.originStationId, signal)
       dispatch({ type: 'station-loaded', station: result.data.station, dataMode: result.meta.dataMode })
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') return
-      setStationError(error instanceof ApiRequestError ? error.message : '정류장 정보를 불러오지 못했습니다.')
-    } finally {
-      if (!signal?.aborted) setStationLoading(false)
     }
   }, [dispatch, state.originStationId])
 
@@ -34,31 +29,17 @@ export default function App() {
   }, [loadStation])
 
   return (
-    <div className={styles.appShell}>
-      <ServiceNotice />
+    <KioskFrame stationName={state.station?.name ?? null} stationNumber={state.station?.displayNumber}>
+      {state.screen !== 'start' && <ServiceNotice />}
       {state.screen === 'start' && (
-        <main className={styles.panel}>
-          <p className="eyebrow">현재 정류장</p>
-          <h1>어디로 가시나요?</h1>
-          {stationLoading && <p role="status">정류장 정보를 확인하고 있습니다.</p>}
-          {stationError && (
-            <div className="message message-error" role="alert">
-              <p>{stationError}</p>
-              <button className="button button-secondary" type="button" onClick={() => void loadStation()}>
-                다시 불러오기
-              </button>
-            </div>
-          )}
-          {state.station && (
-            <p className={styles.stationName}>
-              {state.station.name}{state.station.directionLabel ? ' · ' + state.station.directionLabel : ''}
-            </p>
-          )}
+        <main className={styles.startScreen}>
+          <img className={styles.startBus} src={startBusImage} alt="" aria-hidden="true" />
+          <h1>현재 정류장에서 목적지까지<br />가는 버스를 찾아드려요</h1>
+          <p className={styles.startDescription}>목적지를 선택하면 버스를 안내해 드릴게요.</p>
           <button
-            className="button button-primary"
             type="button"
-            disabled={!state.station || stationLoading}
             onClick={() => dispatch({ type: 'open-search' })}
+            className={`button button-primary ${styles.startButton}`}
           >
             목적지 찾기
           </button>
@@ -82,6 +63,6 @@ export default function App() {
       {state.screen === 'journey-guide' && state.routeSelection && (
         <JourneyGuideScreen selection={state.routeSelection} onReselect={() => dispatch({ type: 'back-to-search' })} />
       )}
-    </div>
+    </KioskFrame>
   )
 }

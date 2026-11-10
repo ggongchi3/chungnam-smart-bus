@@ -28,6 +28,7 @@ export interface ApiResult<T> {
 export interface Station {
   stationId: string
   name: string
+  displayNumber?: string | null
   directionLabel: string
   region: string | null
   coordinates: { latitude: number; longitude: number } | null
