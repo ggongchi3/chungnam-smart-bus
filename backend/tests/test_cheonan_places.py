@@ -124,3 +124,29 @@ def test_origin_import_uses_official_row_and_fails_without_it():
         origin_from_stops([])
     with pytest.raises(ValueError, match='invalid'):
         origin_from_stops([{'STOP_ID': 285000686, 'LAT': float('nan'), 'LNG': row['longitude']}])
+
+
+def test_all_26_places_have_pedestrian_network_distance_and_sort_by_it():
+    app = create_app(Settings(database_url='sqlite:///:memory:'),
+                     place_catalog='cheonan', transport_catalog='cheonan')
+    with TestClient(app) as client:
+        response = client.get('/api/v1/destinations', params={
+            'originStationId':'cheonan-stop-285000686', 'sort':'walking'})
+        assert response.status_code == 200
+        rows = response.json()['data']['destinations']
+        assert len(rows) == 26
+        assert all(row['walkingDistanceMeters'] is not None and row['walkingDistanceMeters'] >= 0 for row in rows)
+        assert [row['walkingDistanceMeters'] for row in rows] == sorted(row['walkingDistanceMeters'] for row in rows)
+        distances = {row['destinationId']:row['walkingDistanceMeters'] for row in rows}
+        # Independently collected pedestrian-network results for remote places;
+        # these are not the former straight-line proximity values.
+        assert distances['cheonan-byeongcheon-market'] == 17749
+        assert distances['cheonan-independence-hall'] == 10618
+        assert app.state.transport.walks['costing'] == 'pedestrian'
+
+
+@pytest.mark.parametrize('row', [{'distance':None,'time':20}, {'distance':-1,'time':20},
+                                {'distance':float('nan'),'time':20}, {'distance':1,'time':True}])
+def test_invalid_network_distance_is_never_approved_as_a_measured_path(row):
+    from backend.scripts.refresh_cheonan_walks import link
+    assert link(row) is None

@@ -4,6 +4,7 @@ Only road-routed links are approved. A straight-line proximity test is a bounded
 candidate lookup, not evidence of pedestrian access. No automotive routes used.
 """
 import json
+from math import isfinite
 import sys
 import time
 from datetime import datetime, timezone
@@ -38,9 +39,32 @@ def matrix(client, key, sources, targets):
 
 def link(value):
     distance, duration = value.get('distance'), value.get('time')
-    if distance is None or duration is None:
+    if any(type(v) not in (int, float) or not isfinite(v) or v < 0 for v in (distance, duration)):
         return None
     return {'distanceMeters': round(distance * 1000), 'durationSeconds': round(duration)}
+
+
+def complete_direct_walks():
+    """Fill missing origin-to-place paths without refreshing approved bus access."""
+    CACHE.mkdir(parents=True, exist_ok=True)
+    path = ROOT / 'shared/data/cheonan-walks.json'
+    output = json.loads(path.read_text(encoding='utf-8'))
+    transit = json.loads((ROOT / 'shared/data/cheonan-transport.json').read_text(encoding='utf-8'))
+    places = json.loads((ROOT / 'shared/data/cheonan-places.json').read_text(encoding='utf-8'))['places']
+    with httpx.Client(timeout=40, headers={'User-Agent': 'CheonanSmartBus/0.1 local-reference-import'}) as client:
+        for place in places:
+            entry = output['destinations'].get(place['destinationId'])
+            if entry is None or entry.get('directWalk'):
+                continue
+            data = matrix(client, place['destinationId'] + '-direct-v1',
+                [point(transit['origin']['coordinates'])], [point(place['coordinates'])])
+            walk = link(data['sources_to_targets'][0][0])
+            if not walk:
+                raise ValueError('No pedestrian route for ' + place['destinationId'])
+            entry['directWalk'] = walk
+            entry['directWalkRetrievedAt'] = datetime.now(timezone.utc).isoformat()
+            print(place['destinationId'], walk, flush=True)
+    path.write_text(json.dumps(output, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
 
 def main():
@@ -70,11 +94,11 @@ def main():
             nearby = sorted((sid for sid, pos in stations.items() if haversine_meters(coordinates, pos) <= 1500),
                             key=lambda sid: (haversine_meters(coordinates, stations[sid]), sid))[:4]
             sources = [point(stations[sid]) for sid in nearby]
-            direct = haversine_meters(origin, coordinates) <= 5000
+            direct = True
             if direct:
                 sources.append(point(origin))
             try:
-                data = matrix(client, place['destinationId'], sources, [point(coordinates)])
+                data = matrix(client, place['destinationId'] + '-all-direct-v2', sources, [point(coordinates)])
                 walks = []
                 for sid, row in zip(nearby, data['sources_to_targets']):
                     walk = link(row[0])
@@ -90,4 +114,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    complete_direct_walks() if '--complete-direct' in sys.argv else main()

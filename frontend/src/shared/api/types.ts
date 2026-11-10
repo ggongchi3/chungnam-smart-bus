@@ -38,6 +38,8 @@ export interface Destination {
   distanceMeters?: number | null;
   distanceBasis?: 'straight_line' | null;
   walkingDistanceMeters?: number | null;
+  /** Presentation annotation; estimates are explicitly authorized for this prototype. */
+  walkingDistanceBasis?: 'pedestrian_network' | 'prototype_estimate';
   coordinateSourceUrl?: string | null;
   locationNote?: string;
   sourceUrl?: string;

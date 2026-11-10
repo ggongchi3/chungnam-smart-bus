@@ -1,5 +1,5 @@
 import catalog from '../../../shared/data/cheonan-places.json';
-import type { Destination, RouteDetail, GuidanceData } from './api/types';
+import type { Destination, RouteDetail, GuidanceData, PlaceSort } from './api/types';
 
 export type PlaceCategory = 'hospital' | 'office' | 'terminal' | 'market' | 'station' | 'education' | 'culture' | 'shopping';
 export const SERVICE_REGION = catalog.region;
@@ -17,6 +17,27 @@ export function withPlaceDetails(destination: Destination): Destination {
   return { ...destination, name: displayText(destination.name),
     ...(place ? { address:place.address, placeKind:place.kind as PlaceCategory, locationNote:place.locationNote,
       sourceUrl:place.sourceUrl, sourceName:place.sourceName } : {}) };
+}
+
+/** Display and sort by pedestrian-network distance, with an explicit prototype fallback. */
+export function prepareDestinations(destinations: Destination[], sort: PlaceSort, allowEstimates = false): Destination[] {
+  const rows = destinations.map(destination => {
+    const place = withPlaceDetails(destination);
+    if (place.walkingDistanceMeters != null) return {...place, walkingDistanceBasis:'pedestrian_network' as const};
+    if (!allowEstimates) return place;
+    const straight = place.distanceMeters;
+    const estimate = straight != null && Number.isFinite(straight) && straight >= 0
+      ? Math.round(straight * 1.3 / 10) * 10 : 1500;
+    return {...place, walkingDistanceMeters:estimate, walkingDistanceBasis:'prototype_estimate' as const};
+  });
+  return rows.sort((a,b) => {
+    if (sort !== 'name') {
+      const first = a.walkingDistanceMeters ?? Infinity;
+      const second = b.walkingDistanceMeters ?? Infinity;
+      if (first !== second) return first - second;
+    }
+    return a.name.localeCompare(b.name, 'ko') || a.destinationId.localeCompare(b.destinationId);
+  });
 }
 export function displayDetail(detail: RouteDetail): RouteDetail {
   return { ...detail, segments: detail.segments.map(segment => segment.type === 'bus'

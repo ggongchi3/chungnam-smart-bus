@@ -6,3 +6,5 @@ export const ORIGIN_PUBLIC_CODE = origin.arsId;
 export const LIVE_REFRESH_MS = 30_000;
 export const IDLE_WARNING_MS = 120_000;
 export const IDLE_COUNTDOWN_SECONDS = 30;
+// Presentation-only prototype values. Live-mode API facts are kept unchanged.
+export const PROTOTYPE_TIMES_ENABLED = true;

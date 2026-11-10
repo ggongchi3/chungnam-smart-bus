@@ -122,7 +122,11 @@
           "durationSeconds": 898
         }
       ],
-      "directWalk": null
+      "directWalk": {
+        "distanceMeters": 5865,
+        "durationSeconds": 5894
+      },
+      "directWalkRetrievedAt": "2026-11-10T14:14:13.591477+00:00"
     },
     "cheonan-chungmu-hospital": {
       "access": [
@@ -371,7 +375,11 @@
           "durationSeconds": 404
         }
       ],
-      "directWalk": null
+      "directWalk": {
+        "distanceMeters": 7733,
+        "durationSeconds": 7210
+      },
+      "directWalkRetrievedAt": "2026-11-10T14:14:15.001760+00:00"
     },
     "cheonan-tax-office": {
       "access": [
@@ -508,7 +516,11 @@
           "durationSeconds": 93
         }
       ],
-      "directWalk": null
+      "directWalk": {
+        "distanceMeters": 17749,
+        "durationSeconds": 17180
+      },
+      "directWalkRetrievedAt": "2026-11-10T14:14:16.544565+00:00"
     },
     "cheonan-sinan-office": {
       "access": [
@@ -645,7 +657,11 @@
           "durationSeconds": 914
         }
       ],
-      "directWalk": null
+      "directWalk": {
+        "distanceMeters": 16801,
+        "durationSeconds": 16349
+      },
+      "directWalkRetrievedAt": "2026-11-10T14:14:17.972841+00:00"
     },
     "cheonan-independence-hall": {
       "access": [
@@ -670,7 +686,11 @@
           "durationSeconds": 972
         }
       ],
-      "directWalk": null
+      "directWalk": {
+        "distanceMeters": 10618,
+        "durationSeconds": 10915
+      },
+      "directWalkRetrievedAt": "2026-11-10T14:14:19.391455+00:00"
     },
     "cheonan-museum": {
       "access": [

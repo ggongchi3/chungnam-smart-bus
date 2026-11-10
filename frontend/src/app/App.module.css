@@ -94,6 +94,7 @@
 .actions > .primary { flex:1; min-width:0; word-break:keep-all; }
 .live { margin-top:5cqw; padding:3cqw; border:.185cqw solid var(--border); border-radius:1.852cqw; color:var(--sub); font-size:2.9cqw; line-height:1.5; }
 .live h2 { font-weight:600; margin-bottom:2cqw; }
+.simulationLabel { display:inline-block; margin-left:1.5cqw; padding:.3cqw 1.2cqw; border-radius:.7cqw; background:var(--accent); color:var(--button-text); font-size:2.4cqw; vertical-align:middle; }
 .live h3 { font-size:3cqw; }
 .live p { margin:1cqw 0; }
 .live button,.error button { border:.185cqw solid var(--accent); border-radius:1cqw; background:var(--surface); color:var(--accent); padding:1.5cqw 2.2cqw; font-size:3cqw; }
@@ -164,11 +165,6 @@ em { font-style:normal; color:var(--accent); }
 .routeScreen .placeDetails .selectionLabel { display:none; }
 .routeScreen .placeDetails a { padding:0; }
 .routeScreen .supportNote { margin:2cqw 0; }
-.routingNotice { margin:2.5cqw 0; padding:2.2cqw; border:.185cqw solid var(--border); border-radius:1cqw; font-size:2.6cqw; color:var(--sub); line-height:1.55; }
-.routingNotice p { margin:0 0 1cqw; }
-.routingNotice summary { cursor:pointer; font-weight:600; }
-.routingNotice details p { margin:1.5cqw 0 0; }
-.routingNotice a { color:inherit; }
 .category[aria-pressed=true],.chip[aria-pressed=true],.destination[aria-pressed=true],.comparisonCard[aria-pressed=true] { background:var(--selected-bg); color:var(--selected-text); }
 .chip[aria-pressed=true]:disabled,.category[aria-pressed=true]:disabled,.destination[aria-pressed=true]:disabled,.comparisonCard[aria-pressed=true]:disabled { opacity:1; }
 .destination[aria-pressed=true] > span,.destination[aria-pressed=true] > small,.destination[aria-pressed=true] .placeDistance,.comparisonCard[aria-pressed=true] .routeStops,.comparisonCard[aria-pressed=true] .routeMetrics > span,.comparisonCard[aria-pressed=true] .routeMetrics b,.comparisonCard[aria-pressed=true] .cardAction { color:var(--selected-text); }
