@@ -39,8 +39,10 @@
   border: 0;
   border-radius: 20px;
   color: #fff;
-  background: linear-gradient(180deg, #3487ff 0%, #0056d6 100%);
-  box-shadow: 0 6px 10px rgb(0 0 0 / 25%);
+  background: linear-gradient(180deg, #3586fc 0%, #004fcf 100%);
+  box-shadow:
+    0 3px 7px -3px rgb(0 0 0 / 30%),
+    0 6px 12px -2px rgb(50 50 93 / 25%);
   font-size: clamp(32px, 4.4vw, 48px);
   font-weight: 700;
 }
