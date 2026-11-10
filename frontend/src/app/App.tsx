@@ -1,5 +1,6 @@
 import JourneyGuideScreen from '../features/journey-guide/JourneyGuideScreen'
 import { useCallback, useEffect, useState } from 'react'
+import startBusImage from '../../../design/assets/images/첫화면버스.png'
 import { getStation, ApiRequestError } from '../shared/api/client'
 import { ServiceNotice } from '../shared/ui/ServiceNotice'
 import { KioskFrame } from '../shared/ui/KioskFrame'
@@ -36,10 +37,12 @@ export default function App() {
 
   return (
     <KioskFrame stationName={state.station?.name ?? null} stationNumber={state.station?.displayNumber}>
-      <ServiceNotice />
+      {state.screen !== 'start' && <ServiceNotice />}
       {state.screen === 'start' && (
-        <main className={styles.panel}>
-          <h1>어디로 가시나요?</h1>
+        <main className={styles.startScreen}>
+          <img className={styles.startBus} src={startBusImage} alt="" aria-hidden="true" />
+          <h1>현재 정류장에서 목적지까지 가는 버스를 찾아드려요</h1>
+          <p className={styles.startDescription}>목적지를 선택하면 버스를 안내해 드릴게요.</p>
           {stationLoading && <p role="status">정류장 정보를 확인하고 있습니다.</p>}
           {stationError && (
             <div className="message message-error" role="alert">
@@ -50,10 +53,10 @@ export default function App() {
             </div>
           )}
           <button
-            className="button button-primary"
             type="button"
             disabled={!state.station || stationLoading}
             onClick={() => dispatch({ type: 'open-search' })}
+            className={`button button-primary ${styles.startButton}`}
           >
             목적지 찾기
           </button>
