@@ -40,15 +40,17 @@
 
 .stationName {
   overflow: hidden;
-  font-size: 32px;
-  font-weight: 700;
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .clock {
   flex: 0 0 auto;
-  font-size: 28px;
+  font-size: 36px;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
