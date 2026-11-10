@@ -34,7 +34,7 @@ export default function App() {
       {state.screen === 'start' && (
         <main className={styles.startScreen}>
           <img className={styles.startBus} src={startBusImage} alt="" aria-hidden="true" />
-          <h1>현재 정류장에서 목적지까지 가는 버스를 찾아드려요</h1>
+          <h1>현재 정류장에서 목적지까지<br />가는 버스를 찾아드려요</h1>
           <p className={styles.startDescription}>목적지를 선택하면 버스를 안내해 드릴게요.</p>
           <button
             type="button"
