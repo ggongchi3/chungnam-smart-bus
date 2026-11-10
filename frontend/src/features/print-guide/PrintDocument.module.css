@@ -1,0 +1,29 @@
+.document { display: none; }
+
+@page { size: A4 portrait; margin: 15mm; }
+
+@media print {
+  .document {
+    display: block;
+    color: #000;
+    background: #fff;
+    font-family: Pretendard, 'Malgun Gothic', sans-serif;
+    font-size: 16pt;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+    print-color-adjust: exact;
+  }
+  .document h1 { font-size: 26pt; margin: 6mm 0; }
+  .document h2 { font-size: 19pt; margin: 0 0 2mm; }
+  .document h3 { font-size: 16pt; margin: 3mm 0 1mm; }
+  .document p { margin: 2mm 0; }
+  .header { border-bottom: 1.5pt solid #000; padding-bottom: 5mm; }
+  .notice { border: 1.5pt solid #000; padding: 3mm; font-weight: 700; }
+  .journey { font-size: 20pt; font-weight: 700; }
+  .steps { padding-left: 9mm; }
+  .steps > li { break-inside: avoid; margin: 6mm 0; padding: 3mm 0; }
+  .caption { font-size: 14pt; }
+  .quality { border-top: 1pt solid #000; padding-top: 5mm; }
+  .observation { break-inside: avoid; margin: 4mm 0; }
+  .footer { border-top: 1pt solid #000; margin-top: 6mm; padding-top: 3mm; font-size: 12pt; }
+}
