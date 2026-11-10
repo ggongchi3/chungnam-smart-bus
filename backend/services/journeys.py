@@ -28,7 +28,7 @@ def confirmed_duration(segments):
 def validated_expiry(search):
     times = (search.created_at, search.expires_at)
     if (any(type(value) not in (int, float) or not isfinite(value) for value in times)
-            or search.data_mode not in ('demo', 'live')):
+            or search.data_mode not in ('demo', 'live', 'static')):
         unavailable()
     expiry = search.created_at + 600
     if search.expires_at <= search.created_at or not isclose(search.expires_at, expiry, rel_tol=0, abs_tol=1e-6):
@@ -36,10 +36,12 @@ def validated_expiry(search):
     return expiry
 
 
-def create_search(session, request, state, now, data_mode):
+def create_search(session, request, state, now, data_mode, *, transport=None):
     require_core(state)
     catalog.station(session, request.originStationId)
     destination = catalog.destination(session, request.destinationId)
+    if transport is not None and request.originStationId == transport.origin['stationId']:
+        return transport.search(session, request, destination, now, data_mode)
     if abs((request.departAt.astimezone(timezone.utc) - now.astimezone(timezone.utc)).total_seconds()) > 120:
         raise ServiceError(400, 'INVALID_REQUEST', '현재 시각에서 120초 이내의 출발 시각을 입력해 주세요.')
     search_id = 'demo-search-' + uuid4().hex
@@ -68,7 +70,7 @@ def create_search(session, request, state, now, data_mode):
                        destinationId=request.destinationId, expiresAt=expires, routeOptions=options)
 
 
-def checked_detail(session, search_id, option_id, state, now, data_mode, expected=None):
+def checked_detail(session, search_id, option_id, state, now, data_mode, expected=None, *, transport=None):
     search = session.get(RouteSearch, search_id)
     if search is None:
         not_found()
@@ -81,6 +83,8 @@ def checked_detail(session, search_id, option_id, state, now, data_mode, expecte
     require_core(state)
     if search.data_mode != data_mode:
         changed()
+    if transport is not None and search.origin_station_id == transport.origin['stationId']:
+        return transport.checked_detail(search, option_id, now, expected)
     try:
         saved = SavedRouteOption.model_validate(search.snapshot[option_id])
     except (ValidationError, TypeError, ValueError):

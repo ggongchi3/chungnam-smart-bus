@@ -1,5 +1,7 @@
 /** Public API v0.1: kept aligned with backend/models/schemas.py. */
-export type DataMode = 'demo' | 'live';
+export type DataMode = 'demo' | 'live' | 'static';
+export type RouteSort = 'fastest' | 'transfers' | 'walking' | 'distance';
+export type PlaceSort = 'distance' | 'name' | 'walking';
 export type Category = 'hospital' | 'market' | 'terminal' | 'station' | 'other';
 export type JourneyStatus = 'ready' | 'recheck_required' | 'unavailable';
 export type Freshness = 'fresh' | 'stale' | 'unknown';
@@ -29,6 +31,17 @@ export interface Destination {
   name: string;
   category: Category;
   aliases: string[];
+  /** Client enrichment from the shared verified facility catalogue, not API fields. */
+  address?: string;
+  placeKind?: 'hospital' | 'office' | 'terminal' | 'market' | 'station' | 'education' | 'culture' | 'shopping';
+  coordinates?: Coordinates | null;
+  distanceMeters?: number | null;
+  distanceBasis?: 'straight_line' | null;
+  walkingDistanceMeters?: number | null;
+  coordinateSourceUrl?: string | null;
+  locationNote?: string;
+  sourceUrl?: string;
+  sourceName?: string;
 }
 export interface DestinationData { destinations: Destination[] }
 export interface Quality {
@@ -75,6 +88,15 @@ export interface RouteOption {
   transferCount: number;
   totalDurationSeconds: number | null;
   walkingDurationSeconds: number | null;
+  walkingDistanceMeters?: number | null;
+  totalDistanceMeters?: number | null;
+  estimatedTravelSeconds?: number | null;
+  waitingDurationSeconds?: number | null;
+  boardStation?: StationRef | null;
+  alightStation?: StationRef | null;
+  transferStations?: StationRef[];
+  features?: string[];
+  dataSource?: string | null;
 }
 export interface SearchRequest { originStationId: string; destinationId: string; departAt: string }
 export interface SearchData {
@@ -83,6 +105,9 @@ export interface SearchData {
   destinationId: string;
   expiresAt: string;
   routeOptions: RouteOption[];
+  sortedBy?: RouteSort;
+  routingNotice?: string | null;
+  referenceRetrievedAt?: string | null;
 }
 export interface RouteDetail {
   routeSearchId: string;
@@ -94,6 +119,11 @@ export interface RouteDetail {
   journeyStatus: JourneyStatus;
   referenceDataQuality: Quality;
   segments: Segment[];
+  dataSource?: string | null;
+  routingNotice?: string | null;
+  estimatedTravelSeconds?: number | null;
+  totalDistanceMeters?: number | null;
+  walkingDistanceMeters?: number | null;
 }
 export interface Arrival {
   segmentId: string;

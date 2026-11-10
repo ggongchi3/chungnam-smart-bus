@@ -1,7 +1,7 @@
 .keyboard {
   background: var(--keyboard-bg, #e7e7e7);
-  padding: 14.4cqw 3.7cqw 8cqw;
-  min-height:85.278cqw;
+  padding: 7cqw 3.7cqw 5cqw;
+  min-height:72cqw;
   width: 100%;
 }
 

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query, Request
 
 from backend.models import schemas as s
 from backend.integrations.providers import read_provider
+from backend.integrations.cheonan_live import arrival_state
 from backend.services import ai, catalog, journeys
 
 router = APIRouter(prefix='/api/v1', responses={status: {'model': s.Envelope[None]} for status in (400,404,409,410,503,500)})
@@ -40,26 +41,29 @@ async def destinations(request: Request, db: Session, params: Annotated[s.Destin
     now, provider = state(request)
     journeys.require_core(provider)
     return response(request, s.DestinationData(destinations=catalog.destinations(
-        db, params.originStationId, params.query, params.category)))
+        db, params.originStationId, params.query, params.category, visible_ids=request.app.state.place_ids,
+        kind=params.kind, sort=params.sort, transport=request.app.state.transport)))
 
 
 @router.post('/route-searches', response_model=s.Envelope[s.SearchData])
 async def search(body: s.SearchRequest, request: Request, db: Session):
     now, provider = state(request)
-    return response(request, journeys.create_search(db, body, provider, now, request.app.state.settings.data_mode))
+    return response(request, journeys.create_search(db, body, provider, now, request.app.state.settings.data_mode, transport=request.app.state.transport))
 
 
 @router.get('/route-searches/{routeSearchId}/options/{routeOptionId}', response_model=s.Envelope[s.RouteDetail])
 async def detail(routeSearchId: s.Identifier, routeOptionId: s.Identifier, request: Request, db: Session):
     now, provider = state(request)
-    result = journeys.checked_detail(db, routeSearchId, routeOptionId, provider, now, request.app.state.settings.data_mode)
+    result = journeys.checked_detail(db, routeSearchId, routeOptionId, provider, now, request.app.state.settings.data_mode, transport=request.app.state.transport)
     return response(request, result)
 
 
 @router.get('/route-searches/{routeSearchId}/options/{routeOptionId}/live', response_model=s.Envelope[s.LiveData])
 async def live(routeSearchId: s.Identifier, routeOptionId: s.Identifier, request: Request, db: Session):
     now, provider = state(request)
-    result = journeys.checked_detail(db, routeSearchId, routeOptionId, provider, now, request.app.state.settings.data_mode)
+    result = journeys.checked_detail(db, routeSearchId, routeOptionId, provider, now, request.app.state.settings.data_mode, transport=request.app.state.transport)
+    if result.dataSource == 'cheonan-bis-static':
+        provider = await arrival_state(result, now)
     return response(request, journeys.live_info(result, provider, now, session=db))
 
 
@@ -67,13 +71,13 @@ async def live(routeSearchId: s.Identifier, routeOptionId: s.Identifier, request
 async def interpretation(body: s.InterpretationRequest, request: Request, db: Session):
     now, provider = state(request)
     journeys.require_core(provider)
-    allowed = catalog.destinations(db, body.originStationId)
+    allowed = catalog.destinations(db, body.originStationId, visible_ids=request.app.state.place_ids, transport=request.app.state.transport)
 
     def current_candidates():
         _, latest_provider = state(request)
         journeys.require_core(latest_provider)
         with request.app.state.database.session() as latest_db:
-            return catalog.destinations(latest_db, body.originStationId)
+            return catalog.destinations(latest_db, body.originStationId, visible_ids=request.app.state.place_ids, transport=request.app.state.transport)
 
     result = await ai.interpret(request.app.state.ai, body.text, allowed, request.app.state.settings.data_mode,
                                 reload_destinations=current_candidates)
@@ -83,7 +87,7 @@ async def interpretation(body: s.InterpretationRequest, request: Request, db: Se
 def selected(request, db, body):
     now, provider = state(request)
     detail = journeys.checked_detail(db, body.routeSearchId, body.routeOptionId, provider, now,
-        request.app.state.settings.data_mode, body.expectedRouteSnapshotVersion)
+        request.app.state.settings.data_mode, body.expectedRouteSnapshotVersion, transport=request.app.state.transport)
     return now, provider, detail
 
 

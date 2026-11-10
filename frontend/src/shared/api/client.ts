@@ -1,6 +1,6 @@
 import type {
   Category, DestinationData, Envelope, GuidanceData, InterpretationData, LiveData,
-  Meta, PrintData, RouteDetail, SearchData, SelectionRequest, StationData,
+  Meta, PrintData, RouteDetail, SearchData, SelectionRequest, StationData, RouteSort, PlaceSort,
 } from './types';
 
 const BASE = '/api/v1';
@@ -49,7 +49,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function readMeta(value: unknown): Meta | undefined {
   if (!isRecord(value) || typeof value.requestId !== 'string' ||
       typeof value.generatedAt !== 'string' ||
-      (value.dataMode !== 'demo' && value.dataMode !== 'live')) return undefined;
+      !['demo', 'live', 'static'].includes(String(value.dataMode))) return undefined;
   return value as unknown as Meta;
 }
 
@@ -59,7 +59,7 @@ async function attempt<T>(path: string, method: 'GET' | 'POST', body: unknown, s
   let timedOut = false;
   const onAbort = () => controller.abort();
   signal?.addEventListener('abort', onAbort, { once: true });
-  const timer = setTimeout(() => { timedOut = true; controller.abort(); }, TIMEOUT_MS);
+  const timer = setTimeout(() => { timedOut = true; controller.abort(); }, path === '/route-searches' ? 30_000 : TIMEOUT_MS);
   try {
     const response = await fetch(BASE + path, {
       method,
@@ -116,13 +116,16 @@ const optionPath = (searchId: string, optionId: string) => `/route-searches/${en
 
 export const api = {
   station: (id: string, signal?: AbortSignal) => request<StationData>(`/stations/${encode(id)}`, 'GET', undefined, signal),
-  destinations: (origin: string, query = '', category?: Category, signal?: AbortSignal) => {
+  destinations: (origin: string, query = '', category?: Category, signal?: AbortSignal, options?: { sort?: PlaceSort; kind?: string }) => {
     const params = new URLSearchParams({ originStationId: origin, query: query.trim() });
     if (category) params.set('category', category);
+    if (options?.sort) params.set('sort', options.sort);
+    if (options?.kind) params.set('kind', options.kind);
     return request<DestinationData>(`/destinations?${params}`, 'GET', undefined, signal);
   },
-  search: (origin: string, destination: string, signal?: AbortSignal) => request<SearchData>('/route-searches', 'POST', {
+  search: (origin: string, destination: string, signal?: AbortSignal, sort?: RouteSort) => request<SearchData>('/route-searches', 'POST', {
     originStationId: origin, destinationId: destination, departAt: new Date().toISOString(),
+    ...(sort ? {sort} : {}),
   }, signal),
   detail: (searchId: string, optionId: string, signal?: AbortSignal) => request<RouteDetail>(optionPath(searchId, optionId), 'GET', undefined, signal),
   live: (searchId: string, optionId: string, signal?: AbortSignal) => request<LiveData>(`${optionPath(searchId, optionId)}/live`, 'GET', undefined, signal),

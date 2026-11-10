@@ -2,7 +2,8 @@ from sqlalchemy import select
 
 from backend.api.errors import not_found
 from backend.models import schemas as s
-from backend.models.tables import Station, Destination, DestinationAlias
+from backend.models.tables import Station, Destination, DestinationAlias, DestinationLocation
+from backend.services.geo import haversine_meters, destination_key
 
 
 def station(session, station_id):
@@ -19,12 +20,34 @@ def destination(session, destination_id):
         not_found()
     aliases = session.scalars(select(DestinationAlias.alias).where(
         DestinationAlias.destination_id == destination_id).order_by(DestinationAlias.alias)).all()
-    return s.Destination(destinationId=row.destination_id, name=row.name, category=row.category, aliases=list(aliases))
+    location = session.get(DestinationLocation, destination_id)
+    facts = location.facts if location else {}
+    return s.Destination(destinationId=row.destination_id, name=row.name, category=row.category, aliases=list(aliases),
+        address=facts.get('address'), placeKind=facts.get('kind'), coordinates=facts.get('coordinates'),
+        sourceUrl=facts.get('sourceUrl'), coordinateSourceUrl=facts.get('coordinateSourceUrl'))
 
 
-def destinations(session, origin, query='', category=None):
-    station(session, origin)
+def destinations(session, origin, query='', category=None, *, visible_ids=None, kind=None, sort='distance', transport=None):
+    source = station(session, origin)
     rows = session.scalars(select(Destination).order_by(Destination.destination_id)).all()
-    result = [destination(session, row.destination_id) for row in rows]
-    return [item for item in result if (not category or item.category == category) and
-            (not query or any(query.casefold() in value.casefold() for value in [item.name, *item.aliases]))]
+    result = [destination(session, row.destination_id) for row in rows
+              if visible_ids is None or row.destination_id in visible_ids]
+    def normalize(text):
+        return ''.join(text.casefold().split()) if visible_ids is not None else text.casefold()
+    result = [item for item in result if (not category or item.category == category) and (not kind or item.placeKind == kind) and
+            (not query or any(normalize(query) in normalize(value) for value in [item.name, *item.aliases]))]
+    if visible_ids is not None:
+        for item in result:
+            if source.coordinates and item.coordinates:
+                item.distanceMeters = round(haversine_meters(source.coordinates.model_dump(), item.coordinates.model_dump()), 3)
+                item.distanceBasis = 'straight_line'
+            if transport:
+                direct = transport.walks.get('destinations', {}).get(item.destinationId, {}).get('directWalk')
+                item.walkingDistanceMeters = direct['distanceMeters'] if direct else None
+        if sort == 'name':
+            result.sort(key=lambda item: (item.name, item.destinationId))
+        elif sort == 'walking':
+            result.sort(key=lambda item: (item.walkingDistanceMeters is None, item.walkingDistanceMeters or 0, *destination_key(item)))
+        else:
+            result.sort(key=destination_key)
+    return result

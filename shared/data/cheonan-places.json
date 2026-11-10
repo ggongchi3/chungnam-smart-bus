@@ -1,0 +1,515 @@
+{
+  "schemaVersion": 1,
+  "region": "충청남도 천안시",
+  "verifiedAt": "2026-11-10",
+  "places": [
+    {
+      "destinationId": "cheonan-dankook-hospital",
+      "name": "단국대학교병원",
+      "category": "hospital",
+      "kind": "hospital",
+      "address": "충청남도 천안시 동남구 망향로 201",
+      "aliases": [
+        "단국대병원",
+        "단대병원",
+        "단국대학교의과대학부속병원"
+      ],
+      "coordinates": {
+        "latitude": 36.8420637,
+        "longitude": 127.1729778
+      },
+      "sourceUrl": "https://camc.or.kr/refer/content/450",
+      "sourceName": "천안의료원 협력병원 현황",
+      "coordinateSourceUrl": "https://www.openstreetmap.org/way/368095491",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-soonchunhyang-hospital",
+      "name": "순천향대학교 부속 천안병원",
+      "category": "hospital",
+      "kind": "hospital",
+      "address": "충청남도 천안시 동남구 순천향6길 31",
+      "aliases": [
+        "순천향병원",
+        "순천향대병원",
+        "순천향대학교천안병원"
+      ],
+      "coordinates": {
+        "latitude": 36.8035065,
+        "longitude": 127.1361347
+      },
+      "sourceUrl": "https://www.schmc.ac.kr/cheonan/index.do",
+      "sourceName": "순천향대학교 부속 천안병원",
+      "coordinateSourceUrl": "https://www.openstreetmap.org/way/1412690010",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-medical-center",
+      "name": "충청남도천안의료원",
+      "category": "hospital",
+      "kind": "hospital",
+      "address": "충청남도 천안시 동남구 충절로 537",
+      "aliases": [
+        "천안의료원",
+        "충청남도 천안의료원"
+      ],
+      "coordinates": {
+        "latitude": 36.7757221,
+        "longitude": 127.1791587
+      },
+      "sourceUrl": "https://camc.or.kr/",
+      "sourceName": "충청남도천안의료원",
+      "coordinateSourceUrl": "https://www.openstreetmap.org/way/815583919",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-chungmu-hospital",
+      "name": "천안충무병원",
+      "category": "hospital",
+      "kind": "hospital",
+      "address": "충청남도 천안시 서북구 다가말3길 8",
+      "aliases": [
+        "충무병원",
+        "천안 충무병원"
+      ],
+      "coordinates": {
+        "latitude": 36.7973691,
+        "longitude": 127.1312123
+      },
+      "sourceUrl": "https://www.cmhos.co.kr/cmhos/guide/map.asp",
+      "sourceName": "천안충무병원 오시는 길",
+      "coordinateSourceUrl": "https://www.openstreetmap.org/way/469716617",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-bus-terminal",
+      "name": "천안종합버스터미널",
+      "category": "terminal",
+      "kind": "terminal",
+      "address": "충청남도 천안시 동남구 만남로 43",
+      "aliases": [
+        "천안종합터미널",
+        "천안시외버스터미널",
+        "천안터미널"
+      ],
+      "coordinates": {
+        "latitude": 36.819492,
+        "longitude": 127.1559849
+      },
+      "complexId": "cheonan-terminal-complex",
+      "locationNote": "종합터미널 단지 · 시외버스는 백화점 건물 지하 1층",
+      "sourceUrl": "https://www.cheonanterminal.co.kr/",
+      "sourceName": "천안종합터미널 운영사",
+      "coordinateSourceUrl": "https://www.openstreetmap.org/node/368736352",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-express-terminal",
+      "name": "천안고속버스터미널",
+      "category": "terminal",
+      "kind": "terminal",
+      "address": "충청남도 천안시 동남구 만남로 43",
+      "aliases": [
+        "천안고속터미널",
+        "천안 고속버스터미널"
+      ],
+      "coordinates": {
+        "latitude": 36.8191988,
+        "longitude": 127.1544119
+      },
+      "complexId": "cheonan-terminal-complex",
+      "locationNote": "같은 종합터미널 단지의 고속버스 전용 시설 · 백화점 왼편 별도 건물",
+      "sourceUrl": "https://www.cheonanterminal.co.kr/",
+      "sourceName": "천안종합터미널 운영사",
+      "coordinateSourceUrl": "https://www.openstreetmap.org/way/174920754",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-station",
+      "name": "천안역",
+      "category": "station",
+      "kind": "station",
+      "address": "충청남도 천안시 동남구 대흥로 239",
+      "aliases": [
+        "천안 역"
+      ],
+      "coordinates": {
+        "latitude": 36.8102804,
+        "longitude": 127.14684
+      },
+      "sourceUrl": "https://www.kr.or.kr/boardCnts/view.do?boardID=51&boardSeq=1111707&page=79",
+      "sourceName": "국가철도공단 천안역사 사업 안내",
+      "coordinateSourceUrl": "https://www.openstreetmap.org/node/368636171",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-dujeong-station",
+      "name": "두정역",
+      "category": "station",
+      "kind": "station",
+      "address": "충청남도 천안시 서북구 두정로 289",
+      "aliases": [
+        "두정 역"
+      ],
+      "coordinates": {
+        "latitude": 36.8330218,
+        "longitude": 127.149005
+      },
+      "sourceUrl": "https://pts.map.naver.com/end-subway/ends/web/1407/home",
+      "sourceName": "네이버 지도 역정보",
+      "coordinateSourceUrl": "https://www.openstreetmap.org/way/479508674",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-bongmyeong-station",
+      "name": "봉명역",
+      "category": "station",
+      "kind": "station",
+      "address": "충청남도 천안시 동남구 차돌로 51",
+      "aliases": [
+        "봉명 역"
+      ],
+      "coordinates": {
+        "latitude": 36.8012958,
+        "longitude": 127.135865
+      },
+      "sourceUrl": "https://parking.cheonan.go.kr/vinf/vinf_cctv.jsp",
+      "sourceName": "천안시 봉명역 입구 위치 안내",
+      "coordinateSourceUrl": "https://www.openstreetmap.org/node/1973709782",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-city-hall",
+      "name": "천안시청",
+      "category": "other",
+      "kind": "office",
+      "address": "충청남도 천안시 서북구 번영로 156",
+      "aliases": [
+        "천안 시청"
+      ],
+      "coordinates": {
+        "latitude": 36.8151378,
+        "longitude": 127.1140314
+      },
+      "sourceUrl": "https://www.eshare.go.kr/UserPortal/Upv/UprResrcExpr/index.do?rsrc_no=BA10A0015155",
+      "sourceName": "공유누리 천안시청 위치",
+      "coordinateSourceUrl": "https://www.openstreetmap.org/relation/18451371",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-dongnam-district-office",
+      "name": "천안시 동남구청",
+      "category": "other",
+      "kind": "office",
+      "address": "충청남도 천안시 동남구 옛시청길 39",
+      "aliases": [
+        "동남구청",
+        "천안 동남구청"
+      ],
+      "coordinates": {
+        "latitude": 36.8067681,
+        "longitude": 127.1511098
+      },
+      "sourceUrl": "https://parking.cheonan.go.kr/pofl/pofl_info.jsp",
+      "sourceName": "천안시 청사·부서 안내",
+      "coordinateSourceUrl": "https://www.openstreetmap.org/way/788723684",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-seobuk-district-office",
+      "name": "천안시 서북구청",
+      "category": "other",
+      "kind": "office",
+      "address": "충청남도 천안시 서북구 성거읍 봉주로 75",
+      "aliases": [
+        "서북구청",
+        "천안 서북구청"
+      ],
+      "coordinates": {
+        "latitude": 36.8784554,
+        "longitude": 127.1550742
+      },
+      "sourceUrl": "https://parking.cheonan.go.kr/pofl/pofl_info.jsp",
+      "sourceName": "천안시 청사·부서 안내",
+      "coordinateSourceUrl": "https://www.openstreetmap.org/way/203708290",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-tax-office",
+      "name": "천안세무서",
+      "category": "other",
+      "kind": "office",
+      "address": "충청남도 천안시 동남구 청수14로 80",
+      "aliases": [
+        "천안 세무서"
+      ],
+      "coordinates": {
+        "latitude": 36.7846316,
+        "longitude": 127.1552946
+      },
+      "sourceUrl": "https://d.nts.go.kr/cheonan/ad/tsm/lcInfo.do?mi=4627",
+      "sourceName": "국세청 천안세무서 찾아오시는 길",
+      "coordinateSourceUrl": "https://www.openstreetmap.org/way/479990340",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-national-pension-office",
+      "name": "국민연금공단 천안지사",
+      "category": "other",
+      "kind": "office",
+      "address": "충청남도 천안시 동남구 청수6로 60",
+      "aliases": [
+        "국민연금 천안지사",
+        "천안 국민연금"
+      ],
+      "coordinates": {
+        "latitude": 36.7860146,
+        "longitude": 127.1581294
+      },
+      "sourceUrl": "https://www.nps.or.kr/pbcpgdnc/ognzprsn/getOHAG0016M0List.do?brofCd=5111",
+      "sourceName": "국민연금공단 천안지사 찾아오시는 길",
+      "coordinateSourceUrl": "https://www.openstreetmap.org/way/816471053",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-central-market",
+      "name": "천안중앙시장",
+      "category": "market",
+      "kind": "market",
+      "address": "충청남도 천안시 동남구 사직로 7",
+      "aliases": [
+        "천안 중앙시장",
+        "남산중앙시장",
+        "남산 중앙시장"
+      ],
+      "coordinates": {
+        "latitude": 36.8023583,
+        "longitude": 127.1491953
+      },
+      "sourceUrl": "https://tour.chungnam.go.kr/prog/trsrcn/kor/sub02_01_02/view.do?trsrcnNo=1377",
+      "sourceName": "충청남도 관광 천안중앙시장",
+      "coordinateSourceUrl": "https://www.openstreetmap.org/node/5282288410",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-seongjeong-market",
+      "name": "성정시장",
+      "category": "market",
+      "kind": "market",
+      "address": "충청남도 천안시 서북구 양지21길 31",
+      "aliases": [
+        "성정 시장",
+        "별빛우물 성정시장"
+      ],
+      "coordinates": {
+        "latitude": 36.81267105,
+        "longitude": 127.1392027
+      },
+      "sourceDate": "2025-11-10",
+      "sourceUrl": "https://www.data.go.kr/data/15012894/standard.do",
+      "sourceName": "전국전통시장표준데이터"
+    },
+    {
+      "destinationId": "cheonan-byeongcheon-market",
+      "name": "병천시장",
+      "category": "market",
+      "kind": "market",
+      "address": "충청남도 천안시 동남구 병천면 아우내장터1길 46",
+      "aliases": [
+        "병천 시장",
+        "아우내장터",
+        "아우내 장터"
+      ],
+      "coordinates": {
+        "latitude": 36.76242111,
+        "longitude": 127.2981701
+      },
+      "sourceDate": "2025-11-10",
+      "sourceUrl": "https://www.data.go.kr/data/15012894/standard.do",
+      "sourceName": "전국전통시장표준데이터"
+    },
+    {
+      "destinationId": "cheonan-sinan-office",
+      "name": "신안동 행정복지센터",
+      "category": "other",
+      "kind": "office",
+      "address": "충청남도 천안시 동남구 신부3길 16-6",
+      "aliases": [
+        "신안동 주민센터"
+      ],
+      "sourceUrl": "https://www.openstreetmap.org/way/795652308",
+      "sourceName": "OpenStreetMap 시설 정보",
+      "coordinates": {
+        "latitude": 36.8173391,
+        "longitude": 127.1604108
+      },
+      "coordinateSourceUrl": "https://www.openstreetmap.org/way/795652308",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-dankook-university",
+      "name": "단국대학교 천안캠퍼스",
+      "category": "other",
+      "kind": "education",
+      "address": "충청남도 천안시 동남구 단대로 119",
+      "aliases": [
+        "단국대",
+        "단국대학교",
+        "대학교",
+        "대학"
+      ],
+      "sourceUrl": "https://www.openstreetmap.org/way/171904156",
+      "sourceName": "OpenStreetMap 시설 정보",
+      "coordinates": {
+        "latitude": 36.836768,
+        "longitude": 127.1692718
+      },
+      "coordinateSourceUrl": "https://www.openstreetmap.org/way/171904156",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-sangmyung-university",
+      "name": "상명대학교 천안캠퍼스",
+      "category": "other",
+      "kind": "education",
+      "address": "충청남도 천안시 동남구 상명대길 31",
+      "aliases": [
+        "상명대",
+        "상명대학교",
+        "대학교",
+        "대학"
+      ],
+      "sourceUrl": "https://www.openstreetmap.org/way/231288273",
+      "sourceName": "OpenStreetMap 시설 정보",
+      "coordinates": {
+        "latitude": 36.8330385,
+        "longitude": 127.1793694
+      },
+      "coordinateSourceUrl": "https://www.openstreetmap.org/way/231288273",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-hoseo-university",
+      "name": "호서대학교 천안캠퍼스",
+      "category": "other",
+      "kind": "education",
+      "address": "충청남도 천안시 동남구 호서대길 12",
+      "aliases": [
+        "호서대",
+        "호서대학교",
+        "대학교",
+        "대학"
+      ],
+      "sourceUrl": "https://www.openstreetmap.org/relation/5470604",
+      "sourceName": "OpenStreetMap 시설 정보",
+      "coordinates": {
+        "latitude": 36.8283614,
+        "longitude": 127.1820067
+      },
+      "coordinateSourceUrl": "https://www.openstreetmap.org/relation/5470604",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-koreatech",
+      "name": "한국기술교육대학교",
+      "category": "other",
+      "kind": "education",
+      "address": "충청남도 천안시 동남구 병천면 충절로 1600",
+      "aliases": [
+        "한기대",
+        "코리아텍",
+        "대학교",
+        "대학"
+      ],
+      "sourceUrl": "https://www.openstreetmap.org/way/223661475",
+      "sourceName": "OpenStreetMap 시설 정보",
+      "coordinates": {
+        "latitude": 36.763535,
+        "longitude": 127.2806268
+      },
+      "coordinateSourceUrl": "https://www.openstreetmap.org/way/223661475",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-independence-hall",
+      "name": "독립기념관",
+      "category": "other",
+      "kind": "culture",
+      "address": "충청남도 천안시 동남구 목천읍 독립기념관로 1",
+      "aliases": [
+        "기념관",
+        "관광",
+        "문화시설"
+      ],
+      "sourceUrl": "https://www.openstreetmap.org/node/368635603",
+      "sourceName": "OpenStreetMap 시설 정보",
+      "coordinates": {
+        "latitude": 36.783045,
+        "longitude": 127.224876
+      },
+      "coordinateSourceUrl": "https://www.openstreetmap.org/node/368635603",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-museum",
+      "name": "천안박물관",
+      "category": "other",
+      "kind": "culture",
+      "address": "충청남도 천안시 동남구 천안대로 429-13",
+      "aliases": [
+        "박물관",
+        "문화시설"
+      ],
+      "sourceUrl": "https://www.openstreetmap.org/way/481319581",
+      "sourceName": "OpenStreetMap 시설 정보",
+      "coordinates": {
+        "latitude": 36.7866138,
+        "longitude": 127.1633803
+      },
+      "coordinateSourceUrl": "https://www.openstreetmap.org/way/481319581",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-arario-gallery",
+      "name": "아라리오갤러리 천안",
+      "category": "other",
+      "kind": "culture",
+      "address": "충청남도 천안시 동남구 만남로 43",
+      "aliases": [
+        "아라리오",
+        "갤러리",
+        "미술관",
+        "문화시설"
+      ],
+      "sourceUrl": "https://www.openstreetmap.org/way/480562867",
+      "sourceName": "OpenStreetMap 시설 정보",
+      "coordinates": {
+        "latitude": 36.8193043,
+        "longitude": 127.1578502
+      },
+      "coordinateSourceUrl": "https://www.openstreetmap.org/way/480562867",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    },
+    {
+      "destinationId": "cheonan-shinsegae",
+      "name": "신세계백화점 천안아산점",
+      "category": "market",
+      "kind": "shopping",
+      "address": "충청남도 천안시 동남구 만남로 43",
+      "aliases": [
+        "신세계",
+        "백화점",
+        "쇼핑"
+      ],
+      "sourceUrl": "https://www.openstreetmap.org/way/84331571",
+      "sourceName": "OpenStreetMap 시설 정보",
+      "coordinates": {
+        "latitude": 36.8194751,
+        "longitude": 127.1562065
+      },
+      "coordinateSourceUrl": "https://www.openstreetmap.org/way/84331571",
+      "coordinateNote": "시설 대표점. 출입구 위치와 차이가 있을 수 있음."
+    }
+  ],
+  "coordinateAttribution": "© OpenStreetMap contributors (ODbL); 일부 시장 좌표: 공공데이터포털"
+}
