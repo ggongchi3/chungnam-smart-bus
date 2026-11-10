@@ -48,6 +48,11 @@
   font-weight: 700;
 }
 
+.startScreen .startButton:active {
+  background: #4f4f4f;
+  filter: none;
+}
+
 .selectionSummary {
   display: grid;
   gap: 12px;
