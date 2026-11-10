@@ -30,7 +30,7 @@ export function KioskFrame({ stationName, stationNumber, onVoiceGuide, children 
     return () => window.clearInterval(timer)
   }, [])
 
-  const stationLabel = stationName?.trim() || '정류장 정보를 확인하고 있습니다'
+  const stationLabel = stationName?.trim() || '현재 정류장'
 
   return (
     <div className={styles.frame} data-contrast={highContrast ? 'high' : 'normal'} lang="ko">

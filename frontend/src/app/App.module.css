@@ -45,10 +45,6 @@
   font-weight: 700;
 }
 
-.startButton:disabled {
-  cursor: wait;
-}
-
 .selectionSummary {
   display: grid;
   gap: 12px;
