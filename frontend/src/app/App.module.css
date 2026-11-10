@@ -1,20 +1,7 @@
-.appShell {
-  width: min(100% - 32px, 760px);
-  min-height: 100vh;
-  margin: 0 auto;
-  padding: 24px 0 48px;
-}
-
 .panel {
   display: grid;
   gap: 24px;
   padding: 24px 0;
-}
-
-.stationName {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 700;
 }
 
 .selectionSummary {

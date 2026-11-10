@@ -2,6 +2,7 @@ import JourneyGuideScreen from '../features/journey-guide/JourneyGuideScreen'
 import { useCallback, useEffect, useState } from 'react'
 import { getStation, ApiRequestError } from '../shared/api/client'
 import { ServiceNotice } from '../shared/ui/ServiceNotice'
+import { KioskFrame } from '../shared/ui/KioskFrame'
 import { DestinationSearch } from '../features/destination-search/DestinationSearch'
 import { RouteSelection } from '../features/route-selection/RouteSelection'
 import { useAppState } from './AppState'
@@ -34,11 +35,10 @@ export default function App() {
   }, [loadStation])
 
   return (
-    <div className={styles.appShell}>
+    <KioskFrame stationName={state.station?.name ?? null} stationNumber={state.station?.displayNumber}>
       <ServiceNotice />
       {state.screen === 'start' && (
         <main className={styles.panel}>
-          <p className="eyebrow">현재 정류장</p>
           <h1>어디로 가시나요?</h1>
           {stationLoading && <p role="status">정류장 정보를 확인하고 있습니다.</p>}
           {stationError && (
@@ -48,11 +48,6 @@ export default function App() {
                 다시 불러오기
               </button>
             </div>
-          )}
-          {state.station && (
-            <p className={styles.stationName}>
-              {state.station.name}{state.station.directionLabel ? ' · ' + state.station.directionLabel : ''}
-            </p>
           )}
           <button
             className="button button-primary"
@@ -82,6 +77,6 @@ export default function App() {
       {state.screen === 'journey-guide' && state.routeSelection && (
         <JourneyGuideScreen selection={state.routeSelection} onReselect={() => dispatch({ type: 'back-to-search' })} />
       )}
-    </div>
+    </KioskFrame>
   )
 }
