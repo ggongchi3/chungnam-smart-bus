@@ -30,7 +30,7 @@ export function formatDuration(seconds: number | null | undefined): string {
 
 export function formatDistance(meters: number | null | undefined): string {
   if (meters == null || !Number.isFinite(meters) || meters < 0) return UNKNOWN;
-  return meters < 1000 ? `${meters.toLocaleString('ko-KR')}m` : `${(meters / 1000).toLocaleString('ko-KR', { maximumFractionDigits: 1 })}km`;
+  return meters < 1000 ? `${Math.round(meters).toLocaleString('ko-KR')}m` : `${(meters / 1000).toLocaleString('ko-KR', { maximumFractionDigits: 1 })}km`;
 }
 
 export function freshnessLabel(freshness: Freshness): string {

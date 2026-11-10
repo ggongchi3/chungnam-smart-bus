@@ -77,11 +77,20 @@ def positions(route, stations):
     return list(reversed(matched)), offsets[-1]
 
 
+def ranking_key(metrics, mode, identity):
+    """Use the same deterministic order before and after candidate pruning."""
+    metric, walking = metrics[mode], metrics['walking']
+    return (metric is None, metric or 0, metrics['transfers'],
+            walking is None, walking or 0, identity)
+
+
+def option_metrics(option):
+    return {'fastest': option.estimatedTravelSeconds, 'transfers': option.transferCount,
+            'walking': option.walkingDistanceMeters, 'distance': option.totalDistanceMeters}
+
+
 def sort_key(option, mode):
-    metric = {'fastest': option.estimatedTravelSeconds, 'transfers': option.transferCount,
-              'walking': option.walkingDistanceMeters, 'distance': option.totalDistanceMeters}[mode]
-    return (metric is None, metric or 0, option.transferCount,
-            option.walkingDistanceMeters is None, option.walkingDistanceMeters or 0, option.routeOptionId)
+    return ranking_key(option_metrics(option), mode, option.routeOptionId)
 
 
 class CheonanNetwork:
@@ -103,9 +112,16 @@ class CheonanNetwork:
 
     def register_origin(self, database):
         with database.session() as session:
-            if session.get(Station, self.origin['stationId']) is None:
-                session.add(Station(station_id=self.origin['stationId'], name=self.origin['name'],
-                    direction_label='정류장 ' + self.origin['arsId'], region='충청남도 천안시', coordinates=self.origin['coordinates']))
+            station = session.get(Station, self.origin['stationId'])
+            if station is None:
+                station = Station(station_id=self.origin['stationId'])
+                session.add(station)
+            # A reused database must not leave the UI/distance origin at old or
+            # manually edited coordinates while this graph uses the fixed stop.
+            station.name = self.origin['name']
+            station.direction_label = '정류장 ' + self.origin['arsId']
+            station.region = '충청남도 천안시'
+            station.coordinates = dict(self.origin['coordinates'])
 
     def ref(self, sid):
         return s.StationRef(stationId='cheonan-stop-' + sid, name=self.stations[sid]['name'])
@@ -168,10 +184,10 @@ class CheonanNetwork:
             walk_time = access['durationSeconds'] + (start['durationSeconds'] if start else 0)
             distance = total([p.distanceMeters for p in buses] + [walking])
             duration = total([p.durationSeconds for p in buses] + [walk_time])
-            stable = (tuple(legs), start['stationId'] if start else '', access.get('stationId', ''))
+            identity = 'cheonan-option-' + digest([legs, start, access])
             metrics = {'fastest': duration, 'transfers': max(0, len(legs)-1), 'walking': walking, 'distance': distance}
-            for mode, metric in metrics.items():
-                key = (metric is None, metric or 0, len(legs), duration is None, duration or 0, walking, stable)
+            for mode in SORTS:
+                key = ranking_key(metrics, mode, identity)
                 if family not in best[mode] or key < best[mode][family][0]:
                     best[mode][family] = (key, path)
         shortlist = {}
@@ -217,7 +233,8 @@ class CheonanNetwork:
         # Keep the best distinct families for every supported criterion before
         # applying the requested order; never truncate to an old top-three first.
         selected = {}
-        winners = {}
+        minima = {mode: min((option_metrics(option)[mode] for _, option, _ in all_candidates
+                    if option_metrics(option)[mode] is not None), default=None) for mode in SORTS}
         for mode in SORTS:
             families = set()
             for family, option, segments in sorted(all_candidates, key=lambda row: sort_key(row[1], mode)):
@@ -225,8 +242,6 @@ class CheonanNetwork:
                     continue
                 families.add(family)
                 selected[option.routeOptionId] = (family, option, segments)
-                if len(families) == 1:
-                    winners[mode] = option.routeOptionId
                 if len(families) == 3:
                     break
         # Display one option per family in this order, capped at twelve.
@@ -236,8 +251,9 @@ class CheonanNetwork:
                 continue
             families.add(family)
             features = {'fastest': '최소 이동시간 · 대기 제외', 'transfers': '최소 환승', 'walking': '최소 도보', 'distance': '최단 이동거리'}
-            option = option.model_copy(update={'features': [features[k] for k, oid in winners.items() if oid == option.routeOptionId
-                and (k != 'fastest' or option.estimatedTravelSeconds is not None) and (k != 'distance' or option.totalDistanceMeters is not None)]})
+            metrics = option_metrics(option)
+            option = option.model_copy(update={'features': [features[mode] for mode in SORTS
+                if minima[mode] is not None and metrics[mode] == minima[mode]]})
             values.append((option, segments))
         search_id = 'cheonan-search-' + uuid4().hex
         saved = {}

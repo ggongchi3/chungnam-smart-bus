@@ -359,6 +359,7 @@ def test_destination_deleted_while_ai_waits_is_no_longer_an_allowed_candidate(ma
     (100, 59, '59초입니다.'),
     (None, 60, '약 1분입니다.'),
     (100, 90, '약 2분입니다.'),
+    (100, 181, '약 4분입니다.'),
     (100, 420, '약 7분입니다.'),
 ])
 def test_fixed_guidance_preserves_each_confirmed_walk_fact(env,distance,duration,expected_time):

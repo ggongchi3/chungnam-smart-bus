@@ -4,6 +4,7 @@ Run from the repository root. Never invoked by an HTTP request or on app startup
 The reference snapshot has no vehicle observations or manufactured timetables.
 """
 import json
+from math import isfinite
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -14,6 +15,25 @@ ROOT = Path(__file__).resolve().parents[2]
 BASE = 'https://its.cheonan.go.kr'
 CACHE = ROOT / 'backend/.local/cheonan-import'
 OUTPUT = ROOT / 'shared/data/cheonan-transport.json'
+
+
+def origin_from_stops(stops):
+    """Bind the fixed stop to the official response on every manual refresh."""
+    public_id = '285000686'
+    row = next((row for row in stops if str(row.get('STOP_ID')) == public_id), None)
+    if row is None:
+        raise RuntimeError('Official origin stop is missing; existing snapshot preserved')
+    latitude, longitude = float(row['LAT']), float(row['LNG'])
+    if not (isfinite(latitude) and isfinite(longitude) and -90 <= latitude <= 90 and -180 <= longitude <= 180):
+        raise ValueError('Official origin coordinates are invalid; existing snapshot preserved')
+    if not row.get('STOP_NAME') or not row.get('SERVICE_ID'):
+        raise ValueError('Official origin name or ARS number is missing; existing snapshot preserved')
+    return {'stationId': 'cheonan-stop-' + public_id, 'publicId': public_id,
+            'name': row['STOP_NAME'], 'arsId': str(row['SERVICE_ID']),
+            'address': '충청남도 천안시 동남구 만남로 (천안종합버스터미널 앞)',
+            'addressNote': '도로 위 정류장으로 건물 도로명주소와 구분',
+            'coordinates': {'latitude': latitude, 'longitude': longitude},
+            'sourceUrl': BASE + '/bis/busStop.do'}
 
 
 def fetch(client, endpoint, **params):
@@ -33,6 +53,7 @@ def main():
     CACHE.mkdir(parents=True, exist_ok=True)
     with httpx.Client(base_url=BASE, timeout=30, headers={'User-Agent': 'CheonanSmartBus/0.1 reference-data-import'}) as client:
         stops = fetch(client, 'getBusStopList', searchKeyword='')
+        origin = origin_from_stops(stops)
         routes = fetch(client, 'getRouteList', searchKeyword='')
         # All directional municipal routes, including cross-boundary routes.
         result = []
@@ -64,12 +85,7 @@ def main():
             'sourceUpdatedAt': None,
             'coverage': '공식 공개 목록의 방향별 노선. 개별 운행일·구간 시간표는 미제공.',
             'failedRouteIds': failures,
-            'origin': {'stationId': 'cheonan-stop-285000686', 'publicId': '285000686',
-                       'name': '종합터미널', 'arsId': '686',
-                       'address': '충청남도 천안시 동남구 만남로 (천안종합버스터미널 앞)',
-                       'addressNote': '도로 위 정류장으로 건물 도로명주소와 구분',
-                       'coordinates': {'latitude': 36.8190148, 'longitude': 127.1565574},
-                       'sourceUrl': BASE + '/bis/busStop.do'},
+            'origin': origin,
             'stations': {str(row['STOP_ID']): {'name': row['STOP_NAME'], 'arsId': str(row.get('SERVICE_ID', '')),
                          'latitude': row['LAT'], 'longitude': row['LNG']} for row in stops},
             'routes': result,

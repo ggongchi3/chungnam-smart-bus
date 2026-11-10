@@ -10,7 +10,8 @@ from backend.config import Settings
 from backend.integrations.cheonan_live import arrival_state
 from backend.main import create_app
 from backend.models import schemas as s
-from backend.models.tables import RouteSearch
+from backend.models.tables import RouteSearch, Station
+from backend.seed import seed
 from backend.services.cheonan_routing import sort_key
 from backend.services.geo import haversine_meters
 from backend.services.places import load_places
@@ -45,6 +46,30 @@ def test_origin_and_distance_are_actual_reference_data(real_service):
     assert len(app.state.transport.routes) == 333
     assert haversine_meters({'latitude':0,'longitude':0}, {'latitude':0,'longitude':1}) == pytest.approx(111195.080, abs=.01)
     assert haversine_meters(origin['coordinates'], origin['coordinates']) == 0
+
+
+def test_reused_database_origin_is_refreshed_to_verified_reference(real_service):
+    app, client, _ = real_service
+    with app.state.database.session() as db:
+        stored = db.get(Station, ORIGIN)
+        stored.name = '이전 설정'
+        stored.coordinates = {'latitude': 0, 'longitude': 0}
+    app.state.transport.register_origin(app.state.database)
+    station = client.get('/api/v1/stations/' + ORIGIN).json()['data']['station']
+    assert station['name'] == '종합터미널'
+    assert station['coordinates'] == {'latitude': 36.8190148, 'longitude': 127.1565574}
+
+
+def test_real_catalog_rejects_legacy_demo_origins_instead_of_synthetic_fallback(real_service):
+    app, client, clock = real_service
+    # Simulate a persistent DB created by the previous demo application. Before
+    # the fixed-origin guard this request returned real-looking synthetic buses.
+    seed(app.state.database)
+    response = client.post('/api/v1/route-searches', json={'originStationId': 'demo-stop-001',
+        'destinationId': 'demo-destination-001', 'departAt': clock[0].isoformat()})
+    assert response.status_code == 400
+    assert response.json()['error']['code'] == 'INVALID_REQUEST'
+    assert response.json()['meta']['dataMode'] == 'static'
 
 
 @pytest.mark.parametrize('kind', [None,'hospital','office','market','shopping','terminal','station','education','culture'])
@@ -105,6 +130,21 @@ def test_four_real_metrics_change_order_and_preserve_detail_ai_and_print(real_se
         assert printed.json()['data']['routeDetail']['routeSnapshotVersion'] == first.routeSnapshotVersion
         assert printed.json()['data']['liveInfoSnapshot']['arrivals'] == [] or all(a['etaSeconds'] is None for a in printed.json()['data']['liveInfoSnapshot']['arrivals'])
     assert len({tuple(order) for order in orders}) >= 3
+
+
+def test_ranked_metrics_and_tied_features_are_independently_consistent(real_service):
+    _, client, clock = real_service
+    fields = {'fastest': 'estimatedTravelSeconds', 'transfers': 'transferCount',
+              'walking': 'walkingDistanceMeters', 'distance': 'totalDistanceMeters'}
+    for mode, field in fields.items():
+        options = search(client, clock, 'cheonan-dankook-hospital', mode)['routeOptions']
+        values = [option[field] for option in options]
+        assert values == sorted(values, key=lambda value: (value is None, value or 0))
+        # Every zero-transfer candidate has the same optimal transfer metric;
+        # a badge must not depend on which equal option happened to sort first.
+        assert any(option['transferCount'] == 0 for option in options)
+        for option in options:
+            assert ('최소 환승' in option['features']) == (option['transferCount'] == 0)
 
 
 def test_expiry_and_changed_snapshot_still_block_guidance(real_service):

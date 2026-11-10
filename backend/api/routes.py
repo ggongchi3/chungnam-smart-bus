@@ -46,7 +46,9 @@ async def destinations(request: Request, db: Session, params: Annotated[s.Destin
 
 
 @router.post('/route-searches', response_model=s.Envelope[s.SearchData])
-async def search(body: s.SearchRequest, request: Request, db: Session):
+def search(body: s.SearchRequest, request: Request, db: Session):
+    # FastAPI runs this CPU/SQLite-only handler in its worker pool. Cold graph
+    # matching must not block station/live requests on the ASGI event loop.
     now, provider = state(request)
     return response(request, journeys.create_search(db, body, provider, now, request.app.state.settings.data_mode, transport=request.app.state.transport))
 

@@ -38,6 +38,10 @@ def validated_expiry(search):
 
 def create_search(session, request, state, now, data_mode, *, transport=None):
     require_core(state)
+    if transport is not None and request.originStationId != transport.origin['stationId']:
+        # Historical demo rows may remain in an existing SQLite file. They must
+        # never fall through to synthetic routing under the real static mode.
+        raise ServiceError(400, 'INVALID_REQUEST', '기준 정류장 종합터미널을 출발지로 선택해 주세요.')
     catalog.station(session, request.originStationId)
     destination = catalog.destination(session, request.destinationId)
     if transport is not None and request.originStationId == transport.origin['stationId']:

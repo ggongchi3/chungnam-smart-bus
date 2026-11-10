@@ -31,7 +31,7 @@ export interface Destination {
   name: string;
   category: Category;
   aliases: string[];
-  /** Client enrichment from the shared verified facility catalogue, not API fields. */
+  /** Verified place/location fields are returned by the backend catalogue. */
   address?: string;
   placeKind?: 'hospital' | 'office' | 'terminal' | 'market' | 'station' | 'education' | 'culture' | 'shopping';
   coordinates?: Coordinates | null;
@@ -90,6 +90,7 @@ export interface RouteOption {
   walkingDurationSeconds: number | null;
   walkingDistanceMeters?: number | null;
   totalDistanceMeters?: number | null;
+  /** Estimated movement only. Excludes bus waiting and transfer waiting. */
   estimatedTravelSeconds?: number | null;
   waitingDurationSeconds?: number | null;
   boardStation?: StationRef | null;

@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
+import unicodedata
 
 from fastapi.testclient import TestClient
+import pytest
 from sqlalchemy import func, select
 
 from ai.adapter import RuleBasedAIAdapter
@@ -60,3 +62,65 @@ def test_terminal_complex_and_central_market_are_not_silent_duplicates():
     assert all(p['locationNote'] for p in terminals)
     assert sum('남산중앙시장' in p['aliases'] for p in places) == 1
     assert all(not any(k in p for k in ['etaSeconds', 'routeId', 'durationSeconds', 'stationId']) for p in places)
+
+
+def test_real_catalog_partial_address_unicode_shortcuts_and_ai_stay_distance_sorted():
+    origin = 'cheonan-stop-285000686'
+    app = create_app(Settings(database_url='sqlite:///:memory:'), ai_adapter=RuleBasedAIAdapter(),
+                     place_catalog='cheonan', transport_catalog='cheonan')
+    with TestClient(app) as client:
+        base = {'originStationId': origin}
+        for query, expected in [('망향로', {'cheonan-dankook-hospital'}),
+                                (unicodedata.normalize('NFD', '단국대병원'), {'cheonan-dankook-hospital'}),
+                                ('지하철', {'cheonan-station', 'cheonan-dujeong-station', 'cheonan-bongmyeong-station'})]:
+            response = client.get('/api/v1/destinations', params={**base, 'query': query})
+            assert response.status_code == 200, response.text
+            rows = response.json()['data']['destinations']
+            assert {row['destinationId'] for row in rows} == expected
+            assert rows == sorted(rows, key=lambda row: (row['distanceMeters'], row['name'], row['destinationId']))
+        rows = client.get('/api/v1/destinations', params={**base, 'kind': 'hospital'}).json()['data']['destinations']
+        interpreted = client.post('/api/v1/destination-interpretations', json={**base, 'text': '병원으로 가고 싶어요'})
+        assert interpreted.status_code == 200
+        assert interpreted.json()['data']['candidates'] == rows
+        # A fixed-origin pedestrian matrix must never be attached to another
+        # origin, even if the request comes from an older bookmarked client.
+        invalid = client.get('/api/v1/destinations', params={'originStationId': 'demo-stop-001', 'sort': 'walking'})
+        assert invalid.status_code == 400
+        assert invalid.json()['error']['code'] == 'INVALID_REQUEST'
+
+
+@pytest.mark.anyio
+async def test_ai_rebinds_current_catalog_distance_and_order_after_lookup():
+    from backend.models.schemas import Destination
+    from backend.services.ai import interpret
+
+    def place(identity, distance):
+        return Destination(destinationId=identity, name=identity, category='hospital', aliases=[],
+                           distanceMeters=distance, distanceBasis='straight_line')
+
+    class Boundary:
+        budget = 1
+
+        async def call(self, operation, payload):
+            return {'status': 'needs_confirmation', 'candidateDestinationIds': ['first', 'second'], 'reasonCode': None}
+
+    result = await interpret(Boundary(), '병원', [place('first', 10), place('second', 20)], 'static',
+                             reload_destinations=lambda: [place('second', 5), place('first', 10)])
+    assert [row.destinationId for row in result.candidates] == ['second', 'first']
+    assert [row.distanceMeters for row in result.candidates] == [5, 10]
+
+
+def test_origin_import_uses_official_row_and_fails_without_it():
+    import json
+    from pathlib import Path
+    from backend.scripts.refresh_cheonan_transport import origin_from_stops
+
+    snapshot = json.loads((Path(__file__).resolve().parents[2] / 'shared/data/cheonan-transport.json').read_text(encoding='utf-8'))
+    row = snapshot['stations']['285000686']
+    imported = origin_from_stops([{'STOP_ID': 285000686, 'STOP_NAME': row['name'], 'SERVICE_ID': row['arsId'],
+                                  'LAT': str(row['latitude']), 'LNG': str(row['longitude'])}])
+    assert imported == snapshot['origin']
+    with pytest.raises(RuntimeError, match='missing'):
+        origin_from_stops([])
+    with pytest.raises(ValueError, match='invalid'):
+        origin_from_stops([{'STOP_ID': 285000686, 'LAT': float('nan'), 'LNG': row['longitude']}])

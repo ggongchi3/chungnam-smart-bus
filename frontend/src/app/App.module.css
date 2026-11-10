@@ -1,5 +1,5 @@
-.kiosk { --surface: #fff; --text:#000; --sub:#3d3d3d; --accent:#3586fc; --border:#e7e7e7; --muted:#4f4f4f; --button-from:#3586fc; --button-to:#004fcf; --button-text:white; position: relative; width: min(100%, calc(100dvh * 9 / 16)); max-width:1080px; aspect-ratio:9/16; margin:0 auto; container-type:inline-size; background:var(--surface); color:var(--text); overflow:hidden; letter-spacing:-.02em; }
-.high { --surface:#262626; --text:#fcff00; --sub:#fff; --accent:#fcff00; --border:#fff; --muted:#fff; --button-from:#fcff00; --button-to:#fcff00; --button-text:#000; }
+.kiosk { --surface: #fff; --text:#000; --sub:#3d3d3d; --accent:#3586fc; --border:#e7e7e7; --muted:#4f4f4f; --button-from:#3586fc; --button-to:#004fcf; --button-text:white; --selected-bg:#004fcf; --selected-text:#fff; position: relative; width: min(100%, calc(100dvh * 9 / 16)); max-width:1080px; aspect-ratio:9/16; margin:0 auto; container-type:inline-size; background:var(--surface); color:var(--text); overflow:hidden; letter-spacing:-.02em; }
+.high { --surface:#262626; --text:#fcff00; --sub:#fff; --accent:#fcff00; --border:#fff; --muted:#fff; --button-from:#fcff00; --button-to:#fcff00; --button-text:#000; --selected-bg:#fcff00; --selected-text:#000; }
 .header { position:absolute; inset:0 0 auto; height:6.25%; padding:0 3.704cqw; background:#262626; color:white; display:flex; align-items:center; justify-content:space-between; gap:2cqw; font-size:3.333cqw; font-weight:600; z-index:2; }
 .header > span { display:flex; align-items:center; gap:.741cqw; min-width:0; }
 .header time { white-space:nowrap; font-weight:500; }
@@ -164,3 +164,11 @@ em { font-style:normal; color:var(--accent); }
 .routeScreen .placeDetails .selectionLabel { display:none; }
 .routeScreen .placeDetails a { padding:0; }
 .routeScreen .supportNote { margin:2cqw 0; }
+.routingNotice { margin:2.5cqw 0; padding:2.2cqw; border:.185cqw solid var(--border); border-radius:1cqw; font-size:2.6cqw; color:var(--sub); line-height:1.55; }
+.routingNotice p { margin:0 0 1cqw; }
+.routingNotice summary { cursor:pointer; font-weight:600; }
+.routingNotice details p { margin:1.5cqw 0 0; }
+.routingNotice a { color:inherit; }
+.category[aria-pressed=true],.chip[aria-pressed=true],.destination[aria-pressed=true],.comparisonCard[aria-pressed=true] { background:var(--selected-bg); color:var(--selected-text); }
+.chip[aria-pressed=true]:disabled,.category[aria-pressed=true]:disabled,.destination[aria-pressed=true]:disabled,.comparisonCard[aria-pressed=true]:disabled { opacity:1; }
+.destination[aria-pressed=true] > span,.destination[aria-pressed=true] > small,.destination[aria-pressed=true] .placeDistance,.comparisonCard[aria-pressed=true] .routeStops,.comparisonCard[aria-pressed=true] .routeMetrics > span,.comparisonCard[aria-pressed=true] .routeMetrics b,.comparisonCard[aria-pressed=true] .cardAction { color:var(--selected-text); }

@@ -1,6 +1,7 @@
 from sqlalchemy import select
+import unicodedata
 
-from backend.api.errors import not_found
+from backend.api.errors import ServiceError, not_found
 from backend.models import schemas as s
 from backend.models.tables import Station, Destination, DestinationAlias, DestinationLocation
 from backend.services.geo import haversine_meters, destination_key
@@ -28,14 +29,23 @@ def destination(session, destination_id):
 
 
 def destinations(session, origin, query='', category=None, *, visible_ids=None, kind=None, sort='distance', transport=None):
+    if transport and origin != transport.origin['stationId']:
+        raise ServiceError(400, 'INVALID_REQUEST', '기준 정류장 종합터미널을 출발지로 선택해 주세요.')
     source = station(session, origin)
     rows = session.scalars(select(Destination).order_by(Destination.destination_id)).all()
     result = [destination(session, row.destination_id) for row in rows
               if visible_ids is None or row.destination_id in visible_ids]
     def normalize(text):
-        return ''.join(text.casefold().split()) if visible_ids is not None else text.casefold()
+        if visible_ids is not None:
+            return ''.join(unicodedata.normalize('NFKC', text).casefold().split())
+        return text.casefold()
+    def searchable_values(item):
+        values = [item.name, *item.aliases]
+        if visible_ids is not None and item.address:
+            values.append(item.address)
+        return values
     result = [item for item in result if (not category or item.category == category) and (not kind or item.placeKind == kind) and
-            (not query or any(normalize(query) in normalize(value) for value in [item.name, *item.aliases]))]
+            (not query or any(normalize(query) in normalize(value) for value in searchable_values(item)))]
     if visible_ids is not None:
         for item in result:
             if source.coordinates and item.coordinates:
