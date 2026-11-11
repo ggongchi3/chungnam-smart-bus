@@ -205,7 +205,8 @@ describe('천안 실제 장소 선택', () => {
     await mount(); await click('목적지 찾기'); await click('병원');
     await act(async () => {Array.from(host.querySelectorAll('button')).find(b => b.querySelector('strong')?.textContent === displayText(destination.name))!.click();});
     const card = Array.from(host.querySelectorAll('button')).find(b => b.querySelector('strong')?.textContent === '1번')!;
-    expect(card.textContent).toContain('종합터미널 승차 → 병원 앞 하차');
+    expect(card.textContent).toContain('타는 곳 종합터미널');
+    expect(card.textContent).toContain('내리는 곳 병원 앞');
     expect(card.textContent).toContain('총 예상시간 18분');
     expect(card.textContent).toContain('예상 대기시간 3분');
     expect(card.textContent).toContain('1번 · 시연 · 약 3분 후 도착 예정');

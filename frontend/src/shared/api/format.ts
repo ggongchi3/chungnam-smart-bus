@@ -33,6 +33,11 @@ export function formatDistance(meters: number | null | undefined): string {
   return meters < 1000 ? `${Math.round(meters).toLocaleString('ko-KR')}m` : `${(meters / 1000).toLocaleString('ko-KR', { maximumFractionDigits: 1 })}km`;
 }
 
+export function formatBusLabel(routeName: string): string {
+  if (routeName.endsWith('버스')) return routeName;
+  return `${routeName}${/\d$/.test(routeName) ? '번' : ''} 버스`;
+}
+
 export function freshnessLabel(freshness: Freshness): string {
   return { fresh: '최근 정보', stale: '오래된 정보', unknown: '갱신 상태 확인 불가' }[freshness];
 }

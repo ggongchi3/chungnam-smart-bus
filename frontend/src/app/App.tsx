@@ -3,7 +3,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import { api, ApiError, isAbortError } from '../shared/api/client';
 import type { Category, Destination, LiveData, OptionArrivals, RouteDetail, RouteOption, SearchArrivals, SelectionRequest, RouteSort, PlaceSort } from '../shared/api/types';
-import { currentArrival, effectiveFreshness, formatDateTime, formatDuration, formatDistance, formatTime } from '../shared/api/format';
+import { currentArrival, effectiveFreshness, formatBusLabel, formatDateTime, formatDuration, formatDistance, formatTime } from '../shared/api/format';
 import { RouteCards } from '../features/route-search/RouteCards';
 import { useVoiceGuide } from '../features/voice-guide/useVoiceGuide';
 import { speechTexts } from '../features/voice-guide/speechText';
@@ -60,6 +60,40 @@ function LiveInfo({ live, cached, retry, verified, detail }: {
 function Summary() {
   const state = useContext(StateContext);
   return <div className={s.summary}><div><span>출발 정류장</span><strong>{state.station?.name ?? '현재 정류장'}</strong></div><Asset file="af0b3.svg" className={s.arrow} /><div><span>목적지</span><strong>{state.destination?.name}</strong></div></div>;
+}
+function JourneySteps({ detail, high }: { detail: RouteDetail; high: boolean }) {
+  return <section className={s.journey}>
+    <h2>이동 순서</h2>
+    <ol className={s.journeyList} role="list">
+      {detail.segments.map((segment, index) => (
+        <li className={s.journeyStep} key={segment.segmentId}>
+          <span className={s.stepIcon} aria-hidden="true">
+            <Asset file={segment.type === 'bus' ? high ? '31cc0.svg' : '322d1.svg' : high ? 'bd9ef.svg' : 'e6b90.svg'} className={s.stepArt} />
+            <span className={s.stepNumber}>{index + 1}</span>
+          </span>
+          <div>
+            {segment.type === 'bus' && <>
+              <h3>{formatBusLabel(segment.routeName)}</h3>
+              <p>타는 곳 <strong>{segment.boardStation.name}</strong></p>
+              <p>내리는 곳 <strong>{segment.alightStation.name}</strong></p>
+              <p>{segment.stopCount}개 정류장 이동</p>
+            </>}
+            {segment.type === 'transfer' && <>
+              <h3>버스를 갈아타세요</h3>
+              <p><strong>{segment.atStation.name}</strong></p>
+            </>}
+            {segment.type === 'walk' && <>
+              <h3>{segment.toLabel}까지 걸어가세요</h3>
+              {(segment.distanceMeters !== null || segment.durationSeconds !== null) && <p>{[
+                segment.distanceMeters !== null ? `도보 ${formatDistance(segment.distanceMeters)}` : null,
+                segment.durationSeconds !== null ? `약 ${formatDuration(segment.durationSeconds)}` : null,
+              ].filter(Boolean).join(' · ')}</p>}
+            </>}
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>;
 }
 function selection(detail: RouteDetail): SelectionRequest {
   return { routeSearchId: detail.routeSearchId, routeOptionId: detail.routeOptionId, expectedRouteSnapshotVersion: detail.routeSnapshotVersion };
@@ -269,8 +303,8 @@ export function App() {
         {state.screen === 'keyboard' && <><Heading title="어디로 가시나요?" subtitle="검색하거나 아래 목록에서 선택해 주세요." /><form onSubmit={e => { e.preventDefault(); searchText(); }}><label className={s.inputWrap}><Asset file="ec4c9.svg" className={s.searchIcon} /><input autoFocus aria-label="목적지 검색" placeholder="장소를 검색하세요" maxLength={100} value={query} onChange={e => setQuery(e.target.value)} /></label><div className={s.keyboard}><Keyboard value={query} onChange={setQuery} onSubmit={() => searchText()} disabled={state.busy} /></div></form></>}
         {state.screen === 'results' && <><Heading title={state.resultTitle} subtitle={noResults ? '검색어와 일치하는 내용이 없어요.' : state.resultTitle.startsWith('“') ? '찾으시는 장소를 선택해 주세요.' : '가고 싶은 장소를 선택해 주세요.'} />{noResults ? <div className={s.empty}><img src="/assets/a3ca0.png" alt="회색 버스" /><p>현재 검색어와 일치하는 내용이 없어요.<br />다시 검색해 주세요.</p><div className={s.actions}><Primary secondary onClick={() => go('destinations')}>이전</Primary><Primary onClick={() => go('keyboard')}>다시 검색하기</Primary></div></div> : <><div className={s.listHeading}><span>검색 결과 {state.results.length}건</span><span>{([['walking','가까운순'], ['name','이름순']] as const).map(([value,label]) => <button key={value} className={s.chip} disabled={state.busy} aria-pressed={placeSort === value} onClick={() => state.selectedCategory ? loadCategory(state.selectedCategory, value) : searchText(value)}>{label}</button>)}</span></div><p className={s.supportNote}>{distanceNotice}</p><div className={s.results}>{sortedResults.map(d => <button key={d.destinationId} className={s.destination} aria-pressed={state.destination?.destinationId === d.destinationId} disabled={state.busy} onClick={() => findRoutes(d)}><strong>{d.name}</strong><b className={s.placeDistance}>{`도보 ${d.walkingDistanceBasis === 'prototype_estimate' ? '약 ' : ''}${formatDistance(d.walkingDistanceMeters)}`}</b><span>{d.address ?? categoryNames[d.category]}</span>{d.locationNote && <small>{d.locationNote}</small>}</button>)}</div></>}</>}
         {state.screen === 'routes' && <><Heading title="어떤 경로로 이동하시겠어요?" subtitle="이용할 경로를 선택해 주세요." /><Summary />{state.destination && <PlaceDetails destination={state.destination} />}<div className={s.routeSort} aria-label="경로 정렬">{([['transfers','최소 환승'],['walking','최소 도보'],['distance','최단 거리'],['fastest','이동시간순 · 대기 제외']] as const).map(([value,label]) => <button key={value} className={s.chip} aria-pressed={sort === value} disabled={state.busy || noRoutes} onClick={() => state.destination && findRoutes(state.destination, value)}>{label}</button>)}</div>{noRoutes ? <div className={s.empty}><img src="/assets/a3ca0.png" alt="회색 버스" /><p>{state.search ? '이용할 수 있는 경로를 찾지 못했어요.' : '경로를 다시 검색해 주세요.'}</p><Primary disabled={!state.destination || state.busy} onClick={() => state.destination && findRoutes(state.destination, sort)}>경로 다시 검색</Primary></div> : <><RouteCards options={options} origin={state.station?.name ?? '현재 정류장'} destination={state.destination?.name ?? ''} selected={state.selectedRouteOptionId} busy={state.busy} simulate={prototypeEnabled(state.dataMode)} arrivals={optionArrivals} onChoose={chooseRoute} /></>}</>}
-        {state.screen === 'detail' && state.detail && <><Heading title="이렇게 이동하세요" subtitle="타는 버스와 내리는 정류장을 확인해 주세요." /><div className={s.detailSummary}><strong>{state.detail.segments.filter(x => x.type === 'bus').map(x => x.routeName).join(' → ') || '도보 이동'}</strong><Asset file="ad3c1.svg" className={s.arrow} /><strong>{state.destination?.name}</strong></div><section className={s.journey}><h2>경로 안내</h2>{state.detail.segments.map((segment, i) => <div className={s.journeyStep} key={segment.segmentId}><div className={s.stepIcon}><Asset file={segment.type === 'bus' ? high ? '31cc0.svg' : '322d1.svg' : high ? 'bd9ef.svg' : 'e6b90.svg'} className={s.stepArt} /></div><div>{segment.type === 'bus' ? <><strong>{segment.routeName}<br />{segment.boardStation.name} 승차</strong><p>{segment.stopCount}개 정류장 후 {segment.alightStation.name} 하차</p></> : segment.type === 'transfer' ? <strong>{segment.atStation.name}에서 환승</strong> : <><strong>{segment.toLabel}까지 도보 이동</strong><p>도보 {formatDistance(segment.distanceMeters)} · 약 {formatDuration(segment.durationSeconds)}</p></>}{state.guidance?.steps.find(x => x.segmentId === segment.segmentId)?.text && <p className={s.easy}>{state.guidance.steps.find(x => x.segmentId === segment.segmentId)?.text}</p>}</div>{i < state.detail!.segments.length - 1 && <i className={s.connector} />}</div>)}</section><div className={s.actions}><Primary secondary onClick={() => { setShowVoice(true); if (voice.speaking) voice.stop(); else voice.speak(displayText(spokenText)); }}>{voice.speaking ? '안내 중지' : '음성으로 듣기'}</Primary><Primary disabled={state.busy || state.detail.journeyStatus !== 'ready'} onClick={preparePrint}>안내표 인쇄하기</Primary></div><LiveInfo detail={state.detail} live={state.live} cached={optionArrivals?.[state.detail.routeOptionId]} verified={state.dataMode === 'live' || state.dataMode === 'static'} retry={() => void refreshLive()} /></>}
-        {state.screen === 'print' && state.print && <><Heading title="종이 안내표를 출력해 드릴까요?" subtitle={<>타는 버스와 내리는 정류장을<br />종이로 확인할 수 있어요.</>} /><div className={s.printerArt}><img src="/assets/7144f.png" alt="안내표를 출력하는 키오스크" /></div><div className={s.printSummary}><strong>{state.station?.name} → {state.destination?.name}</strong><p>안내 일시: {formatDateTime(state.print.generatedAt)}</p></div><div className={s.actions}><Primary secondary onClick={() => go('detail')}>인쇄 안 함</Primary><Primary disabled={state.busy} onClick={printNow}>인쇄하기</Primary></div></>}
+        {state.screen === 'detail' && state.detail && <><Heading title="이렇게 이동하세요" subtitle="타는 버스와 내리는 정류장을 확인해 주세요." /><div className={s.detailSummary}><strong>{state.detail.segments.filter(x => x.type === 'bus').map(x => x.routeName).join(' → ') || '도보 이동'}</strong><Asset file="ad3c1.svg" className={s.arrow} /><strong>{state.destination?.name}</strong></div><JourneySteps detail={state.detail} high={high} /><div className={s.actions}><Primary secondary onClick={() => { setShowVoice(true); if (voice.speaking) voice.stop(); else voice.speak(displayText(spokenText)); }}>{voice.speaking ? '안내 중지' : '음성으로 듣기'}</Primary><Primary disabled={state.busy || state.detail.journeyStatus !== 'ready'} onClick={preparePrint}>안내표 인쇄하기</Primary></div><LiveInfo detail={state.detail} live={state.live} cached={optionArrivals?.[state.detail.routeOptionId]} verified={state.dataMode === 'live' || state.dataMode === 'static'} retry={() => void refreshLive()} /></>}
+        {state.screen === 'print' && state.print && <><Heading title="종이 안내표를 출력해 드릴까요?" subtitle={<>타는 버스와 내리는 정류장을<br />종이로 확인할 수 있어요.</>} /><div className={s.printerArt}><img src="/assets/7144f.png" alt="안내표를 출력하는 키오스크" /></div><div className={s.printSummary}><strong>{state.station?.name} → {state.destination?.name}</strong><p>인쇄 시각 {formatDateTime(state.print.generatedAt)}</p></div><div className={s.actions}><Primary secondary onClick={() => go('detail')}>인쇄 안 함</Primary><Primary disabled={state.busy} onClick={printNow}>인쇄하기</Primary></div></>}
         {state.screen === 'done' && <div className={s.done}><Heading title="안내표를 확인해 주세요" subtitle={<>필요하면 다시 인쇄할 수 있어요.</>} /><div className={`${s.printerArt} ${s.completionArt}`}><img src="/assets/7144f.png" alt="안내표를 가져가는 모습" /></div><p><em>{doneSeconds}</em>초 후 처음으로 돌아가요</p><Primary onClick={() => go('print')}>계속 이용하기</Primary><button className={s.textButton} onClick={reset}>이용 마치기</button></div>}
         {state.error && <div className={s.error} role="alert"><p>{state.error}</p><button onClick={() => state.screen === 'home' ? void run(async signal => { const r = await api.station(ORIGIN_STATION_ID, signal); if (!signal.aborted) patch({ station: { ...r.data.station, name: r.data.station.stationId.startsWith('demo-') ? '현재 정류장' : displayText(r.data.station.name) }, dataMode: r.meta.dataMode }); }) : patch({ error: '' })}>{state.screen === 'home' ? '정류장 다시 확인' : '확인'}</button></div>}
       </main>
@@ -279,7 +313,7 @@ export function App() {
       {state.busy && <div className={s.loading} role="status"><span />확인하고 있어요…</div>}
       {idle !== null && <IdleDialog count={idle} resume={() => { activity.current = Date.now(); setIdle(null); }} end={reset} />}
     </div>
-    {state.print && <PrintDocument dataMode={state.dataMode} snapshot={state.print} originName={state.station?.name ?? ''} destinationName={state.destination?.name ?? ''} />}
+    {state.print && <PrintDocument snapshot={state.print} originName={state.station?.name ?? ''} destinationName={state.destination?.name ?? ''} />}
   </StateContext.Provider>;
 }
 function IdleDialog({ count, resume, end }: { count: number; resume: () => void; end: () => void }) {

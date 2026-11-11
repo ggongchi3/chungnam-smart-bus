@@ -26,8 +26,12 @@ export function RouteCards({options, origin, destination, selected, busy, simula
     <span className={styles.routeBadges}>{option.features?.map(label => <span key={label}>{label}</span>)}{timing.simulated && <span>총시간·대기 시연</span>}</span>
     <strong>{option.routeNames.join(' → ') || '도보 이동'}</strong>
     <span className={styles.routeEndpoints}>{origin} → {destination}</span>
-    <span className={styles.routeStops}>{!option.routeNames.length ? '현재 정류장에서 목적지까지 도보 이동' : option.boardStation ? `${option.boardStation.name} 승차 → ${option.alightStation?.name ?? '도착 정류장'} 하차` : '승하차 정류장은 상세 안내에서 확인해 주세요.'}</span>
-    {!!option.transferStations?.length && <span className={styles.routeStops}>환승: {option.transferStations.map(stop => stop.name).join(' → ')}</span>}
+    {!option.routeNames.length ? <span className={styles.routeStops}>현재 정류장에서 목적지까지 도보 이동</span> : <>
+      {option.boardStation && <span className={styles.routeStops}>타는 곳 <b>{option.boardStation.name}</b></span>}
+      {!!option.transferStations?.length && <span className={styles.routeStops}>갈아타는 곳 <b>{option.transferStations.map(stop => stop.name).join(' → ')}</b></span>}
+      {option.alightStation && <span className={styles.routeStops}>내리는 곳 <b>{option.alightStation.name}</b></span>}
+      {(!option.boardStation || !option.alightStation) && <span className={styles.routeStops}>정류장은 상세 안내에서 확인해 주세요.</span>}
+    </>}
     <span className={styles.routeMetrics}>
       <span>총 예상시간 <b>{formatDuration(timing.total)}</b></span>
       <span>이동 추정 · 대기 제외 <b>{formatDuration(timing.movement)}</b></span>

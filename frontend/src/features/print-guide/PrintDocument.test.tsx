@@ -21,7 +21,7 @@ function snapshot(): PrintData {
           boardSequence: 1, alightSequence: 3, stopCount: 2, durationSeconds: null },
         { type: 'transfer', segmentId: 'transfer-1', fromSegmentId: 'bus-1', toSegmentId: 'bus-2',
           atStation: { stationId: 'transfer', name: '시연 환승 정류장' }, instructionTemplateId: 'transfer.basic' },
-        { type: 'bus', segmentId: 'bus-2', routeId: 'route-2', routeName: '시연 2번',
+        { type: 'bus', segmentId: 'bus-2', routeId: 'route-2', routeName: '시연 2',
           boardStation: { stationId: 'transfer', name: '시연 환승 정류장' },
           alightStation: { stationId: 'end', name: '시연 도착 정류장' },
           boardSequence: 1, alightSequence: 2, stopCount: 1, durationSeconds: null },
@@ -42,7 +42,7 @@ function snapshot(): PrintData {
 
 function render(data: PrintData): HTMLElement {
   const host = document.createElement('div');
-  host.innerHTML = renderToStaticMarkup(<PrintDocument snapshot={data} dataMode="live" originName="시연 출발 정류장" destinationName="시연 터미널" />);
+  host.innerHTML = renderToStaticMarkup(<PrintDocument snapshot={data} originName="시연 출발 정류장" destinationName="시연 터미널" />);
   return host;
 }
 
@@ -50,10 +50,15 @@ describe('고정 인쇄 안내표', () => {
   it('버스·환승·도보 순서와 미확인 정보를 유지하고 변동하는 도착 예측은 출력하지 않는다', () => {
     const doc = render(snapshot());
     const steps = Array.from(doc.querySelectorAll('ol > li'));
-    expect(steps.map(step => step.querySelector('h2')?.textContent)).toEqual(['1번 버스', '버스 환승', '2번 버스', '도보 이동']);
+    expect(steps.map(step => step.querySelector('h2')?.textContent)).toEqual(['1번 버스', '버스를 갈아타세요', '2번 버스', '걸어가세요']);
+    expect(Array.from(steps[0].querySelectorAll('dt, dd'), cell => cell.textContent)).toEqual([
+      '타는 곳', '출발 정류장', '내리는 곳', '환승 정류장',
+    ]);
     expect(steps[0].textContent).toContain('2개 정류장');
     expect(steps[1].textContent).toContain('환승 정류장');
-    expect(steps[3].textContent).toContain('도착 정류장 → 터미널');
+    expect(Array.from(steps[3].querySelectorAll('dt, dd'), cell => cell.textContent)).toEqual([
+      '출발하는 곳', '도착 정류장', '도착하는 곳', '터미널',
+    ]);
     expect(steps[3].textContent).not.toMatch(/확인되지 않음|0m|0분/);
     expect(doc.textContent).not.toMatch(/시연|테스트용|가상 시설|더미 데이터/);
     expect(doc.textContent).not.toMatch(/운행 상태|운행 변경 정보 확인|원천 갱신|서버 수집|카운트다운|자료 출처/);
@@ -63,14 +68,12 @@ describe('고정 인쇄 안내표', () => {
     expect(doc.querySelectorAll('h1')).toHaveLength(1);
   });
 
-  it.each([
-    { version: 'old-version', segmentId: 'bus-1' },
-    { version: 'v1', segmentId: 'unrelated-segment' },
-  ])('현재 경로와 연결되지 않은 안내 문장을 인쇄하지 않는다 (%s)', ({ version, segmentId }) => {
+  it('현재 경로의 안내 문장이 있어도 같은 이동 지시를 반복 인쇄하지 않는다', () => {
     const data = snapshot();
-    data.guidance = { routeSnapshotVersion: version, mode: 'ai_assisted', steps: [{ segmentId, text: '다른 경로에서 남은 오래된 안내 문장' }] };
+    const text = '출발 정류장에서 1번 버스를 타세요. 환승 정류장에서 내리세요.';
+    data.guidance = { routeSnapshotVersion: 'v1', mode: 'template_fallback', steps: [{ segmentId: 'bus-1', text }] };
     const doc = render(data);
-    expect(doc.textContent).not.toContain('다른 경로에서 남은 오래된 안내 문장');
+    expect(doc.textContent).not.toContain(text);
     expect(doc.querySelectorAll('ol > li')).toHaveLength(4);
     expect(doc.querySelector('article')?.getAttribute('data-route-version')).toBe('v1');
   });
@@ -87,15 +90,17 @@ it('연결 전 운행 상태를 실시간으로 출력하거나 반복 시연 �
 });
 
 
-it.each(['static', 'live'] as const)('소비자 인쇄표는 이동 안내와 값만 표시하고 메타데이터를 생략한다 (%s)', dataMode => {
+it('소비자 인쇄표는 이동 안내와 값만 표시하고 메타데이터를 생략한다', () => {
   const data = snapshot();
   data.routeDetail.routingNotice = '공식 노선 구조 기준 · 평균 이동시간 추정 · 대기시간 제외 · OpenStreetMap contributors';
   const walk = data.routeDetail.segments.find(segment => segment.type === 'walk')!;
   if (walk.type === 'walk') { walk.distanceMeters = 170; walk.durationSeconds = 180; }
   const before = JSON.stringify(data);
   const host = document.createElement('div');
-  host.innerHTML = renderToStaticMarkup(<PrintDocument snapshot={data} dataMode={dataMode} originName="종합터미널" destinationName="병원" />);
-  expect(host.textContent).toContain('종합터미널 → 병원');
+  host.innerHTML = renderToStaticMarkup(<PrintDocument snapshot={data} originName="종합터미널" destinationName="병원" />);
+  expect(Array.from(host.querySelectorAll('header dt, header dd'), cell => cell.textContent)).toEqual([
+    '출발 정류장', '종합터미널', '목적지', '병원',
+  ]);
   expect(host.textContent).toContain('도보 170m · 약 3분');
   expect(host.textContent).not.toMatch(/공식 노선|대기시간 제외|OpenStreetMap|원천|서버 수집|카운트다운|확인 불가|출발 정류장은 제외/);
   expect(JSON.stringify(data)).toBe(before);

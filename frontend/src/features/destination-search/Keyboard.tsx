@@ -64,7 +64,7 @@ export default function Keyboard({ value, onChange, onSubmit, disabled = false }
         </div>
         <div className={styles.row}>
           {rows[2].map(key => <button key={key} type="button" disabled={disabled} onClick={() => apply(display(key))}>{display(key)}</button>)}
-          <button className={`${styles.wide} ${styles.space} ${styles.utility}`} type="button" disabled={disabled} onClick={() => apply(' ')}>한칸 띄우기</button>
+          <button className={`${styles.wide} ${styles.utility}`} type="button" disabled={disabled} onClick={() => apply(' ')}>한칸 띄우기</button>
         </div>
       </div>
       <button type="button" className={styles.submit} disabled={disabled || !value.trim()} onClick={onSubmit}>검색하기</button>
