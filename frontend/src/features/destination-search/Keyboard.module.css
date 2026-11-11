@@ -15,7 +15,7 @@
   background: var(--key-bg, #fff);
   color: var(--key-text, #262626);
   font: inherit;
-  font-size: max(15px, 4cqw);
+  font-size: 3.33cqw;
   font-weight: 600;
   cursor: pointer;
   touch-action: manipulation;
@@ -25,7 +25,7 @@
   justify-content: center;
 }
 .row .wide { grid-column: span 2; }
-.row .utility { background:#3d3d3d; color:white; border-color:#3d3d3d; font-size:max(12px, 3.2cqw); white-space:nowrap; }
+.row .utility { background:#3d3d3d; color:white; border-color:#3d3d3d; white-space:nowrap; }
 .row .utility[aria-pressed='true'] { background: var(--selected-bg); color: var(--selected-text); border-color: var(--selected-bg); }
 .row button:active { transform: translateY(1px); }
 .row button:focus-visible, .submit:focus-visible { outline: 3px solid #004fcf; outline-offset: 1px; z-index:1; }
@@ -44,10 +44,10 @@
   box-shadow: 0 3px 7px #0000004d, 0 6px 12px #32325d40;
   display: block;
   font: inherit;
-  font-size: var(--body-size);
+  font-size: 3.7cqw;
   font-weight: 700;
   cursor: pointer;
   touch-action: manipulation;
 }
 
-:global([data-theme='contrast']) .keyboard { --keyboard-bg: #fff; --key-bg: #fff; --key-border: #3d3d3d; --key-text: #000; }
+:global([data-theme='contrast']) .keyboard { --keyboard-bg: #fff; --key-bg: #fff; --key-border: #b0b0b0; --key-text: #3d3d3d; }

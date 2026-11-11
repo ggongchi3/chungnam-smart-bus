@@ -100,6 +100,10 @@ class CheonanNetwork:
         self.origin = self.data['origin']
         self.stations = self.data['stations']
         self.routes = {r['routeId']: r for r in self.data['routes']}
+        origin_name = ''.join(self.origin['name'].split())
+        self.origin_stops = {sid for sid, station in self.stations.items()
+                             if ''.join(station['name'].split()) == origin_name}
+        self.origin_stops.add(self.origin['publicId'])
         self.occurrences = defaultdict(list)
         for route in self.routes.values():
             if any(sid not in self.stations for sid in route['stops']):
@@ -146,45 +150,42 @@ class CheonanNetwork:
         destination = self.walks['destinations'].get(destination_id, {})
         target = defaultdict(list)
         for access in destination.get('access', []):
-            for route_id, alight in self.occurrences[access['stationId']]:
-                for board in range(alight):
-                    target[self.routes[route_id]['stops'][board]].append((route_id, board, alight, access))
-        paths = []
-        origin_area = {walk['stationId'] for walk in self.walks['originAccess']}
-        direct = destination.get('directWalk')
-        if direct and direct['distanceMeters'] <= 1200:
-            paths.append(([], None, direct, None))
-        for start in self.walks['originAccess']:
-            sid = start['stationId']
-            for route_id, board, alight, access in target[sid]:
-                paths.append(([(route_id, board, alight)], start, access, None))
-            for route_id, board in self.occurrences[sid]:
+            alight_sid = access['stationId']
+            if alight_sid in self.origin_stops:
+                continue
+            for route_id, alight in self.occurrences[alight_sid]:
                 stops = self.routes[route_id]['stops']
-                for transfer in range(board + 1, len(stops)):
-                    # Exclude bus loops returning to another platform at the
-                    # origin complex merely to avoid a short initial walk.
-                    if stops[transfer] in origin_area:
+                for board in range(alight):
+                    target[stops[board]].append((route_id, board, alight, access))
+        paths = []
+        origin_sid = self.origin['publicId']
+        origin_area = {walk['stationId'] for walk in self.walks['originAccess']}
+        for route_id, board, alight, access in target[origin_sid]:
+            paths.append(([(route_id, board, alight)], access, None))
+        for route_id, board in self.occurrences[origin_sid]:
+            stops = self.routes[route_id]['stops']
+            for transfer in range(board + 1, len(stops)):
+                if stops[transfer] in self.origin_stops or stops[transfer] in origin_area:
+                    continue
+                for next_id, next_board, next_alight, access in target[stops[transfer]]:
+                    if route_id == next_id or self.routes[route_id]['name'] == self.routes[next_id]['name']:
                         continue
-                    for next_id, next_board, next_alight, access in target[stops[transfer]]:
-                        if route_id == next_id or self.routes[route_id]['name'] == self.routes[next_id]['name']:
-                            continue
-                        # A passenger must make forward progress, not return to
-                        # a stop already passed on the first leg.
-                        if self.routes[next_id]['stops'][next_alight] in stops[board:transfer+1]:
-                            continue
-                        paths.append(([(route_id, board, transfer), (next_id, next_board, next_alight)], start, access, stops[transfer]))
+                    # Exclude journeys that double back to a stop on the first leg.
+                    if self.routes[next_id]['stops'][next_alight] in stops[board:transfer+1]:
+                        continue
+                    paths.append(([(route_id, board, transfer), (next_id, next_board, next_alight)], access, stops[transfer]))
         # Prune path families using all four metrics before constructing public
         # models. This bounds memory on a city graph with many shared stops.
         best = {mode: {} for mode in SORTS}
         for path in paths:
-            legs, start, access, _ = path
+            legs, access, _ = path
             family = tuple(self.routes[rid]['name'] for rid, _, _ in legs)
             buses = [self.bus(rid, board, alight, 'bus') for rid, board, alight in legs]
-            walking = access['distanceMeters'] + (start['distanceMeters'] if start else 0)
-            walk_time = access['durationSeconds'] + (start['durationSeconds'] if start else 0)
+            walking = access['distanceMeters']
+            walk_time = access['durationSeconds']
             distance = total([p.distanceMeters for p in buses] + [walking])
             duration = total([p.durationSeconds for p in buses] + [walk_time])
-            identity = 'cheonan-option-' + digest([legs, start, access])
+            identity = 'cheonan-option-' + digest([legs, access])
             metrics = {'fastest': duration, 'transfers': max(0, len(legs)-1), 'walking': walking, 'distance': distance}
             for mode in SORTS:
                 key = ranking_key(metrics, mode, identity)
@@ -193,32 +194,29 @@ class CheonanNetwork:
         shortlist = {}
         for ranked in best.values():
             for _, path in sorted(ranked.values(), key=lambda value: value[0])[:3]:
-                legs, start, access, _ = path
-                shortlist[digest([legs, start, access])] = path
+                legs, access, _ = path
+                shortlist[digest([legs, access])] = path
         candidates = []
-        for legs, start, access, transfer in shortlist.values():
+        for legs, access, transfer in shortlist.values():
             segments = []
-            if start and start['distanceMeters'] > 0:
-                segments.append(s.Walk(segmentId='origin-walk', fromLabel=self.origin['name'] + ' 정류장',
-                    toLabel=self.stations[start['stationId']]['name'] + ' 정류장', distanceMeters=start['distanceMeters'], durationSeconds=start['durationSeconds']))
             for index, (rid, board, alight) in enumerate(legs):
                 identity = f'bus-{index+1}'
                 if index:
                     segments.append(s.Transfer(segmentId=f'transfer-{index}', fromSegmentId=f'bus-{index}',
                         toSegmentId=identity, atStation=self.ref(transfer)))
                 segments.append(self.bus(rid, board, alight, identity))
-            segments.append(s.Walk(segmentId='destination-walk', fromLabel=(self.stations[access['stationId']]['name'] if legs else self.origin['name']) + ' 정류장',
+            segments.append(s.Walk(segmentId='destination-walk', fromLabel=self.stations[access['stationId']]['name'] + ' 정류장',
                 toLabel=destination_name, distanceMeters=access['distanceMeters'], durationSeconds=access['durationSeconds']))
             buses = [p for p in segments if p.type == 'bus']
             walks = [p for p in segments if p.type == 'walk']
-            identity = 'cheonan-option-' + digest([legs, start, access])
+            identity = 'cheonan-option-' + digest([legs, access])
             option = s.RouteOption(routeOptionId=identity, routeSnapshotVersion='cheonan-v-' + digest([self.revision, [p.model_dump(mode='json') for p in segments]]),
                 journeyStatus='ready', routeNames=[p.routeName for p in buses], transferCount=max(0,len(legs)-1),
                 totalDurationSeconds=None, walkingDurationSeconds=total([p.durationSeconds for p in walks]),
                 walkingDistanceMeters=total([p.distanceMeters for p in walks]),
                 totalDistanceMeters=total([p.distanceMeters for p in segments if p.type != 'transfer']),
                 estimatedTravelSeconds=total([p.durationSeconds for p in segments if p.type != 'transfer']),
-                boardStation=buses[0].boardStation if buses else None, alightStation=buses[-1].alightStation if buses else None,
+                boardStation=buses[0].boardStation, alightStation=buses[-1].alightStation,
                 transferStations=[p.atStation for p in segments if p.type == 'transfer'], dataSource='cheonan-bis-static')
             # Same buses with a nearby alighting/transfer stop are a single
             # alternative family; choose its best member for each sort later.

@@ -1,6 +1,7 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ORIGIN_STATION_ID } from '../../config/kiosk';
 import { api, ApiError } from '../shared/api/client';
 import type { Destination, Envelope, GuidanceData, LiveData, PrintData, Quality, RouteDetail, SearchData } from '../shared/api/types';
 import { App } from './App';
@@ -87,6 +88,25 @@ afterEach(async () => {
 });
 
 describe('연결된 키오스크 사용자 흐름', () => {
+  it('현재 정류장 번호를 헤더에 표시하고 이동 순서를 그 정류장에서의 승차로 시작한다', async () => {
+    const station = { stationId: ORIGIN_STATION_ID, name: '종합터미널', directionLabel: '정류장 686', region: null, coordinates: null };
+    const bus = detail.segments[0];
+    if (bus.type !== 'bus') throw new Error('승차 구간이 필요합니다.');
+    vi.mocked(api.station).mockResolvedValue(envelope({ station }));
+    vi.mocked(api.detail).mockResolvedValue(envelope({ ...detail, originStationId: station.stationId, segments: [
+      { ...bus, boardStation: station },
+      { type: 'walk', segmentId: 'destination-walk', fromLabel: '병원 앞 정류장', toLabel: '병원', distanceMeters: 170, durationSeconds: 180 },
+    ] }));
+
+    await mount();
+    expect(host.querySelector('header')?.textContent).toContain('종합터미널 686');
+    await reachDetail();
+    const steps = host.querySelectorAll('main ol > li');
+    expect(steps[0].textContent).toContain('1번 버스');
+    expect(steps[0].textContent).toContain('타는 곳 종합터미널');
+    expect(steps[1].textContent).toContain('도보 170m · 약 3분');
+  });
+
   it.each(['live 변경', '검색 만료'])('%s 이후 늦은 인쇄 응답으로 이전 경로가 복구되지 않는다', async reason => {
     if (reason === '검색 만료') vi.mocked(api.search).mockResolvedValue(envelope(search('2026-11-10T04:00:02Z')));
     await mount(); await reachDetail();

@@ -17,6 +17,7 @@ from backend.services.geo import haversine_meters
 from backend.services.places import load_places
 
 ORIGIN = 'cheonan-stop-285000686'
+TERMINAL_STOPS = {'285000685', '285000686', '285010014', '285010125'}
 
 
 @pytest.fixture(scope='module')
@@ -92,21 +93,29 @@ def test_all_places_have_real_directed_paths_and_no_synthetic_edges(real_service
     counts = {}
     for place in load_places():
         found = search(client, clock, place['destinationId'])
+        if place['destinationId'] in {'cheonan-bus-terminal', 'cheonan-shinsegae'}:
+            assert not found['routeOptions']
+            continue
         counts[place['destinationId']] = len(found['routeOptions'])
         assert found['routeOptions'], place['name']
         assert len({tuple(o['routeNames']) for o in found['routeOptions']}) == len(found['routeOptions'])
         for option in found['routeOptions']:
             assert option['totalDurationSeconds'] is None and option['waitingDurationSeconds'] is None
+            assert option['routeNames'] and option['boardStation']['stationId'] == ORIGIN
             path = f"/api/v1/route-searches/{found['routeSearchId']}/options/{option['routeOptionId']}"
             response = client.get(path)
             assert response.status_code == 200, response.text
             detail = response.json()['data']
+            assert detail['segments'][0]['type'] == 'bus'
+            assert detail['segments'][0]['boardStation']['stationId'] == ORIGIN
+            assert [p['segmentId'] for p in detail['segments'] if p['type'] == 'walk'] == ['destination-walk']
             buses = [p for p in detail['segments'] if p['type']=='bus']
             for bus in buses:
                 route = network.routes[bus['routeId'].removeprefix('cheonan-route-')]
                 assert bus['boardSequence'] < bus['alightSequence']
                 assert bus['boardStation']['stationId'] == 'cheonan-stop-' + route['stops'][bus['boardSequence']-1]
                 assert bus['alightStation']['stationId'] == 'cheonan-stop-' + route['stops'][bus['alightSequence']-1]
+                assert route['stops'][bus['alightSequence']-1] not in TERMINAL_STOPS
             if len(buses)==2:
                 assert buses[0]['alightStation'] == buses[1]['boardStation']
     assert all(count >= 2 for count in counts.values()), counts
@@ -119,6 +128,7 @@ def test_four_real_metrics_change_order_and_preserve_detail_ai_and_print(real_se
         found = search(client, clock, 'cheonan-dankook-hospital', mode)
         options = [s.RouteOption.model_validate(o) for o in found['routeOptions']]
         assert options == sorted(options, key=lambda o:sort_key(o,mode))
+        assert all(option.routeNames[0] != '192' for option in options)
         orders.append([o.routeOptionId for o in options])
         first = options[0]
         selected = {'routeSearchId':found['routeSearchId'],'routeOptionId':first.routeOptionId,
@@ -128,6 +138,9 @@ def test_four_real_metrics_change_order_and_preserve_detail_ai_and_print(real_se
         assert guidance.status_code == printed.status_code == 200
         assert guidance.json()['data']['mode'] == 'ai_assisted'
         assert printed.json()['data']['routeDetail']['routeSnapshotVersion'] == first.routeSnapshotVersion
+        printed_segments = printed.json()['data']['routeDetail']['segments']
+        assert printed_segments[0]['type'] == 'bus' and printed_segments[0]['boardStation']['stationId'] == ORIGIN
+        assert [p['segmentId'] for p in printed_segments if p['type'] == 'walk'] == ['destination-walk']
         assert printed.json()['data']['liveInfoSnapshot']['arrivals'] == [] or all(a['etaSeconds'] is None for a in printed.json()['data']['liveInfoSnapshot']['arrivals'])
     assert len({tuple(order) for order in orders}) >= 3
 
@@ -140,11 +153,10 @@ def test_ranked_metrics_and_tied_features_are_independently_consistent(real_serv
         options = search(client, clock, 'cheonan-dankook-hospital', mode)['routeOptions']
         values = [option[field] for option in options]
         assert values == sorted(values, key=lambda value: (value is None, value or 0))
-        # Every zero-transfer candidate has the same optimal transfer metric;
-        # a badge must not depend on which equal option happened to sort first.
-        assert any(option['transferCount'] == 0 for option in options)
+        # The minimum can be one when the fixed stop has no direct bus.
+        minimum_transfers = min(option['transferCount'] for option in options)
         for option in options:
-            assert ('최소 환승' in option['features']) == (option['transferCount'] == 0)
+            assert ('최소 환승' in option['features']) == (option['transferCount'] == minimum_transfers)
 
 
 def test_expiry_and_changed_snapshot_still_block_guidance(real_service):
