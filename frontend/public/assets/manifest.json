@@ -1,0 +1,682 @@
+{
+  "sourceFile": "w1O09Ota2UTXzMNHNgaLlw",
+  "canvas": [
+    1080,
+    1920
+  ],
+  "slots": {
+    "header": {
+      "logo": "57066.svg"
+    },
+    "start": {
+      "bus": "b8667.png",
+      "renderBox": [
+        386,
+        257
+      ]
+    },
+    "navigation": {
+      "normal": {
+        "contrast": "94617.svg",
+        "home": "5d43b.svg",
+        "voice": "889d6.svg"
+      },
+      "highContrast": {
+        "contrast": "1e05d.svg",
+        "home": "c25a9.svg",
+        "voice": "f17e5.svg"
+      }
+    },
+    "categories": {
+      "normal": {
+        "hospital": "26a86.svg",
+        "office": "3b151.svg",
+        "terminal": "62785.svg",
+        "marketTop": "8d70f.svg",
+        "marketBottom": "9042c.svg",
+        "station": "d92b2.svg"
+      },
+      "highContrast": {
+        "hospital": "3a98b.svg",
+        "office": "d780a.svg",
+        "terminal": "3a4ca.svg",
+        "marketTop": "df386.svg",
+        "marketBottom": "76506.svg",
+        "station": "4a3cf.svg"
+      }
+    },
+    "search": {
+      "normal": "b06fb.svg",
+      "highContrast": "70f47.svg",
+      "keyboardSearch": "ec4c9.svg",
+      "delete": "cdc36.svg",
+      "shift": "97449.svg"
+    },
+    "route": {
+      "normal": {
+        "arrow": "ad3c1.svg",
+        "divider": "ba2a9.svg",
+        "bus": "322d1.svg",
+        "pin": "e6b90.svg"
+      },
+      "highContrast": {
+        "arrow": "4a54e.svg",
+        "divider": "af7e8.svg",
+        "bus": "31cc0.svg",
+        "pin": "bd9ef.svg"
+      },
+      "optionArrows": [
+        "d7267.svg",
+        "af0b3.svg"
+      ]
+    },
+    "print": {
+      "source": "7144f.png",
+      "mask": "11ff5.svg",
+      "sourceRender": [
+        1886.881,
+        943.441
+      ],
+      "cropBox": [
+        496,
+        483
+      ],
+      "sourceOffset": [
+        -253.203,
+        -363.154
+      ],
+      "fadeHeight": 217
+    },
+    "errors": {
+      "emptyBus": "a3ca0.png"
+    },
+    "idle": {
+      "clock": "b49ad.png"
+    },
+    "completion": {
+      "source": "7144f.png",
+      "mask": "c26e5.svg"
+    }
+  },
+  "sources": [
+    {
+      "nodeId": "27:3464",
+      "variable": "img",
+      "file": "94617.svg"
+    },
+    {
+      "nodeId": "27:3464",
+      "variable": "img1",
+      "file": "5d43b.svg"
+    },
+    {
+      "nodeId": "27:3464",
+      "variable": "img2",
+      "file": "889d6.svg"
+    },
+    {
+      "nodeId": "27:3464",
+      "variable": "imgVector",
+      "file": "26a86.svg"
+    },
+    {
+      "nodeId": "27:3464",
+      "variable": "imgVector1",
+      "file": "3b151.svg"
+    },
+    {
+      "nodeId": "27:3464",
+      "variable": "imgVector2",
+      "file": "62785.svg"
+    },
+    {
+      "nodeId": "27:3464",
+      "variable": "imgVector3",
+      "file": "8d70f.svg"
+    },
+    {
+      "nodeId": "27:3464",
+      "variable": "imgVector4",
+      "file": "9042c.svg"
+    },
+    {
+      "nodeId": "27:3464",
+      "variable": "imgVector5",
+      "file": "d92b2.svg"
+    },
+    {
+      "nodeId": "27:3464",
+      "variable": "imgGroup",
+      "file": "b06fb.svg"
+    },
+    {
+      "nodeId": "27:3464",
+      "variable": "imgGroup1",
+      "file": "57066.svg"
+    },
+    {
+      "nodeId": "27:3620",
+      "variable": "imgGroup",
+      "file": "57066.svg"
+    },
+    {
+      "nodeId": "27:3620",
+      "variable": "img",
+      "file": "ad3c1.svg"
+    },
+    {
+      "nodeId": "27:3620",
+      "variable": "imgVector1",
+      "file": "ba2a9.svg"
+    },
+    {
+      "nodeId": "27:3620",
+      "variable": "imgVector",
+      "file": "e6b90.svg"
+    },
+    {
+      "nodeId": "27:3620",
+      "variable": "imgVector2",
+      "file": "322d1.svg"
+    },
+    {
+      "nodeId": "27:3620",
+      "variable": "img1",
+      "file": "94617.svg"
+    },
+    {
+      "nodeId": "27:3620",
+      "variable": "img2",
+      "file": "5d43b.svg"
+    },
+    {
+      "nodeId": "27:3620",
+      "variable": "img3",
+      "file": "889d6.svg"
+    },
+    {
+      "nodeId": "27:3994",
+      "variable": "img3",
+      "file": "7144f.png"
+    },
+    {
+      "nodeId": "27:3994",
+      "variable": "img2",
+      "file": "11ff5.svg"
+    },
+    {
+      "nodeId": "27:3994",
+      "variable": "imgGroup",
+      "file": "57066.svg"
+    },
+    {
+      "nodeId": "27:3994",
+      "variable": "img",
+      "file": "94617.svg"
+    },
+    {
+      "nodeId": "27:3994",
+      "variable": "img1",
+      "file": "5d43b.svg"
+    },
+    {
+      "nodeId": "27:3994",
+      "variable": "img4",
+      "file": "889d6.svg"
+    },
+    {
+      "nodeId": "27:10364",
+      "variable": "img3D",
+      "file": "b8667.png"
+    },
+    {
+      "nodeId": "27:10364",
+      "variable": "imgGroup",
+      "file": "57066.svg"
+    },
+    {
+      "nodeId": "27:10364",
+      "variable": "img",
+      "file": "1e05d.svg"
+    },
+    {
+      "nodeId": "27:10364",
+      "variable": "img1",
+      "file": "f17e5.svg"
+    },
+    {
+      "nodeId": "27:10393",
+      "variable": "img",
+      "file": "1e05d.svg"
+    },
+    {
+      "nodeId": "27:10393",
+      "variable": "img1",
+      "file": "c25a9.svg"
+    },
+    {
+      "nodeId": "27:10393",
+      "variable": "img2",
+      "file": "f17e5.svg"
+    },
+    {
+      "nodeId": "27:10393",
+      "variable": "imgVector",
+      "file": "3a98b.svg"
+    },
+    {
+      "nodeId": "27:10393",
+      "variable": "imgVector1",
+      "file": "d780a.svg"
+    },
+    {
+      "nodeId": "27:10393",
+      "variable": "imgVector2",
+      "file": "3a4ca.svg"
+    },
+    {
+      "nodeId": "27:10393",
+      "variable": "imgVector3",
+      "file": "df386.svg"
+    },
+    {
+      "nodeId": "27:10393",
+      "variable": "imgVector4",
+      "file": "76506.svg"
+    },
+    {
+      "nodeId": "27:10393",
+      "variable": "imgVector5",
+      "file": "4a3cf.svg"
+    },
+    {
+      "nodeId": "27:10393",
+      "variable": "imgGroup",
+      "file": "70f47.svg"
+    },
+    {
+      "nodeId": "27:10393",
+      "variable": "imgGroup1",
+      "file": "57066.svg"
+    },
+    {
+      "nodeId": "27:10585",
+      "variable": "imgGroup",
+      "file": "57066.svg"
+    },
+    {
+      "nodeId": "27:10585",
+      "variable": "img",
+      "file": "4a54e.svg"
+    },
+    {
+      "nodeId": "27:10585",
+      "variable": "imgVector1",
+      "file": "af7e8.svg"
+    },
+    {
+      "nodeId": "27:10585",
+      "variable": "imgVector",
+      "file": "bd9ef.svg"
+    },
+    {
+      "nodeId": "27:10585",
+      "variable": "imgVector2",
+      "file": "31cc0.svg"
+    },
+    {
+      "nodeId": "27:10585",
+      "variable": "img1",
+      "file": "1e05d.svg"
+    },
+    {
+      "nodeId": "27:10585",
+      "variable": "img2",
+      "file": "c25a9.svg"
+    },
+    {
+      "nodeId": "27:10585",
+      "variable": "img3",
+      "file": "f17e5.svg"
+    },
+    {
+      "nodeId": "27:3435",
+      "file": "b8667.png"
+    },
+    {
+      "nodeId": "27:3435",
+      "file": "57066.svg"
+    },
+    {
+      "nodeId": "27:3435",
+      "file": "94617.svg"
+    },
+    {
+      "nodeId": "27:3435",
+      "file": "889d6.svg"
+    },
+    {
+      "nodeId": "27:3537",
+      "file": "d7267.svg"
+    },
+    {
+      "nodeId": "27:3537",
+      "file": "ba2a9.svg"
+    },
+    {
+      "nodeId": "27:3537",
+      "file": "af0b3.svg"
+    },
+    {
+      "nodeId": "27:3537",
+      "file": "5d43b.svg"
+    },
+    {
+      "nodeId": "27:3683",
+      "file": "ec4c9.svg"
+    },
+    {
+      "nodeId": "27:3683",
+      "file": "cdc36.svg"
+    },
+    {
+      "nodeId": "27:3683",
+      "file": "97449.svg"
+    },
+    {
+      "nodeId": "27:3785",
+      "file": "a3ca0.png"
+    },
+    {
+      "nodeId": "27:5411",
+      "file": "b49ad.png"
+    },
+    {
+      "nodeId": "27:4075",
+      "file": "c26e5.svg"
+    }
+  ],
+  "assets": [
+    {
+      "file": "11ff5.svg",
+      "bytes": 243,
+      "width": "496",
+      "height": "483",
+      "viewBox": "0 0 496 483"
+    },
+    {
+      "file": "1e05d.svg",
+      "bytes": 1212,
+      "width": "60",
+      "height": "60",
+      "viewBox": "0 0 60 60"
+    },
+    {
+      "file": "26a86.svg",
+      "bytes": 2335,
+      "width": "100",
+      "height": "100",
+      "viewBox": "0 0 100 100"
+    },
+    {
+      "file": "31cc0.svg",
+      "bytes": 1084,
+      "width": "50",
+      "height": "50",
+      "viewBox": "0 0 50 50"
+    },
+    {
+      "file": "322d1.svg",
+      "bytes": 1084,
+      "width": "50",
+      "height": "50",
+      "viewBox": "0 0 50 50"
+    },
+    {
+      "file": "3a4ca.svg",
+      "bytes": 973,
+      "width": "100",
+      "height": "100",
+      "viewBox": "0 0 100 100"
+    },
+    {
+      "file": "3a98b.svg",
+      "bytes": 2335,
+      "width": "100",
+      "height": "100",
+      "viewBox": "0 0 100 100"
+    },
+    {
+      "file": "3b151.svg",
+      "bytes": 2184,
+      "width": "86",
+      "height": "99.8827",
+      "viewBox": "0 0 86 99.8827"
+    },
+    {
+      "file": "4a3cf.svg",
+      "bytes": 1453,
+      "width": "82",
+      "height": "100",
+      "viewBox": "0 0 82 100"
+    },
+    {
+      "file": "4a54e.svg",
+      "bytes": 761,
+      "width": "60",
+      "height": "60",
+      "viewBox": "0 0 60 60"
+    },
+    {
+      "file": "57066.svg",
+      "bytes": 4163,
+      "width": "47.7065",
+      "height": "34",
+      "viewBox": "0 0 47.7065 34"
+    },
+    {
+      "file": "5d43b.svg",
+      "bytes": 847,
+      "width": "60",
+      "height": "60",
+      "viewBox": "0 0 60 60"
+    },
+    {
+      "file": "62785.svg",
+      "bytes": 973,
+      "width": "100",
+      "height": "100",
+      "viewBox": "0 0 100 100"
+    },
+    {
+      "file": "70f47.svg",
+      "bytes": 556,
+      "width": "34.3229",
+      "height": "33",
+      "viewBox": "0 0 34.3229 33"
+    },
+    {
+      "file": "7144f.png",
+      "bytes": 905034,
+      "width": 1774,
+      "height": 887
+    },
+    {
+      "file": "76506.svg",
+      "bytes": 1823,
+      "width": "85.0003",
+      "height": "50.0001",
+      "viewBox": "0 0 85.0003 50.0001"
+    },
+    {
+      "file": "889d6.svg",
+      "bytes": 1638,
+      "width": "60",
+      "height": "60",
+      "viewBox": "0 0 60 60"
+    },
+    {
+      "file": "8d70f.svg",
+      "bytes": 1406,
+      "width": "95.0003",
+      "height": "40.0001",
+      "viewBox": "0 0 95.0003 40.0001"
+    },
+    {
+      "file": "9042c.svg",
+      "bytes": 1823,
+      "width": "85.0003",
+      "height": "50.0001",
+      "viewBox": "0 0 85.0003 50.0001"
+    },
+    {
+      "file": "94617.svg",
+      "bytes": 1158,
+      "width": "60",
+      "height": "60",
+      "viewBox": "0 0 60 60"
+    },
+    {
+      "file": "97449.svg",
+      "bytes": 766,
+      "width": "60",
+      "height": "60",
+      "viewBox": "0 0 60 60"
+    },
+    {
+      "file": "a3ca0.png",
+      "bytes": 186247,
+      "width": 1024,
+      "height": 683
+    },
+    {
+      "file": "ad3c1.svg",
+      "bytes": 799,
+      "width": "60",
+      "height": "60",
+      "viewBox": "0 0 60 60"
+    },
+    {
+      "file": "af0b3.svg",
+      "bytes": 799,
+      "width": "60",
+      "height": "60",
+      "viewBox": "0 0 60 60"
+    },
+    {
+      "file": "af7e8.svg",
+      "bytes": 263,
+      "width": "2",
+      "height": "114",
+      "viewBox": "0 0 2 114"
+    },
+    {
+      "file": "b06fb.svg",
+      "bytes": 560,
+      "width": "34.3229",
+      "height": "33",
+      "viewBox": "0 0 34.3229 33"
+    },
+    {
+      "file": "b49ad.png",
+      "bytes": 791098,
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "b8667.png",
+      "bytes": 1370309,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "file": "ba2a9.svg",
+      "bytes": 265,
+      "width": "2",
+      "height": "114",
+      "viewBox": "0 0 2 114"
+    },
+    {
+      "file": "bd9ef.svg",
+      "bytes": 630,
+      "width": "40",
+      "height": "50",
+      "viewBox": "0 0 40 50"
+    },
+    {
+      "file": "c25a9.svg",
+      "bytes": 901,
+      "width": "60",
+      "height": "60",
+      "viewBox": "0 0 60 60"
+    },
+    {
+      "file": "c26e5.svg",
+      "bytes": 255,
+      "width": "553.429",
+      "height": "598",
+      "viewBox": "0 0 553.429 598"
+    },
+    {
+      "file": "cdc36.svg",
+      "bytes": 997,
+      "width": "60",
+      "height": "60",
+      "viewBox": "0 0 60 60"
+    },
+    {
+      "file": "d7267.svg",
+      "bytes": 799,
+      "width": "60",
+      "height": "60",
+      "viewBox": "0 0 60 60"
+    },
+    {
+      "file": "d780a.svg",
+      "bytes": 2184,
+      "width": "86",
+      "height": "99.8827",
+      "viewBox": "0 0 86 99.8827"
+    },
+    {
+      "file": "d92b2.svg",
+      "bytes": 1453,
+      "width": "82",
+      "height": "100",
+      "viewBox": "0 0 82 100"
+    },
+    {
+      "file": "df386.svg",
+      "bytes": 1406,
+      "width": "95.0003",
+      "height": "40.0001",
+      "viewBox": "0 0 95.0003 40.0001"
+    },
+    {
+      "file": "e6b90.svg",
+      "bytes": 630,
+      "width": "40",
+      "height": "50",
+      "viewBox": "0 0 40 50"
+    },
+    {
+      "file": "ec4c9.svg",
+      "bytes": 560,
+      "width": "34.3229",
+      "height": "33",
+      "viewBox": "0 0 34.3229 33"
+    },
+    {
+      "file": "f17e5.svg",
+      "bytes": 1692,
+      "width": "60",
+      "height": "60",
+      "viewBox": "0 0 60 60"
+    }
+  ],
+  "notes": [
+    "SVG root dimensions are preserved; wrapper sizing must not stretch SVG assets.",
+    "Design screenshots are reference targets and are not implementation assets.",
+    "All assets downloaded unchanged with curl -L from Figma MCP returned URLs."
+  ]
+}

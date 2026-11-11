@@ -171,7 +171,7 @@ def test_openapi_filters_match_actual_validation(env):
     schema = client.get('/openapi.json').json()
     operation = schema['paths']['/api/v1/destinations']['get']
     parameters = {p['name']:p for p in operation['parameters']}
-    assert set(parameters) == {'originStationId','query','category'}
+    assert set(parameters) == {'originStationId','query','category','kind','sort'}
     assert parameters['originStationId']['required'] is True
     assert parameters['query']['schema']['maxLength'] == 100
     assert parameters['query']['schema']['default'] == ''

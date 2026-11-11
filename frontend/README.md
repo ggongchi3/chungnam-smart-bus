@@ -1,48 +1,78 @@
-# 충청남도 스마트 버스정류장 프론트엔드
+> 2026-11-10 위치·경로 업데이트: 기본 출발지는 종합터미널 686, 목적지는 26곳이며 공식 노선 333개의 정적 경로를 사용합니다. 대기 포함 총시간은 미제공입니다. 최신 범위·API·검증 및 수정 파일 목록은 [천안 경로 구현 보고](../docs/cheonan-routing-update.md)를 참고하세요.
 
-A와 B가 함께 사용하는 하나의 React/TypeScript 앱이다.
+# 스마트 버스정류장 프론트엔드
 
-- A: 현재 정류장 → 목적지 검색/확인 → 경로 선택, 공통 앱 상태/UI/API.
-- B: 선택한 경로 상세 → 도착·운행 정보 → 80mm 인쇄 안내표 → 한국어 음성 안내.
-
-기본 화면은 A의 시작 화면이다. 경로를 선택하면 같은 식별자·버전·데이터 모드를 B에 전달한다. '다른 경로 찾기'는 검색 화면으로 돌아가며, 새로고침으로 선택이 사라지면 시작 화면부터 진행한다. needs_confirmation은 후보가 하나여도 확인을 거친다.
+Figma 키오스크 화면을 기존 FastAPI 서비스 API에 연결한 로컬 웹 앱이다. 서비스 지역은 충청남도 천안시다. 공식 기관·지도 자료로 확인한 시설 26곳을 기존 API에 등록하고 주소·좌표·거리순 정렬·선택 상태를 연결한다. 반복 시연 문구는 화면·음성·인쇄에서 제거했다. 공식 노선 333개의 정적 경로와 공개 도착정보 조회를 연결했다. 현재 운행 보장과 대기 포함 총시간은 제공하지 않는다. 최신 변경은 [천안 경로 구현 보고](../docs/cheonan-routing-update.md)를 따른다.
 
 ## 실행
 
-Node 24와 npm을 사용한다. frontend 폴더에서:
+Node.js와 npm이 필요하다. 이번 작업 PC는 Node 24.14.1, npm 11.11.0이며, 정확한 의존성은 `package-lock.json`을 기준으로 설치한다. `package.json`의 주요 버전은 React 19.3.1, Vite 8.3.7, TypeScript 7.0.2다.
+
+백엔드 환경 준비는 [기존 백엔드 안내](../backend/README.md)를 따른다. 이미 준비된 환경에서는 프로젝트 루트의 별도 PowerShell에서 다음 서버를 실행한다.
 
 ```powershell
+backend/.venv/Scripts/python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
+
+다른 PowerShell에서 프론트엔드를 시작한다.
+
+```powershell
+cd frontend
 npm ci
 npm run dev
 ```
 
-기본 주소는 http://localhost:5173/ 이다. 백엔드는 프로젝트 루트에서 실행한다.
+[로컬 화면](http://127.0.0.1:5173)을 연다. Vite는 포트 5173을 사용하며 `/api` 요청을 기본 `http://127.0.0.1:8000`으로 전달한다. 5173이 사용 중이면 다른 포트로 자동 변경하지 않고 종료한다.
+
+개발 백엔드 포트를 바꾼 경우 Vite를 시작하는 PowerShell에만 다음 값을 지정한다. `.env` 자동 로딩이나 운영 배포 설정을 의미하지 않는다.
 
 ```powershell
-backend/.venv/Scripts/python.exe -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+$env:BUS_API_TARGET = 'http://127.0.0.1:8001'
+npm run dev
 ```
 
-서버 주소는 VITE_API_BASE_URL로 변경할 수 있다. 기본값은 http://127.0.0.1:8000 이다. 현재 백엔드는 합성 시연 데이터이며 실제 버스 운행 정보가 아니다.
+## 빌드와 테스트
 
-## 통합 기준
-
-- A의 앱 셸·Context·검색/확인/경로 선택을 유지하고 마지막 임시 연결 화면을 JourneyGuideScreen으로 교체했다.
-- 공통 전송 계층은 src/shared/api/http.ts 한 곳이다. A의 client.ts와 B의 journeyApi.ts가 사용하며, B는 경로 식별자·버전·구간 검사와 기존 오류 분기를 유지한다.
-- 전달 객체 RouteSelection과 DataMode는 src/shared/api/types.ts를 공유한다. B 화면도 공통 ScreenHeader를 사용한다.
-- TypeScript는 기존 B에서 검증한 ~6.0.2로 통일했다. A/B 소스를 함께 빌드하며 package-lock.json과 npm ci로 재현한다.
-- 본문 24px·제목 32px·버튼 높이 64px·최대 화면 폭 760px·모서리 8px·파란 키보드 초점을 사용한다.
-
-## 검증
+프론트엔드 폴더에서 실행한다.
 
 ```powershell
+npm run typecheck
+npm test
 npm run build
-npm run lint
-npm test
-# 백엔드가 실행 중이면 실제 API 검사도 포함한다.
-$env:BUS_API_SMOKE='1'
-npm test
 ```
 
-브라우저 통합 검사는 node tools/check-b-browser.mjs 로 실행한다. Playwright 설치 경로를 BUS_PLAYWRIGHT_PATH로 지정할 수 있다. A의 실제 선택 흐름을 통해 B로 진입하고 목적지 재선택·상태 오류·30초 조회·음성·인쇄 스냅샷을 확인한다. 결과는 Git 제외 폴더 qa.local에 저장한다.
+빌드 결과는 `dist/`에 생성된다. `npm run preview`로 로컬 빌드 결과를 확인할 수 있으며, 이번 API 통합 확인은 `npm run dev`를 기준으로 수행한다. 별도 배포 환경에는 `/api`를 기존 백엔드에 전달하는 서버 구성이 필요하다. 이번 작업은 로컬 구현이며 공개 배포는 포함하지 않는다.
 
-기능과 장비 확인 사항은 src/features/journey-guide/README.md를 따른다. 자동 검사에서는 음성 엔진과 인쇄 대화상자를 모의하며 실제 스피커·감열 프린터 출력은 별도로 확인한다.
+## 구조
+
+| 위치 | 역할 |
+| --- | --- |
+| `config/kiosk.ts` | 출발 정류장, 갱신 간격, 유휴 시간 설정 |
+| `src/main.tsx`, `src/styles.css` | 앱 진입, 로컬 Pretendard 글꼴, 공통 스타일 |
+| `src/app/App.tsx`, `App.module.css` | 키오스크 화면, 고대비, 검색·경로·상세·인쇄 흐름 |
+| `src/app/state.ts` | Context/useReducer에서 사용하는 화면·검색·선택 상태 |
+| `src/shared/api/` | 기존 API 타입, fetch 클라이언트, 시각·품질 표시 |
+| `src/features/destination-search/` | 한글 조합·삭제, 한/영·기호·쌍자음 전환 키보드 |
+| `src/features/voice-guide/` | 브라우저 한국어 음성 재생·중지 |
+| `src/features/print-guide/` | 고정 스냅샷의 A4 인쇄 전용 문서 |
+| `public/assets/manifest.json` | Figma 원본 자산의 노드·용도·크기 기록 |
+
+시작 → 목적지 분류/검색 → 결과 선택 → 경로 선택 → 상세 안내 → 인쇄 준비 → 브라우저 인쇄 순서로 이동한다. URL별 라우터 대신 한 앱의 메모리 상태를 사용한다. 새로고침하면 선택 상태가 사라지고 시작 화면으로 돌아간다. 사용자 검색 이력은 영구 저장하지 않는다.
+
+## 데이터·기능 경계
+
+- 현재 출발 설정 ID는 `cheonan-stop-285000686`이다. 종합터미널 686의 이름·소재 도로를 표시하며 모든 검색에 같은 출발지를 사용한다. 실제 시설과 공식 노선 그래프를 연결한다.
+- API는 기존 8개만 사용한다. 자세한 [화면/API 연결표와 미지원 기능](../docs/figma-implementation.md)을 참고한다.
+- 검증된 26곳을 8개 시설 종류로 검색한다. 관공서는 기존 `other` category와 `office` kind를 사용한다. 명칭·별칭·주소 부분검색과 AI 후보에도 서버의 거리순 결과를 사용한다. 임의의 천안 전체 장소 검색은 외부 장소 API 연결 전까지 지원하지 않는다.
+- 기본 장소 정렬은 직선거리순이고 별도 보행거리순도 지원한다. 경로 정렬은 최소 환승·최소 도보·최단 이동거리·대기 제외 이동시간이다. 총시간·대기시간 미확보, 정적 운행 여부 미확인을 명시하며 값을 만들어 채우지 않는다.
+- 상세 도착 정보는 활성 화면에서 30초마다 조회한다. 원천 갱신 시각과 서버 수집 시각을 구분하며 미수신·오래된 자료를 정상 운행이나 현재 도착 예측으로 바꾸지 않는다.
+- 409 경로 변경/이용 불가, 410 만료 시 상세·음성·인쇄 선택을 중단하고 다시 검색한다. API 검색 유효기간은 서버가 정하는 600초다.
+- 유휴 경고는 `config/kiosk.ts`의 로컬 시제품 정책으로 120초 후 표시하고, 30초 안에 계속 이용하지 않으면 시작 화면으로 돌아간다. 서버 검색 만료와 별개다.
+- 음성은 한국어 `speechSynthesis` 음성의 제공 여부에 따라 동작한다. 미지원·실패 시 화면 안내를 유지한다. 실제 스피커 청취는 기기에서 확인해야 한다.
+- 인쇄 직전 기존 API로 버전을 재확인하고 고정 스냅샷을 만든다. `window.print()`와 인쇄용 CSS를 사용하며, 인쇄창을 닫거나 취소한 것을 종이 출력 성공으로 표시하지 않는다. 실제 프린터 제어·완료 감지는 없다.
+
+## 디자인·검증 기록
+
+[Figma 복사본](https://www.figma.com/design/w1O09Ota2UTXzMNHNgaLlw/?node-id=27-3424)의 1080×1920 일반/고대비 화면을 기준으로 구현했다. CSS 크기는 키오스크 컨테이너 너비에 따라 조정하고 내용이 길어지는 상세 화면은 스크롤한다. API의 사실 데이터와 미지원 상태를 정확히 전달하기 위해 일부 문구·목록 수·상태 영역은 시안과 다르다.
+
+최종 빌드·테스트와 브라우저 확인 범위는 [구현 보고서](../docs/figma-implementation.md)의 검증 항목에 기록한다. 자동 테스트 통과는 한국어 소리 청취나 실제 프린터 출력 완료를 뜻하지 않는다.

@@ -9,7 +9,7 @@ from pathlib import Path
 
 CATALOG_PATH = Path(__file__).with_name('templates.json')
 SEGMENT_TYPES = ('bus', 'walk', 'transfer')
-DATA_MODES = ('demo', 'live')
+DATA_MODES = ('demo', 'live', 'static')
 
 
 def load_active(path=CATALOG_PATH):

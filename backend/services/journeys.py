@@ -28,7 +28,7 @@ def confirmed_duration(segments):
 def validated_expiry(search):
     times = (search.created_at, search.expires_at)
     if (any(type(value) not in (int, float) or not isfinite(value) for value in times)
-            or search.data_mode not in ('demo', 'live')):
+            or search.data_mode not in ('demo', 'live', 'static')):
         unavailable()
     expiry = search.created_at + 600
     if search.expires_at <= search.created_at or not isclose(search.expires_at, expiry, rel_tol=0, abs_tol=1e-6):
@@ -36,10 +36,16 @@ def validated_expiry(search):
     return expiry
 
 
-def create_search(session, request, state, now, data_mode):
+def create_search(session, request, state, now, data_mode, *, transport=None):
     require_core(state)
+    if transport is not None and request.originStationId != transport.origin['stationId']:
+        # Historical demo rows may remain in an existing SQLite file. They must
+        # never fall through to synthetic routing under the real static mode.
+        raise ServiceError(400, 'INVALID_REQUEST', '기준 정류장 종합터미널을 출발지로 선택해 주세요.')
     catalog.station(session, request.originStationId)
     destination = catalog.destination(session, request.destinationId)
+    if transport is not None and request.originStationId == transport.origin['stationId']:
+        return transport.search(session, request, destination, now, data_mode)
     if abs((request.departAt.astimezone(timezone.utc) - now.astimezone(timezone.utc)).total_seconds()) > 120:
         raise ServiceError(400, 'INVALID_REQUEST', '현재 시각에서 120초 이내의 출발 시각을 입력해 주세요.')
     search_id = 'demo-search-' + uuid4().hex
@@ -68,7 +74,7 @@ def create_search(session, request, state, now, data_mode):
                        destinationId=request.destinationId, expiresAt=expires, routeOptions=options)
 
 
-def checked_detail(session, search_id, option_id, state, now, data_mode, expected=None):
+def checked_search(session, search_id, now):
     search = session.get(RouteSearch, search_id)
     if search is None:
         not_found()
@@ -76,11 +82,18 @@ def checked_detail(session, search_id, option_id, state, now, data_mode, expecte
         raise ServiceError(410, 'ROUTE_SEARCH_EXPIRED', '검색 유효기간이 지났습니다. 다시 검색해 주세요.')
     if not isinstance(search.snapshot, dict):
         unavailable()
+    return search
+
+
+def checked_detail(session, search_id, option_id, state, now, data_mode, expected=None, *, transport=None):
+    search = checked_search(session, search_id, now)
     if option_id not in search.snapshot:
         not_found()
     require_core(state)
     if search.data_mode != data_mode:
         changed()
+    if transport is not None and search.origin_station_id == transport.origin['stationId']:
+        return transport.checked_detail(search, option_id, now, expected)
     try:
         saved = SavedRouteOption.model_validate(search.snapshot[option_id])
     except (ValidationError, TypeError, ValueError):
@@ -113,7 +126,7 @@ def checked_detail(session, search_id, option_id, state, now, data_mode, expecte
     return detail
 
 
-def live_info(detail, state, now, for_print=False, *, session=None):
+def arrival_values(detail, state, now, for_print=False):
     arrivals = []
     for segment in detail.segments:
         if segment.type != 'bus':
@@ -130,6 +143,11 @@ def live_info(detail, state, now, for_print=False, *, session=None):
             etaSeconds=max(0, int((expected - now).total_seconds())) if available and not for_print else None,
             expectedArrivalAt=expected if available else None,
             operationStatus=observation.operation_status, dataQuality=q))
+    return arrivals
+
+
+def live_info(detail, state, now, for_print=False, *, session=None):
+    arrivals = arrival_values(detail, state, now, for_print=for_print)
     routes = {p.routeId for p in detail.segments if p.type == 'bus'}
     legs = [(p.routeId, p.boardSequence, p.alightSequence) for p in detail.segments if p.type == 'bus']
     stations = (routing.route_station_ids(session, legs) if session is not None else

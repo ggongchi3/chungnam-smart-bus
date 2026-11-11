@@ -1,5 +1,4 @@
-import type { RouteDetail } from '../journey-guide/journeyTypes'
-import type { GuidanceData } from './guidanceTypes'
+import type { GuidanceData, RouteDetail } from '../../shared/api/types'
 
 const digits = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구']
 const smallUnits = ['', '십', '백', '천']

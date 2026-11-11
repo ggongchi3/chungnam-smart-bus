@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 from contextlib import asynccontextmanager
+from dataclasses import replace
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
@@ -16,17 +17,27 @@ from backend.api.errors import ServiceError
 from backend.config import Settings
 from backend.database import Database
 from backend.integrations.ai import AIBoundary
-from backend.integrations.providers import DemoProvider, UnconnectedLiveProvider
+from backend.integrations.providers import DemoProvider, UnconnectedLiveProvider, StaticReferenceProvider
 from backend.seed import seed
-from backend.api.routes import router
+from backend.api.routes import cheonan_router, router
 from backend.config import ROOT
+from backend.services.places import load_places, register_places
+from backend.services.cheonan_routing import CheonanNetwork
 
 
-def create_app(settings=None, clock=None, provider=None, ai_adapter=None):
+def create_app(settings=None, clock=None, provider=None, ai_adapter=None, *, place_catalog='legacy', transport_catalog='legacy'):
     settings = settings or Settings.from_env()
-    if settings.data_mode not in ('demo', 'live'):
-        raise ValueError('BUS_DATA_MODE must be demo or live')
+    if transport_catalog not in ('legacy', 'cheonan'):
+        raise ValueError('Unknown transport catalogue')
+    transport = CheonanNetwork() if transport_catalog == 'cheonan' else None
+    if transport and provider is None and settings.data_mode == 'demo':
+        settings = replace(settings, data_mode='static')
+    if settings.data_mode not in ('demo', 'live', 'static'):
+        raise ValueError('BUS_DATA_MODE must be demo, static or live')
     database = Database(settings.database_url)
+    if place_catalog not in ('legacy', 'cheonan'):
+        raise ValueError('Unknown place catalogue')
+    places = load_places() if place_catalog == 'cheonan' else None
 
     @asynccontextmanager
     async def lifespan(app):
@@ -34,18 +45,26 @@ def create_app(settings=None, clock=None, provider=None, ai_adapter=None):
             database.initialize()
             if settings.data_mode == 'demo':
                 seed(database)
+            if places is not None:
+                register_places(database, places)
+            if transport is not None:
+                transport.register_origin(database)
             yield
         finally:
             database.engine.dispose()
 
-    app = FastAPI(title='충남 스마트 버스 · 합성 시연 API', version='1.0.0', lifespan=lifespan)
+    app = FastAPI(title='천안 스마트 버스 · 경로 안내 API', version='1.0.0', lifespan=lifespan)
     app.state.settings = settings
     app.state.clock = clock or (lambda: datetime.now(timezone.utc))
     app.state.database = database
-    app.state.provider = provider or (DemoProvider(settings.demo_scenario, ROOT / '.local/scenario.json')
+    app.state.transport = transport
+    app.state.provider = provider or (StaticReferenceProvider() if settings.data_mode == 'static' else DemoProvider(settings.demo_scenario, ROOT / '.local/scenario.json')
         if settings.data_mode == 'demo' else UnconnectedLiveProvider())
     app.state.ai = AIBoundary(ai_adapter)
+    app.state.place_ids = {p['destinationId'] for p in places} if places is not None else None
     app.include_router(router)
+    if transport is not None:
+        app.include_router(cheonan_router)
 
     @app.middleware('http')
     async def common_server_errors(request, call_next):
@@ -114,4 +133,4 @@ def create_app(settings=None, clock=None, provider=None, ai_adapter=None):
     return app
 
 
-app = create_app(ai_adapter=RuleBasedAIAdapter())
+app = create_app(ai_adapter=RuleBasedAIAdapter(), place_catalog='cheonan', transport_catalog='cheonan')

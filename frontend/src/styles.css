@@ -1,0 +1,29 @@
+@font-face { font-family:Pretendard; font-style:normal; font-weight:500; font-display:swap; src:url('pretendard/dist/web/static/woff2/Pretendard-Medium.woff2') format('woff2'); }
+@font-face { font-family:Pretendard; font-style:normal; font-weight:600; font-display:swap; src:url('pretendard/dist/web/static/woff2/Pretendard-SemiBold.woff2') format('woff2'); }
+@font-face { font-family:Pretendard; font-style:normal; font-weight:700; font-display:swap; src:url('pretendard/dist/web/static/woff2/Pretendard-Bold.woff2') format('woff2'); }
+* { box-sizing: border-box; }
+:root { font-family: Pretendard, 'Malgun Gothic', sans-serif; color: #000; background: #e9edf2; font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
+body { margin: 0; }
+button, input { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+button:focus-visible, input:focus-visible, [role='button']:focus-visible, a[href]:focus-visible { outline: 3px solid #fa8b21; outline-offset: 4px; }
+h1:focus { outline: none; }
+button, a, input { -webkit-tap-highlight-color: transparent; }
+/* A transient press is independent from the persistent aria-pressed selection. */
+:is(button, input[type='button'], input[type='submit'], input[type='reset'], [role='button'], a[href]) {
+  transition: filter 120ms ease-out;
+  touch-action: manipulation;
+}
+/* The extra scope wins over component hover filters, including primary buttons. */
+html :is(button, input[type='button'], input[type='submit'], input[type='reset'], [role='button'], a[href]):not(:disabled):not([aria-disabled='true']):is(:active, [data-pressed='true']) {
+  filter: brightness(.84);
+  transition-duration: 0ms;
+}
+:is(button, input[type='button'], input[type='submit'], input[type='reset'], [role='button'], a[href]):where(:disabled, [aria-disabled='true']) {
+  cursor: not-allowed;
+  opacity: .5;
+  filter: none;
+}
+@media print { body, :root { background: white; } #root > div { display: none !important; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition: none !important; } }

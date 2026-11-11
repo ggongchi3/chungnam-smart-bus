@@ -23,7 +23,7 @@ class Error(Model):
 class Meta(Model):
     requestId: str
     generatedAt: AwareDatetime
-    dataMode: Literal['demo', 'live']
+    dataMode: Literal['demo', 'live', 'static']
 
 
 T = TypeVar('T')
@@ -36,8 +36,8 @@ class Envelope(Model, Generic[T]):
 
 
 class Coordinates(Model):
-    latitude: Annotated[float, Field(allow_inf_nan=False)]
-    longitude: Annotated[float, Field(allow_inf_nan=False)]
+    latitude: Annotated[float, Field(ge=-90, le=90, allow_inf_nan=False)]
+    longitude: Annotated[float, Field(ge=-180, le=180, allow_inf_nan=False)]
 
 
 class Station(Model):
@@ -57,6 +57,14 @@ class Destination(Model):
     name: str
     category: Category
     aliases: list[str]
+    address: str | None = None
+    placeKind: str | None = None
+    coordinates: Coordinates | None = None
+    distanceMeters: Annotated[float, Field(ge=0, allow_inf_nan=False)] | None = None
+    distanceBasis: Literal['straight_line'] | None = None
+    walkingDistanceMeters: Nonnegative | None = None
+    sourceUrl: str | None = None
+    coordinateSourceUrl: str | None = None
 
 
 class DestinationData(Model):
@@ -68,6 +76,8 @@ class DestinationQuery(BaseModel):
     originStationId: Identifier
     query: Annotated[str, StringConstraints(strip_whitespace=True, max_length=100)] = ''
     category: Category | None = None
+    kind: Literal['hospital', 'office', 'market', 'shopping', 'terminal', 'station', 'education', 'culture'] | None = None
+    sort: Literal['distance', 'name', 'walking'] = 'distance'
 
 
 class Quality(Model):
@@ -93,6 +103,7 @@ class Bus(Model):
     alightSequence: Annotated[int, Field(ge=1)]
     stopCount: Annotated[int, Field(ge=1)]
     durationSeconds: Nonnegative | None
+    distanceMeters: Nonnegative | None = None
 
 
 class Walk(Model):
@@ -124,12 +135,22 @@ class RouteOption(Model):
     transferCount: Annotated[int, Field(ge=0, le=1)]
     totalDurationSeconds: Nonnegative | None
     walkingDurationSeconds: Nonnegative | None
+    walkingDistanceMeters: Nonnegative | None = None
+    totalDistanceMeters: Nonnegative | None = None
+    estimatedTravelSeconds: Nonnegative | None = None
+    waitingDurationSeconds: Nonnegative | None = None
+    boardStation: StationRef | None = None
+    alightStation: StationRef | None = None
+    transferStations: list[StationRef] = Field(default_factory=list)
+    features: list[str] = Field(default_factory=list)
+    dataSource: str | None = None
 
 
 class SearchRequest(Model):
     originStationId: Identifier
     destinationId: Identifier
     departAt: AwareDatetime
+    sort: Literal['fastest', 'transfers', 'walking', 'distance'] = 'transfers'
 
     @field_validator('departAt', mode='before')
     @classmethod
@@ -151,7 +172,10 @@ class SearchData(Model):
     originStationId: Identifier
     destinationId: Identifier
     expiresAt: AwareDatetime
-    routeOptions: list[RouteOption] = Field(max_length=3)
+    routeOptions: list[RouteOption] = Field(max_length=12)
+    sortedBy: str | None = None
+    routingNotice: str | None = None
+    referenceRetrievedAt: AwareDatetime | None = None
 
 
 class RouteDetail(Model):
@@ -164,6 +188,11 @@ class RouteDetail(Model):
     journeyStatus: JourneyStatus
     referenceDataQuality: Quality
     segments: list[Segment]
+    dataSource: str | None = None
+    routingNotice: str | None = None
+    estimatedTravelSeconds: Nonnegative | None = None
+    totalDistanceMeters: Nonnegative | None = None
+    walkingDistanceMeters: Nonnegative | None = None
 
 
 class Arrival(Model):
@@ -195,9 +224,17 @@ class ServiceChanges(Model):
     dataQuality: Quality
 
 
-class LiveData(Model):
+class OptionArrivals(Model):
     routeSnapshotVersion: str
     arrivals: list[Arrival]
+
+
+class SearchArrivals(Model):
+    routeSearchId: Identifier
+    options: dict[Identifier, OptionArrivals]
+
+
+class LiveData(OptionArrivals):
     serviceChanges: ServiceChanges
 
 

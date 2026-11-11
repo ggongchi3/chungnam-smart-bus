@@ -16,10 +16,10 @@
       "segmentType": "walk",
       "status": "active",
       "slots": ["fromLabel", "toLabel", "distanceMeters?", "durationSeconds?"],
-      "text": "{fromLabel}에서 {toLabel}까지 걸어가세요. (거리·시간은 확인된 값만, 없으면 '확인되지 않았습니다'. 시간은 60초 미만이면 'N초', 60초 이상이면 (초+30)//60으로 반올림해 '약 N분')",
+      "text": "{fromLabel}에서 {toLabel}까지 걸어가세요. (거리·시간은 확인된 값만, 없으면 '확인되지 않았습니다'. 시간은 60초 미만이면 'N초', 60초 이상이면 분 단위로 올림해 '약 N분')",
       "example": "시연 병원 앞 정류장에서 시연 병원까지 걸어가세요. 거리와 이동 시간은 확인되지 않았습니다.",
       "exampleWithValues": "시연 병원 앞 정류장에서 시연 병원까지 걸어가세요. 거리는 350미터입니다. 이동 시간은 약 7분입니다.",
-      "source": "backend/services/ai.py template_text와 동일 (분 단위 표시는 3cd2fd2에서 반영). 응답의 durationSeconds 필드는 초 그대로"
+      "source": "backend/services/ai.py template_text와 동일. 응답의 durationSeconds 필드는 초 그대로"
     },
     {
       "templateId": "transfer.basic",

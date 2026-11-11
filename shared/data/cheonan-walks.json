@@ -1,0 +1,781 @@
+{
+  "schemaVersion": 1,
+  "sourceUrl": "https://valhalla.openstreetmap.de/",
+  "attribution": "© OpenStreetMap contributors (ODbL) · Valhalla / FOSSGIS",
+  "costing": "pedestrian",
+  "walkingSpeedKmh": 4.0,
+  "retrievedAt": "2026-11-10T12:29:44.837728+00:00",
+  "originAccess": [
+    {
+      "stationId": "285000686",
+      "distanceMeters": 0,
+      "durationSeconds": 0
+    },
+    {
+      "stationId": "285010014",
+      "distanceMeters": 198,
+      "durationSeconds": 193
+    },
+    {
+      "stationId": "285010125",
+      "distanceMeters": 256,
+      "durationSeconds": 251
+    },
+    {
+      "stationId": "285000685",
+      "distanceMeters": 288,
+      "durationSeconds": 286
+    },
+    {
+      "stationId": "285000687",
+      "distanceMeters": 178,
+      "durationSeconds": 205
+    },
+    {
+      "stationId": "285000706",
+      "distanceMeters": 301,
+      "durationSeconds": 278
+    },
+    {
+      "stationId": "285000707",
+      "distanceMeters": 350,
+      "durationSeconds": 328
+    }
+  ],
+  "destinations": {
+    "cheonan-dankook-hospital": {
+      "access": [
+        {
+          "stationId": "285000640",
+          "distanceMeters": 138,
+          "durationSeconds": 124
+        },
+        {
+          "stationId": "285001715",
+          "distanceMeters": 170,
+          "durationSeconds": 167
+        },
+        {
+          "stationId": "285000639",
+          "distanceMeters": 273,
+          "durationSeconds": 242
+        },
+        {
+          "stationId": "285000641",
+          "distanceMeters": 369,
+          "durationSeconds": 406
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 3452,
+        "durationSeconds": 3338
+      }
+    },
+    "cheonan-soonchunhyang-hospital": {
+      "access": [
+        {
+          "stationId": "285071991",
+          "distanceMeters": 98,
+          "durationSeconds": 107
+        },
+        {
+          "stationId": "285071987",
+          "distanceMeters": 165,
+          "durationSeconds": 212
+        },
+        {
+          "stationId": "285000899",
+          "distanceMeters": 323,
+          "durationSeconds": 343
+        },
+        {
+          "stationId": "285071988",
+          "distanceMeters": 702,
+          "durationSeconds": 665
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 3009,
+        "durationSeconds": 2825
+      }
+    },
+    "cheonan-medical-center": {
+      "access": [
+        {
+          "stationId": "285000746",
+          "distanceMeters": 314,
+          "durationSeconds": 297
+        },
+        {
+          "stationId": "285000743",
+          "distanceMeters": 259,
+          "durationSeconds": 586
+        },
+        {
+          "stationId": "285000745",
+          "distanceMeters": 574,
+          "durationSeconds": 664
+        },
+        {
+          "stationId": "285000744",
+          "distanceMeters": 642,
+          "durationSeconds": 898
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 5865,
+        "durationSeconds": 5894
+      },
+      "directWalkRetrievedAt": "2026-11-10T14:14:13.591477+00:00"
+    },
+    "cheonan-chungmu-hospital": {
+      "access": [
+        {
+          "stationId": "285001518",
+          "distanceMeters": 218,
+          "durationSeconds": 204
+        },
+        {
+          "stationId": "285000838",
+          "distanceMeters": 148,
+          "durationSeconds": 141
+        },
+        {
+          "stationId": "285000837",
+          "distanceMeters": 352,
+          "durationSeconds": 317
+        },
+        {
+          "stationId": "285000828",
+          "distanceMeters": 313,
+          "durationSeconds": 299
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 4014,
+        "durationSeconds": 3735
+      }
+    },
+    "cheonan-bus-terminal": {
+      "access": [
+        {
+          "stationId": "285000686",
+          "distanceMeters": 533,
+          "durationSeconds": 508
+        },
+        {
+          "stationId": "285010125",
+          "distanceMeters": 597,
+          "durationSeconds": 545
+        },
+        {
+          "stationId": "285000685",
+          "distanceMeters": 629,
+          "durationSeconds": 580
+        },
+        {
+          "stationId": "285010014",
+          "distanceMeters": 539,
+          "durationSeconds": 513
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 533,
+        "durationSeconds": 508
+      }
+    },
+    "cheonan-express-terminal": {
+      "access": [
+        {
+          "stationId": "285000687",
+          "distanceMeters": 65,
+          "durationSeconds": 96
+        },
+        {
+          "stationId": "285000685",
+          "distanceMeters": 486,
+          "durationSeconds": 512
+        },
+        {
+          "stationId": "285010125",
+          "distanceMeters": 454,
+          "durationSeconds": 477
+        },
+        {
+          "stationId": "285000686",
+          "distanceMeters": 197,
+          "durationSeconds": 244
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 197,
+        "durationSeconds": 244
+      }
+    },
+    "cheonan-station": {
+      "access": [
+        {
+          "stationId": "285072005",
+          "distanceMeters": 309,
+          "durationSeconds": 372
+        },
+        {
+          "stationId": "285000678",
+          "distanceMeters": 254,
+          "durationSeconds": 288
+        },
+        {
+          "stationId": "285000655",
+          "distanceMeters": 322,
+          "durationSeconds": 383
+        },
+        {
+          "stationId": "285000654",
+          "distanceMeters": 259,
+          "durationSeconds": 340
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 1497,
+        "durationSeconds": 1475
+      }
+    },
+    "cheonan-dujeong-station": {
+      "access": [
+        {
+          "stationId": "285001035",
+          "distanceMeters": 201,
+          "durationSeconds": 187
+        },
+        {
+          "stationId": "285001034",
+          "distanceMeters": 182,
+          "durationSeconds": 132
+        },
+        {
+          "stationId": "285001483",
+          "distanceMeters": 190,
+          "durationSeconds": 171
+        },
+        {
+          "stationId": "285002086",
+          "distanceMeters": 413,
+          "durationSeconds": 374
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 2190,
+        "durationSeconds": 2054
+      }
+    },
+    "cheonan-bongmyeong-station": {
+      "access": [
+        {
+          "stationId": "285071988",
+          "distanceMeters": 764,
+          "durationSeconds": 685
+        },
+        {
+          "stationId": "285071731",
+          "distanceMeters": 763,
+          "durationSeconds": 685
+        },
+        {
+          "stationId": "285000835",
+          "distanceMeters": 1086,
+          "durationSeconds": 963
+        },
+        {
+          "stationId": "285071987",
+          "distanceMeters": 424,
+          "durationSeconds": 377
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 3119,
+        "durationSeconds": 2923
+      }
+    },
+    "cheonan-city-hall": {
+      "access": [
+        {
+          "stationId": "285001503",
+          "distanceMeters": 490,
+          "durationSeconds": 627
+        },
+        {
+          "stationId": "285071398",
+          "distanceMeters": 472,
+          "durationSeconds": 651
+        },
+        {
+          "stationId": "285001502",
+          "distanceMeters": 507,
+          "durationSeconds": 699
+        },
+        {
+          "stationId": "285071748",
+          "distanceMeters": 610,
+          "durationSeconds": 796
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 4790,
+        "durationSeconds": 4963
+      }
+    },
+    "cheonan-dongnam-district-office": {
+      "access": [
+        {
+          "stationId": "285001753",
+          "distanceMeters": 242,
+          "durationSeconds": 279
+        },
+        {
+          "stationId": "285000668",
+          "distanceMeters": 164,
+          "durationSeconds": 154
+        },
+        {
+          "stationId": "285000667",
+          "distanceMeters": 179,
+          "durationSeconds": 167
+        },
+        {
+          "stationId": "285000669",
+          "distanceMeters": 531,
+          "durationSeconds": 548
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 1978,
+        "durationSeconds": 1859
+      }
+    },
+    "cheonan-seobuk-district-office": {
+      "access": [
+        {
+          "stationId": "285002140",
+          "distanceMeters": 216,
+          "durationSeconds": 148
+        },
+        {
+          "stationId": "285000532",
+          "distanceMeters": 139,
+          "durationSeconds": 119
+        },
+        {
+          "stationId": "285055671",
+          "distanceMeters": 378,
+          "durationSeconds": 331
+        },
+        {
+          "stationId": "285002298",
+          "distanceMeters": 421,
+          "durationSeconds": 404
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 7733,
+        "durationSeconds": 7210
+      },
+      "directWalkRetrievedAt": "2026-11-10T14:14:15.001760+00:00"
+    },
+    "cheonan-tax-office": {
+      "access": [
+        {
+          "stationId": "285071564",
+          "distanceMeters": 475,
+          "durationSeconds": 464
+        },
+        {
+          "stationId": "285071565",
+          "distanceMeters": 279,
+          "durationSeconds": 288
+        },
+        {
+          "stationId": "285001972",
+          "distanceMeters": 513,
+          "durationSeconds": 522
+        },
+        {
+          "stationId": "285001971",
+          "distanceMeters": 510,
+          "durationSeconds": 518
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 4663,
+        "durationSeconds": 4461
+      }
+    },
+    "cheonan-national-pension-office": {
+      "access": [
+        {
+          "stationId": "285002043",
+          "distanceMeters": 64,
+          "durationSeconds": 76
+        },
+        {
+          "stationId": "285002042",
+          "distanceMeters": 59,
+          "durationSeconds": 71
+        },
+        {
+          "stationId": "285001972",
+          "distanceMeters": 95,
+          "durationSeconds": 81
+        },
+        {
+          "stationId": "285001971",
+          "distanceMeters": 98,
+          "durationSeconds": 86
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 4120,
+        "durationSeconds": 3909
+      }
+    },
+    "cheonan-central-market": {
+      "access": [
+        {
+          "stationId": "285000664",
+          "distanceMeters": 190,
+          "durationSeconds": 178
+        },
+        {
+          "stationId": "285000665",
+          "distanceMeters": 207,
+          "durationSeconds": 184
+        },
+        {
+          "stationId": "285000663",
+          "distanceMeters": 263,
+          "durationSeconds": 239
+        },
+        {
+          "stationId": "285000662",
+          "distanceMeters": 275,
+          "durationSeconds": 254
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 2446,
+        "durationSeconds": 2261
+      }
+    },
+    "cheonan-seongjeong-market": {
+      "access": [
+        {
+          "stationId": "285000953",
+          "distanceMeters": 236,
+          "durationSeconds": 210
+        },
+        {
+          "stationId": "285000952",
+          "distanceMeters": 207,
+          "durationSeconds": 171
+        },
+        {
+          "stationId": "285000903",
+          "distanceMeters": 260,
+          "durationSeconds": 235
+        },
+        {
+          "stationId": "285000904",
+          "distanceMeters": 266,
+          "durationSeconds": 240
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 2005,
+        "durationSeconds": 1836
+      }
+    },
+    "cheonan-byeongcheon-market": {
+      "access": [
+        {
+          "stationId": "285001143",
+          "distanceMeters": 98,
+          "durationSeconds": 86
+        },
+        {
+          "stationId": "285001916",
+          "distanceMeters": 87,
+          "durationSeconds": 88
+        },
+        {
+          "stationId": "285000449",
+          "distanceMeters": 108,
+          "durationSeconds": 16
+        },
+        {
+          "stationId": "285001915",
+          "distanceMeters": 93,
+          "durationSeconds": 93
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 17749,
+        "durationSeconds": 17180
+      },
+      "directWalkRetrievedAt": "2026-11-10T14:14:16.544565+00:00"
+    },
+    "cheonan-sinan-office": {
+      "access": [
+        {
+          "stationId": "285000706",
+          "distanceMeters": 309,
+          "durationSeconds": 308
+        },
+        {
+          "stationId": "285000688",
+          "distanceMeters": 404,
+          "durationSeconds": 366
+        },
+        {
+          "stationId": "285000689",
+          "distanceMeters": 417,
+          "durationSeconds": 395
+        },
+        {
+          "stationId": "285000707",
+          "distanceMeters": 589,
+          "durationSeconds": 547
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 489,
+        "durationSeconds": 508
+      }
+    },
+    "cheonan-dankook-university": {
+      "access": [
+        {
+          "stationId": "285001478",
+          "distanceMeters": 363,
+          "durationSeconds": 419
+        },
+        {
+          "stationId": "285001595",
+          "distanceMeters": 817,
+          "durationSeconds": 761
+        },
+        {
+          "stationId": "285001052",
+          "distanceMeters": 942,
+          "durationSeconds": 969
+        },
+        {
+          "stationId": "285071397",
+          "distanceMeters": 542,
+          "durationSeconds": 505
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 2715,
+        "durationSeconds": 2623
+      }
+    },
+    "cheonan-sangmyung-university": {
+      "access": [
+        {
+          "stationId": "285001594",
+          "distanceMeters": 677,
+          "durationSeconds": 624
+        },
+        {
+          "stationId": "285001047",
+          "distanceMeters": 840,
+          "durationSeconds": 795
+        },
+        {
+          "stationId": "285001048",
+          "distanceMeters": 657,
+          "durationSeconds": 650
+        },
+        {
+          "stationId": "285001046",
+          "distanceMeters": 888,
+          "durationSeconds": 744
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 3061,
+        "durationSeconds": 2985
+      }
+    },
+    "cheonan-hoseo-university": {
+      "access": [
+        {
+          "stationId": "285071805",
+          "distanceMeters": 724,
+          "durationSeconds": 744
+        },
+        {
+          "stationId": "285071806",
+          "distanceMeters": 735,
+          "durationSeconds": 724
+        },
+        {
+          "stationId": "285001046",
+          "distanceMeters": 350,
+          "durationSeconds": 315
+        },
+        {
+          "stationId": "285001047",
+          "distanceMeters": 359,
+          "durationSeconds": 440
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 3283,
+        "durationSeconds": 3308
+      }
+    },
+    "cheonan-koreatech": {
+      "access": [
+        {
+          "stationId": "285000406",
+          "distanceMeters": 605,
+          "durationSeconds": 614
+        },
+        {
+          "stationId": "285000405",
+          "distanceMeters": 584,
+          "durationSeconds": 659
+        },
+        {
+          "stationId": "285000407",
+          "distanceMeters": 917,
+          "durationSeconds": 951
+        },
+        {
+          "stationId": "285000408",
+          "distanceMeters": 952,
+          "durationSeconds": 914
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 16801,
+        "durationSeconds": 16349
+      },
+      "directWalkRetrievedAt": "2026-11-10T14:14:17.972841+00:00"
+    },
+    "cheonan-independence-hall": {
+      "access": [
+        {
+          "stationId": "285001783",
+          "distanceMeters": 1097,
+          "durationSeconds": 1091
+        },
+        {
+          "stationId": "285001782",
+          "distanceMeters": 917,
+          "durationSeconds": 859
+        },
+        {
+          "stationId": "285000521",
+          "distanceMeters": 997,
+          "durationSeconds": 972
+        },
+        {
+          "stationId": "285000520",
+          "distanceMeters": 1025,
+          "durationSeconds": 972
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 10618,
+        "durationSeconds": 10915
+      },
+      "directWalkRetrievedAt": "2026-11-10T14:14:19.391455+00:00"
+    },
+    "cheonan-museum": {
+      "access": [
+        {
+          "stationId": "285001950",
+          "distanceMeters": 121,
+          "durationSeconds": 107
+        },
+        {
+          "stationId": "285001951",
+          "distanceMeters": 660,
+          "durationSeconds": 611
+        },
+        {
+          "stationId": "285000737",
+          "distanceMeters": 573,
+          "durationSeconds": 541
+        },
+        {
+          "stationId": "285000738",
+          "distanceMeters": 596,
+          "durationSeconds": 552
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 4181,
+        "durationSeconds": 3964
+      }
+    },
+    "cheonan-arario-gallery": {
+      "access": [
+        {
+          "stationId": "285000686",
+          "distanceMeters": 137,
+          "durationSeconds": 127
+        },
+        {
+          "stationId": "285010014",
+          "distanceMeters": 143,
+          "durationSeconds": 132
+        },
+        {
+          "stationId": "285000706",
+          "distanceMeters": 214,
+          "durationSeconds": 190
+        },
+        {
+          "stationId": "285010125",
+          "distanceMeters": 201,
+          "durationSeconds": 164
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 137,
+        "durationSeconds": 127
+      }
+    },
+    "cheonan-shinsegae": {
+      "access": [
+        {
+          "stationId": "285000686",
+          "distanceMeters": 514,
+          "durationSeconds": 487
+        },
+        {
+          "stationId": "285010125",
+          "distanceMeters": 578,
+          "durationSeconds": 524
+        },
+        {
+          "stationId": "285010014",
+          "distanceMeters": 520,
+          "durationSeconds": 492
+        },
+        {
+          "stationId": "285000685",
+          "distanceMeters": 610,
+          "durationSeconds": 559
+        }
+      ],
+      "directWalk": {
+        "distanceMeters": 514,
+        "durationSeconds": 487
+      }
+    }
+  },
+  "failures": []
+}

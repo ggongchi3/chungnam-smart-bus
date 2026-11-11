@@ -1,6 +1,15 @@
 # 백엔드 실행 안내
 
-합성 데이터 전용 FastAPI 시제품이다. **시연 데이터 · 실제 운행 정보 아님**. 서비스 API 8개와 DB·경로·최신성·AI 출력 검증·인쇄 준비 데이터를 구현했다. 기본 서버에는 외부 모델·네트워크를 호출하지 않는 규칙 기반 AI 어댑터가 연결되어 있다. 실제 교통 API, 프론트 화면, 음성 재생, 브라우저 인쇄는 연결되지 않았다.
+기본 `backend.main:app`은 실제 천안 참조 자료를 사용하는 FastAPI 서버다. **종합터미널 686**, 검증된 장소 26곳, 공식 방향별 노선 333개를 사용하며 정적 경로와 선택적 공개 도착조회를 구분한다. 기존 API 8개·SQLite 스냅샷·규칙 기반 AI·인쇄 준비 기능을 재사용한다. 대기 포함 총시간·운행일 시간표·현재 운행 보장은 미지원이다. 최신 API·검증·수정 파일은 [천안 경로 구현 보고](../docs/cheonan-routing-update.md)를 따른다. 아래 단계별 합성 데이터 설명과 당시 테스트 기록은 기존 엔진의 과거 기록이다.
+
+현재 기본 서버는 프로젝트 루트에서 다음과 같이 실행한다. `.env`는 자동으로 읽지 않는다. 기존 DB를 사용해도 출발지 정보는 공식 참조값으로 동기화되며, 기존 합성 행을 삭제하지 않는다.
+
+```powershell
+$env:BUS_DATA_MODE='static'
+backend/.venv/Scripts/python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
+
+현재 모드에서 `demo-stop-*` 출발지로 목적지·경로 검색을 요청하면 400이다. 기존 합성 테스트는 `create_app(..., place_catalog='legacy', transport_catalog='legacy')`를 사용한다. 전체 테스트와 실제 HTTP 검증 재현 명령은 최신 보고서에 있다.
 
 명령은 프로젝트 루트에서 실행한다. 검증 환경은 Windows, Python **3.13.2**, FastAPI **0.115.5**, Uvicorn **0.32.0**, Pydantic **2.9.2**, SQLAlchemy **2.0.36**, HTTPX **0.27.2**, pytest **8.3.3**이다. SQLite는 Python 내장 라이브러리이며 실제 버전은 `docs/runtime-versions.json`에 기록한다. 전체 간접 의존성까지 `requirements.lock`에 고정했다. 규칙 기반 AI 모듈은 표준 라이브러리만 사용한다.
 

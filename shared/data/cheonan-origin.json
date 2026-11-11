@@ -1,0 +1,13 @@
+{
+  "stationId": "cheonan-stop-285000686",
+  "publicId": "285000686",
+  "name": "종합터미널",
+  "arsId": "686",
+  "address": "충청남도 천안시 동남구 만남로 (천안종합버스터미널 앞)",
+  "addressNote": "도로 위 정류장으로 건물 도로명주소와 구분",
+  "coordinates": {
+    "latitude": 36.8190148,
+    "longitude": 127.1565574
+  },
+  "sourceUrl": "https://its.cheonan.go.kr/bis/busStop.do"
+}

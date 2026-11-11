@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { test } from 'node:test'
+import { test } from 'vitest'
 import { pronounceRouteName, speechTexts } from '../src/features/voice-guide/speechText.ts'
 import { createSpeechPlayer } from '../src/features/voice-guide/speechPlayer.ts'
 import { detail, guidance } from './fixtures.mjs'
