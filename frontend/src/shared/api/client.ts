@@ -1,6 +1,6 @@
 import type {
   Category, DestinationData, Envelope, GuidanceData, InterpretationData, LiveData,
-  Meta, PrintData, RouteDetail, SearchData, SelectionRequest, StationData, RouteSort, PlaceSort,
+  Meta, PrintData, RouteDetail, SearchArrivals, SearchData, SelectionRequest, StationData, RouteSort, PlaceSort,
 } from './types';
 
 const BASE = '/api/v1';
@@ -128,6 +128,7 @@ export const api = {
     ...(sort ? {sort} : {}),
   }, signal),
   detail: (searchId: string, optionId: string, signal?: AbortSignal) => request<RouteDetail>(optionPath(searchId, optionId), 'GET', undefined, signal),
+  searchArrivals: (searchId: string, signal?: AbortSignal) => request<SearchArrivals>(`/route-searches/${encode(searchId)}/arrivals`, 'GET', undefined, signal),
   live: (searchId: string, optionId: string, signal?: AbortSignal) => request<LiveData>(`${optionPath(searchId, optionId)}/live`, 'GET', undefined, signal),
   interpret: (origin: string, text: string, signal?: AbortSignal) => request<InterpretationData>('/destination-interpretations', 'POST', { originStationId: origin, text: text.trim() }, signal),
   guidance: (selection: SelectionRequest, signal?: AbortSignal) => request<GuidanceData>('/easy-guidance', 'POST', selection, signal),

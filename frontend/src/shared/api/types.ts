@@ -150,7 +150,9 @@ export interface Change {
   dataQuality: Quality;
 }
 export interface ServiceChanges { coverageStatus: 'available' | 'unknown'; items: Change[]; dataQuality: Quality }
-export interface LiveData { routeSnapshotVersion: string; arrivals: Arrival[]; serviceChanges: ServiceChanges }
+export interface OptionArrivals { routeSnapshotVersion: string; arrivals: Arrival[] }
+export interface SearchArrivals { routeSearchId: string; options: Record<string, OptionArrivals> }
+export interface LiveData extends OptionArrivals { serviceChanges: ServiceChanges }
 export interface SelectionRequest { routeSearchId: string; routeOptionId: string; expectedRouteSnapshotVersion: string }
 export interface RouteSelection {
   originStationId: string;

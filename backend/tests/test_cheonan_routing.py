@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from ai.adapter import RuleBasedAIAdapter
 from backend.config import Settings
-from backend.integrations.cheonan_live import arrival_state
+from backend.integrations.cheonan_live import arrival_state, arrival_state_many
 from backend.main import create_app
 from backend.models import schemas as s
 from backend.models.tables import RouteSearch, Station
@@ -162,6 +162,56 @@ def test_expiry_and_changed_snapshot_still_block_guidance(real_service):
     clock[0] += timedelta(minutes=10)
     assert client.get(path).status_code == 410
     clock[0] = before
+
+
+def test_card_arrivals_cover_every_bus_and_share_stop_queries(real_service, monkeypatch):
+    _, client, clock = real_service
+    found = search(client, clock, 'cheonan-dankook-hospital')
+    base = f"/api/v1/route-searches/{found['routeSearchId']}"
+    buses_by_option = {}
+    for option in found['routeOptions']:
+        option_id = option['routeOptionId']
+        detail = client.get(f'{base}/options/{option_id}').json()['data']
+        buses_by_option[option_id] = [p for p in detail['segments'] if p['type'] == 'bus']
+    assert any(len(buses) > 1 for buses in buses_by_option.values())
+    buses = [bus for legs in buses_by_option.values() for bus in legs]
+    target = buses[0]
+    target_stop = target['boardStation']['stationId'].removeprefix('cheonan-stop-')
+    target_route = target['routeId'].removeprefix('cheonan-route-')
+    all_stops = {bus['boardStation']['stationId'].removeprefix('cheonan-stop-') for bus in buses}
+    assert len(all_stops) < len(buses)
+    queried = []
+
+    def official(request):
+        stop = request.url.params['stopId']
+        queried.append(stop)
+        if stop != target_stop:
+            return httpx.Response(503)
+        return httpx.Response(200, json={'resultList':[{'ROUTE_ID':int(target_route), 'RTIME':4}]})
+
+    async def lookup(details, now):
+        async with httpx.AsyncClient(transport=httpx.MockTransport(official)) as provider:
+            return await arrival_state_many(details, now, client=provider)
+
+    monkeypatch.setattr('backend.api.routes.arrival_state_many', lookup)
+    response = client.get(base + '/arrivals')
+    assert response.status_code == 200, response.text
+    data = response.json()['data']
+    assert data['routeSearchId'] == found['routeSearchId']
+    assert set(data['options']) == set(buses_by_option)
+    assert sorted(queried) == sorted(all_stops)
+    for option in found['routeOptions']:
+        option_id = option['routeOptionId']
+        result = data['options'][option_id]
+        assert result['routeSnapshotVersion'] == option['routeSnapshotVersion']
+        assert len(result['arrivals']) == len(buses_by_option[option_id])
+        for bus, arrival in zip(buses_by_option[option_id], result['arrivals']):
+            assert arrival['segmentId'] == bus['segmentId']
+            assert arrival['routeId'] == bus['routeId']
+            assert arrival['boardStationId'] == bus['boardStation']['stationId']
+            matches = bus['routeId'] == target['routeId'] and bus['boardStation'] == target['boardStation']
+            assert arrival['etaSeconds'] == (240 if matches else None)
+            assert arrival['arrivalStatus'] == ('available' if matches else 'unavailable')
 
 
 @pytest.mark.anyio

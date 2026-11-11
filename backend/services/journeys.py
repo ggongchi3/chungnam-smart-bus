@@ -74,7 +74,7 @@ def create_search(session, request, state, now, data_mode, *, transport=None):
                        destinationId=request.destinationId, expiresAt=expires, routeOptions=options)
 
 
-def checked_detail(session, search_id, option_id, state, now, data_mode, expected=None, *, transport=None):
+def checked_search(session, search_id, now):
     search = session.get(RouteSearch, search_id)
     if search is None:
         not_found()
@@ -82,6 +82,11 @@ def checked_detail(session, search_id, option_id, state, now, data_mode, expecte
         raise ServiceError(410, 'ROUTE_SEARCH_EXPIRED', '검색 유효기간이 지났습니다. 다시 검색해 주세요.')
     if not isinstance(search.snapshot, dict):
         unavailable()
+    return search
+
+
+def checked_detail(session, search_id, option_id, state, now, data_mode, expected=None, *, transport=None):
+    search = checked_search(session, search_id, now)
     if option_id not in search.snapshot:
         not_found()
     require_core(state)
@@ -121,7 +126,7 @@ def checked_detail(session, search_id, option_id, state, now, data_mode, expecte
     return detail
 
 
-def live_info(detail, state, now, for_print=False, *, session=None):
+def arrival_values(detail, state, now, for_print=False):
     arrivals = []
     for segment in detail.segments:
         if segment.type != 'bus':
@@ -138,6 +143,11 @@ def live_info(detail, state, now, for_print=False, *, session=None):
             etaSeconds=max(0, int((expected - now).total_seconds())) if available and not for_print else None,
             expectedArrivalAt=expected if available else None,
             operationStatus=observation.operation_status, dataQuality=q))
+    return arrivals
+
+
+def live_info(detail, state, now, for_print=False, *, session=None):
+    arrivals = arrival_values(detail, state, now, for_print=for_print)
     routes = {p.routeId for p in detail.segments if p.type == 'bus'}
     legs = [(p.routeId, p.boardSequence, p.alightSequence) for p in detail.segments if p.type == 'bus']
     stations = (routing.route_station_ids(session, legs) if session is not None else

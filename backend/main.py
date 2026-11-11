@@ -19,7 +19,7 @@ from backend.database import Database
 from backend.integrations.ai import AIBoundary
 from backend.integrations.providers import DemoProvider, UnconnectedLiveProvider, StaticReferenceProvider
 from backend.seed import seed
-from backend.api.routes import router
+from backend.api.routes import cheonan_router, router
 from backend.config import ROOT
 from backend.services.places import load_places, register_places
 from backend.services.cheonan_routing import CheonanNetwork
@@ -63,6 +63,8 @@ def create_app(settings=None, clock=None, provider=None, ai_adapter=None, *, pla
     app.state.ai = AIBoundary(ai_adapter)
     app.state.place_ids = {p['destinationId'] for p in places} if places is not None else None
     app.include_router(router)
+    if transport is not None:
+        app.include_router(cheonan_router)
 
     @app.middleware('http')
     async def common_server_errors(request, call_next):

@@ -52,3 +52,22 @@ export function arrivalLabel(arrival: Arrival, now = Date.now()): string {
   if (freshness === 'unknown') return '도착 정보 갱신 시각 확인 불가';
   return `${formatDuration(arrival.etaSeconds)} 후 도착 예정`;
 }
+
+export function currentArrival(arrival: Arrival | undefined, now = Date.now()) {
+  if (!arrival) return null;
+  const freshness = effectiveFreshness(arrival.dataQuality, now);
+  const fetched = parsed(arrival.dataQuality.fetchedAt);
+  const age = fetched ? now - fetched.getTime() : Infinity;
+  const recentQuery = arrival.dataQuality.sourceId === 'cheonan-bis-arrival'
+    && freshness !== 'stale' && age >= 0 && age < 90_000;
+  const queriedAt = arrival.dataQuality.fetchedAt;
+  if (arrival.operationStatus === 'not_running') {
+    return freshness === 'fresh' ? {label:'운행하지 않아요', queriedAt} : null;
+  }
+  if (arrival.arrivalStatus !== 'available' || arrival.etaSeconds == null || (freshness !== 'fresh' && !recentQuery)) return null;
+  const expected = parsed(arrival.expectedArrivalAt);
+  const seconds = expected ? (expected.getTime() - now) / 1000 : arrival.etaSeconds;
+  if (seconds < 0 && arrival.etaSeconds !== 0) return null;
+  const timeLabel = seconds <= 0 ? '곧 도착 예정' : `약 ${formatDuration(seconds)} 후 도착 예정`;
+  return {label: freshness === 'fresh' ? timeLabel : `최근 조회 ${timeLabel}`, queriedAt};
+}

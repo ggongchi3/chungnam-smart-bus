@@ -1,5 +1,6 @@
 import { PROTOTYPE_TIMES_ENABLED } from '../../config/kiosk';
 import type { DataMode, RouteOption } from './api/types';
+import { formatDuration } from './api/format';
 
 export const prototypeEnabled = (mode: DataMode) => PROTOTYPE_TIMES_ENABLED && mode === 'static';
 
@@ -8,6 +9,11 @@ export function boardingWaitSeconds(optionId: string, leg = 0): number {
   let hash = 0;
   for (const letter of optionId) hash = (hash * 31 + letter.charCodeAt(0)) >>> 0;
   return (3 + (hash + leg * 2) % 5) * 60;
+}
+
+export function simulatedArrivalLabel(optionId: string, leg: number): string {
+  const duration = formatDuration(boardingWaitSeconds(optionId, leg));
+  return leg === 0 ? `시연 · 약 ${duration} 후 도착 예정` : `시연 · 환승 정류장 도착 후 약 ${duration} 대기`;
 }
 
 export function routeTiming(option: RouteOption, simulate = false) {

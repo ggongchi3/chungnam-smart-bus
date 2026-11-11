@@ -224,9 +224,17 @@ class ServiceChanges(Model):
     dataQuality: Quality
 
 
-class LiveData(Model):
+class OptionArrivals(Model):
     routeSnapshotVersion: str
     arrivals: list[Arrival]
+
+
+class SearchArrivals(Model):
+    routeSearchId: Identifier
+    options: dict[Identifier, OptionArrivals]
+
+
+class LiveData(OptionArrivals):
     serviceChanges: ServiceChanges
 
 

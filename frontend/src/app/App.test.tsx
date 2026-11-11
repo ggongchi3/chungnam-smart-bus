@@ -10,7 +10,7 @@ vi.mock('../shared/api/client', async importOriginal => {
   const actual = await importOriginal<typeof import('../shared/api/client')>();
   return { ...actual, api: {
     station: vi.fn(), destinations: vi.fn(), search: vi.fn(), detail: vi.fn(),
-    live: vi.fn(), interpret: vi.fn(), guidance: vi.fn(), printGuide: vi.fn(),
+    live: vi.fn(), searchArrivals: vi.fn(), interpret: vi.fn(), guidance: vi.fn(), printGuide: vi.fn(),
   } };
 });
 const voice = vi.hoisted(() => ({ supported: true, speaking: false, message: '', speak: vi.fn(), stop: vi.fn() }));
@@ -76,6 +76,7 @@ beforeEach(() => {
   vi.mocked(api.detail).mockResolvedValue(envelope(detail));
   vi.mocked(api.guidance).mockResolvedValue(envelope(guidance));
   vi.mocked(api.live).mockResolvedValue(envelope(live));
+  vi.mocked(api.searchArrivals).mockResolvedValue(envelope({routeSearchId:'search-1',options:{}}, 'static'));
   vi.mocked(api.printGuide).mockResolvedValue(envelope(printed));
 });
 afterEach(async () => {
@@ -207,7 +208,7 @@ describe('천안 실제 장소 선택', () => {
     expect(card.textContent).toContain('종합터미널 승차 → 병원 앞 하차');
     expect(card.textContent).toContain('총 예상시간 18분');
     expect(card.textContent).toContain('예상 대기시간 3분');
-    expect(card.textContent).toContain('첫 버스 약 3분 후 도착 예정');
+    expect(card.textContent).toContain('1번 · 시연 · 약 3분 후 도착 예정');
     expect(card.textContent).toContain('이동 추정 · 대기 제외 15분');
     expect(card.textContent).toContain('도보 거리 240m');
     expect(card.textContent).toContain('전체 이동거리 3.4km');
@@ -225,6 +226,42 @@ describe('천안 실제 장소 선택', () => {
     expect(host.querySelector('[aria-label="도착·운행 정보"]')?.textContent).toContain('약 3분 후 도착 예정');
     await act(async () => {await vi.advanceTimersByTimeAsync(30_000);});
     expect(host.querySelector('[aria-label="도착·운행 정보"]')?.textContent).toContain('약 3분 후 도착 예정');
+  });
+
+  it('카드와 상세의 각 버스에 실제 도착값을 우선 표시하고 빠진 환승 버스만 시연값으로 채운다', async () => {
+    const first = detail.segments[0];
+    if (first.type !== 'bus') throw new Error('버스 테스트 구간이 필요합니다');
+    const second = {...first, segmentId:'bus-2', routeId:'route-2', routeName:'2번', boardStation:first.alightStation};
+    const option = {...search().routeOptions[0], routeNames:['1번','2번'], transferCount:1,
+      boardStation:first.boardStation, transferStations:[second.boardStation]};
+    const observed: LiveData['arrivals'] = [{
+      segmentId:first.segmentId, routeId:first.routeId, boardStationId:first.boardStation.stationId,
+      arrivalStatus:'available', etaSeconds:120, expectedArrivalAt:'2026-11-10T04:02:00Z', operationStatus:'unknown',
+      dataQuality:{...quality, sourceId:'cheonan-bis-arrival'},
+    }, {
+      segmentId:second.segmentId, routeId:second.routeId, boardStationId:second.boardStation.stationId,
+      arrivalStatus:'unavailable', etaSeconds:null, expectedArrivalAt:null, operationStatus:'unknown', dataQuality:quality,
+    }];
+    vi.mocked(api.search).mockResolvedValue(envelope({...search(),routeOptions:[option]}, 'static'));
+    vi.mocked(api.searchArrivals).mockResolvedValue(envelope({routeSearchId:'search-1',options:{
+      'option-1':{routeSnapshotVersion:'v1',arrivals:observed},
+    }}, 'static'));
+    vi.mocked(api.detail).mockResolvedValue(envelope({...detail,segments:[first,second]}, 'static'));
+    vi.mocked(api.live).mockResolvedValue(envelope({...live,arrivals:observed}, 'static'));
+    await mount(); await click('목적지 찾기'); await click('병원');
+    await act(async () => {Array.from(host.querySelectorAll('button')).find(b => b.querySelector('strong')?.textContent === displayText(destination.name))!.click();});
+    const card = Array.from(host.querySelectorAll('button')).find(b => b.querySelector('strong')?.textContent === '1번 → 2번')!;
+    expect(api.searchArrivals).toHaveBeenCalledWith('search-1', expect.any(AbortSignal));
+    expect(card.textContent).toContain('1번 · 최근 조회 약 2분 후 도착 예정');
+    expect(card.textContent).toContain('2번 (환승) · 시연 · 환승 정류장 도착 후 약 5분 대기');
+    await act(async () => {card.click();});
+    const panel = host.querySelector('[aria-label="도착·운행 정보"]');
+    expect(panel?.textContent).toContain('최근 조회 약 2분 후 도착 예정');
+    expect(panel?.textContent).toContain('시연 · 환승 정류장 도착 후 약 5분 대기');
+    expect(panel?.textContent).not.toContain('시연 · 약 3분 후 도착 예정');
+    await act(async () => {await vi.advanceTimersByTimeAsync(90_001);});
+    expect(panel?.textContent).not.toContain('최근 조회 약 2분 후 도착 예정');
+    expect(panel?.textContent).toContain('시연 · 약 3분 후 도착 예정');
   });
 
   it('정렬 요청 실패 시 이전 경로를 새 순위로 표시하지 않고 같은 기준으로 재시도한다', async () => {

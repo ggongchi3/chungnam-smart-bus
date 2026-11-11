@@ -4,10 +4,12 @@ from fastapi import APIRouter, Depends, Query, Request
 
 from backend.models import schemas as s
 from backend.integrations.providers import read_provider
-from backend.integrations.cheonan_live import arrival_state
+from backend.integrations.cheonan_live import arrival_state, arrival_state_many
+from backend.api.errors import changed, unavailable
 from backend.services import ai, catalog, journeys
 
 router = APIRouter(prefix='/api/v1', responses={status: {'model': s.Envelope[None]} for status in (400,404,409,410,503,500)})
+cheonan_router = APIRouter(prefix=router.prefix, responses=router.responses)
 
 
 def session(request: Request):
@@ -67,6 +69,26 @@ async def live(routeSearchId: s.Identifier, routeOptionId: s.Identifier, request
     if result.dataSource == 'cheonan-bis-static':
         provider = await arrival_state(result, now)
     return response(request, journeys.live_info(result, provider, now, session=db))
+
+
+@cheonan_router.get('/route-searches/{routeSearchId}/arrivals', response_model=s.Envelope[s.SearchArrivals])
+async def search_arrivals(routeSearchId: s.Identifier, request: Request, db: Session):
+    now, provider = state(request)
+    search = journeys.checked_search(db, routeSearchId, now)
+    data_mode = request.app.state.settings.data_mode
+    transport = request.app.state.transport
+    journeys.require_core(provider)
+    if search.data_mode != data_mode or search.origin_station_id != transport.origin['stationId']:
+        changed()
+    if len(search.snapshot) > 12:
+        unavailable()
+    details = [journeys.checked_detail(db, routeSearchId, option_id, provider, now, data_mode,
+        transport=transport) for option_id in search.snapshot]
+    arrivals = await arrival_state_many(details, now)
+    return response(request, s.SearchArrivals(routeSearchId=routeSearchId, options={
+        detail.routeOptionId: s.OptionArrivals(routeSnapshotVersion=detail.routeSnapshotVersion,
+            arrivals=journeys.arrival_values(detail, arrivals, now)) for detail in details
+    }))
 
 
 @router.post('/destination-interpretations', response_model=s.Envelope[s.InterpretationData])
