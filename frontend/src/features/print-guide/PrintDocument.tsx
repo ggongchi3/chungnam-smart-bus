@@ -1,4 +1,4 @@
-import { formatBusLabel, formatDateTime, formatDistance, formatDuration } from '../../shared/api/format';
+import { formatBusLabel, formatDateTime, formatDistance, formatDuration, formatStation } from '../../shared/api/format';
 import type { PrintData } from '../../shared/api/types';
 import { displayDetail, displayText } from '../../shared/places';
 import { ORIGIN_PUBLIC_CODE, ORIGIN_STATION_ID } from '../../../config/kiosk';
@@ -21,24 +21,20 @@ export function PrintDocument({ snapshot, originName, destinationName }: PrintDo
           <dt>출발 정류장</dt><dd>{displayText(originName)}{originCode && ` ${originCode}`}</dd>
           <dt>목적지</dt><dd className={styles.destination}>{displayText(destinationName)}</dd>
         </dl>
+        {detail.estimatedTravelSeconds != null && <p>예상 이동시간 {formatDuration(detail.estimatedTravelSeconds)} · 대기시간 제외</p>}
         <p className={styles.timestamp}>인쇄 시각 {formatDateTime(snapshot.generatedAt)}</p>
       </header>
       <ol className={styles.steps}>
-        {detail.segments.map((segment) => (
+        {detail.segments.filter(segment => segment.type !== 'transfer').map(segment => (
           <li key={segment.segmentId}>
             {segment.type === 'bus' && <>
               <h2 className={styles.bus}>{formatBusLabel(segment.routeName)}</h2>
+              {segment.directionLabel && <p>운행 방향 · {segment.directionLabel}</p>}
               <dl className={styles.instructions}>
-                <dt>타는 곳</dt><dd className={styles.board}>{segment.boardStation.name}</dd>
-                <dt>내리는 곳</dt><dd className={styles.alight}>{segment.alightStation.name}</dd>
+                <dt>타는 곳</dt><dd className={styles.board}>{formatStation(segment.boardStation)}</dd>
+                <dt>내리는 곳</dt><dd className={styles.alight}>{formatStation(segment.alightStation)}</dd>
               </dl>
               <p>{segment.stopCount}개 정류장 이동</p>
-            </>}
-            {segment.type === 'transfer' && <>
-              <h2>버스를 갈아타세요</h2>
-              <dl className={styles.instructions}>
-                <dt>갈아타는 곳</dt><dd>{segment.atStation.name}</dd>
-              </dl>
             </>}
             {segment.type === 'walk' && <>
               <h2>걸어가세요</h2>

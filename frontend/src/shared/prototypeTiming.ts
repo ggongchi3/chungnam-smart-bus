@@ -2,7 +2,7 @@ import { PROTOTYPE_TIMES_ENABLED } from '../../config/kiosk';
 import type { DataMode, RouteOption } from './api/types';
 import { formatDuration } from './api/format';
 
-export const prototypeEnabled = (mode: DataMode) => PROTOTYPE_TIMES_ENABLED && mode === 'static';
+export const prototypeEnabled = (mode: DataMode) => PROTOTYPE_TIMES_ENABLED && mode === 'demo';
 
 /** Stable per route and boarding leg: re-rendering or sorting never rolls new values. */
 export function boardingWaitSeconds(optionId: string, leg = 0): number {

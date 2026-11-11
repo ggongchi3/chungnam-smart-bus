@@ -1,4 +1,4 @@
-import type { Arrival, Freshness, Quality } from './types';
+import type { Arrival, Freshness, Quality, StationRef } from './types';
 
 export const UNKNOWN = '확인되지 않음';
 
@@ -75,4 +75,7 @@ export function currentArrival(arrival: Arrival | undefined, now = Date.now()) {
   if (seconds < 0 && arrival.etaSeconds !== 0) return null;
   const timeLabel = seconds <= 0 ? '곧 도착 예정' : `약 ${formatDuration(seconds)} 후 도착 예정`;
   return {label: freshness === 'fresh' ? timeLabel : `최근 조회 ${timeLabel}`, queriedAt};
+}
+export function formatStation(station: StationRef): string {
+  return station.arsId ? `${station.name} (${station.arsId}번)` : station.name;
 }

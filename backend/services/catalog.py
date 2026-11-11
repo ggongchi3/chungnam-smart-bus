@@ -1,7 +1,7 @@
 from sqlalchemy import select
 import unicodedata
 
-from backend.api.errors import ServiceError, not_found
+from backend.api.errors import not_found
 from backend.models import schemas as s
 from backend.models.tables import Station, Destination, DestinationAlias, DestinationLocation
 from backend.services.geo import haversine_meters, destination_key
@@ -29,9 +29,9 @@ def destination(session, destination_id):
 
 
 def destinations(session, origin, query='', category=None, *, visible_ids=None, kind=None, sort='distance', transport=None):
-    if transport and origin != transport.origin['stationId']:
-        raise ServiceError(400, 'INVALID_REQUEST', '기준 정류장 종합터미널을 출발지로 선택해 주세요.')
-    source = station(session, origin)
+    if transport:
+        transport.require_origin(origin)
+    source = transport.station(origin) if transport else station(session, origin)
     rows = session.scalars(select(Destination).order_by(Destination.destination_id)).all()
     result = [destination(session, row.destination_id) for row in rows
               if visible_ids is None or row.destination_id in visible_ids]
@@ -52,7 +52,7 @@ def destinations(session, origin, query='', category=None, *, visible_ids=None, 
                 item.distanceMeters = round(haversine_meters(source.coordinates.model_dump(), item.coordinates.model_dump()), 3)
                 item.distanceBasis = 'straight_line'
             if transport:
-                direct = transport.walks.get('destinations', {}).get(item.destinationId, {}).get('directWalk')
+                direct = transport.direct_walk(item.destinationId)
                 item.walkingDistanceMeters = direct['distanceMeters'] if direct else None
         if sort == 'name':
             result.sort(key=lambda item: (item.name, item.destinationId))

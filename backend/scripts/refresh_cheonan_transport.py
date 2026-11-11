@@ -19,7 +19,7 @@ OUTPUT = ROOT / 'shared/data/cheonan-transport.json'
 
 def origin_from_stops(stops):
     """Bind the fixed stop to the official response on every manual refresh."""
-    public_id = '285000686'
+    public_id = json.loads(OUTPUT.with_name('cheonan-origin.json').read_text(encoding='utf-8'))['publicId']
     row = next((row for row in stops if str(row.get('STOP_ID')) == public_id), None)
     if row is None:
         raise RuntimeError('Official origin stop is missing; existing snapshot preserved')

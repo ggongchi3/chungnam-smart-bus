@@ -46,6 +46,7 @@ class Station(Model):
     directionLabel: str
     region: str | None
     coordinates: Coordinates | None
+    arsId: str | None = None
 
 
 class StationData(Model):
@@ -90,6 +91,12 @@ class Quality(Model):
 class StationRef(Model):
     stationId: Identifier
     name: str
+    arsId: str | None = None
+
+
+class RouteStop(StationRef):
+    sequence: Annotated[int, Field(ge=1)]
+    coordinates: Coordinates
 
 
 class Bus(Model):
@@ -104,6 +111,9 @@ class Bus(Model):
     stopCount: Annotated[int, Field(ge=1)]
     durationSeconds: Nonnegative | None
     distanceMeters: Nonnegative | None = None
+    directionLabel: str | None = None
+    stops: list[RouteStop] = Field(default_factory=list)
+    path: list[Coordinates] = Field(default_factory=list)
 
 
 class Walk(Model):
@@ -132,6 +142,7 @@ class RouteOption(Model):
     routeSnapshotVersion: str
     journeyStatus: JourneyStatus
     routeNames: list[str]
+    directionLabels: list[str] = Field(default_factory=list)
     transferCount: Annotated[int, Field(ge=0, le=1)]
     totalDurationSeconds: Nonnegative | None
     walkingDurationSeconds: Nonnegative | None

@@ -1,0 +1,12 @@
+.map { margin-top: 5cqw; padding: 2.407cqw 3.333cqw; border: .185cqw solid var(--control-border); border-radius: 1.852cqw; background: var(--surface); color: var(--text); }
+.map h2 { margin: 0 0 1.5cqw; font-size: 3.704cqw; }
+.map p { margin: .9cqw 0 0; font-size: 2.315cqw; }
+.diagram { display: block; width: 100%; height: auto; background: var(--surface); border: .185cqw solid var(--control-border); border-radius: 1.3cqw; }
+.first { color: var(--accent); }
+.transfer { color: var(--text); }
+.diagram polyline.transfer { stroke-dasharray: 9 5; }
+.station { fill: var(--surface); }
+.arrow { paint-order: stroke; stroke: var(--surface); }
+.legend { margin: 1.5cqw 0 0; padding: 0; list-style: none; font-size: 2.5cqw; }
+.legend li + li { margin-top: .6cqw; }
+.legend li > span { margin-right: .9cqw; }

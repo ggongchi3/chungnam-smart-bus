@@ -6,6 +6,7 @@ import { api, ApiError } from '../shared/api/client';
 import type { Destination, Envelope, GuidanceData, LiveData, PrintData, Quality, RouteDetail, SearchData } from '../shared/api/types';
 import { App } from './App';
 import { displayText, places } from '../shared/places';
+import styles from './App.module.css';
 
 vi.mock('../shared/api/client', async importOriginal => {
   const actual = await importOriginal<typeof import('../shared/api/client')>();
@@ -48,6 +49,8 @@ let root: Root;
 let host: HTMLDivElement;
 const originalScroll = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollTo');
 const heading = () => host.querySelector('main h1')?.textContent;
+const routeCards = () => Array.from(host.querySelectorAll<HTMLButtonElement>('[aria-label="이용 가능 경로"] button'));
+const routeArrivals = () => routeCards().map(card => card.querySelector(`.${styles.routeFooter}`)?.textContent);
 function button(text: string): HTMLButtonElement {
   const result = Array.from(host.querySelectorAll('button')).find(item => item.textContent?.trim() === text);
   if (!result) throw new Error(`화면에 버튼이 없습니다: ${text}`);
@@ -60,7 +63,7 @@ async function reachDetail() {
   await click('병원');
   const destinationButton = Array.from(host.querySelectorAll('button')).find(item => item.querySelector('strong')?.textContent === displayText(destination.name))!;
   await act(async () => { destinationButton.click(); });
-  const routeButton = Array.from(host.querySelectorAll('button')).find(item => item.querySelector('strong')?.textContent === '1번')!;
+  const routeButton = routeCards()[0];
   await act(async () => { routeButton.click(); });
   expect(heading()).toBe('이렇게 이동하세요');
 }
@@ -89,21 +92,39 @@ afterEach(async () => {
 
 describe('연결된 키오스크 사용자 흐름', () => {
   it('현재 정류장 번호를 헤더에 표시하고 이동 순서를 그 정류장에서의 승차로 시작한다', async () => {
-    const station = { stationId: ORIGIN_STATION_ID, name: '종합터미널', directionLabel: '정류장 686', region: null, coordinates: null };
+    const station = { stationId: ORIGIN_STATION_ID, name: '종합터미널', arsId: '685', directionLabel: '정류장 685', region: null,
+      coordinates: {latitude:36.8187607, longitude:127.1556582} };
+    const hospital = { stationId:'cheonan-stop-285001715', name:'단국대학교병원', arsId:'1715',
+      coordinates:{latitude:36.8412905, longitude:127.1743703} };
+    const next = { stationId:'cheonan-stop-285000706', name:'나은필병원', arsId:'706',
+      coordinates:{latitude:36.822, longitude:127.158} };
     const bus = detail.segments[0];
     if (bus.type !== 'bus') throw new Error('승차 구간이 필요합니다.');
     vi.mocked(api.station).mockResolvedValue(envelope({ station }));
-    vi.mocked(api.detail).mockResolvedValue(envelope({ ...detail, originStationId: station.stationId, segments: [
-      { ...bus, boardStation: station },
+    vi.mocked(api.detail).mockResolvedValue(envelope({ ...detail, originStationId: station.stationId, dataSource:'cheonan-bis-static',
+      estimatedTravelSeconds: 660, segments: [
+      { ...bus, routeName:'192', boardStation: station, alightStation:hospital, directionLabel:'단국대학교병원 방면',
+        boardSequence:20, alightSequence:22, stopCount:2,
+        stops:[{...station, sequence:20}, {...next, sequence:21}, {...hospital, sequence:22}],
+        path:[station.coordinates, next.coordinates, hospital.coordinates] },
       { type: 'walk', segmentId: 'destination-walk', fromLabel: '병원 앞 정류장', toLabel: '병원', distanceMeters: 170, durationSeconds: 180 },
     ] }));
 
     await mount();
-    expect(host.querySelector('header')?.textContent).toContain('종합터미널 686');
+    expect(host.querySelector('header')?.textContent).toContain('종합터미널 685');
     await reachDetail();
-    const steps = host.querySelectorAll('main ol > li');
-    expect(steps[0].textContent).toContain('1번 버스');
-    expect(steps[0].textContent).toContain('타는 곳 종합터미널');
+    const steps = host.querySelectorAll('[aria-label="이동 단계"] > li');
+    expect(steps[0].textContent).toContain('192번 버스');
+    expect(steps[0].textContent).toContain('타는 곳 종합터미널 (685번)');
+    expect(steps[0].textContent).toContain('단국대학교병원 방면');
+    expect(Array.from(steps[0].querySelectorAll('ol > li'), stop => stop.textContent)).toEqual([
+      '종합터미널 (685번) · 승차', '나은필병원 (706번)', '단국대학교병원 (1715번) · 하차',
+    ]);
+    const map = host.querySelector('[aria-label="버스 운행 경로"]');
+    expect(map?.querySelectorAll('svg circle')).toHaveLength(3);
+    expect(map?.querySelector('svg path[transform]')).not.toBeNull();
+    expect(map?.textContent).toContain('종합터미널 (685번) → 단국대학교병원 (1715번)');
+    expect(host.textContent).toContain('예상 이동시간 11분');
     expect(steps[1].textContent).toContain('도보 170m · 약 3분');
   });
 
@@ -155,7 +176,7 @@ describe('연결된 키오스크 사용자 흐름', () => {
     vi.mocked(api.interpret).mockRejectedValue(new ApiError('AI_UNAVAILABLE', 503, '안내 연결 실패'));
     await mount(); await click('목적지 찾기'); await click('장소를 검색하세요');
     await click('1'); await click('검색하기');
-    expect(api.interpret).toHaveBeenCalledWith('cheonan-stop-285000686', '1', expect.any(AbortSignal));
+    expect(api.interpret).toHaveBeenCalledWith('cheonan-stop-285000685', '1', expect.any(AbortSignal));
     expect(host.textContent).toContain('검색어와 일치하는 내용이 없어요');
     expect(host.querySelector('[role="alert"]')).toBeNull();
     await click('다시 검색하기');
@@ -192,7 +213,7 @@ describe('천안 실제 장소 선택', () => {
     expect(host.textContent).toContain('도보 600m');
     expect(host.textContent).toContain('현재 정류장에서 길을 따라 걷는 거리순');
     await click('가까운순');
-    expect(api.destinations).toHaveBeenLastCalledWith('cheonan-stop-285000686','', 'hospital', expect.any(AbortSignal),{sort:'walking',kind:'hospital'});
+    expect(api.destinations).toHaveBeenLastCalledWith('cheonan-stop-285000685','', 'hospital', expect.any(AbortSignal),{sort:'walking',kind:'hospital'});
     expect(button('가까운순').getAttribute('aria-pressed')).toBe('true');
     expect(host.textContent).not.toContain('직선');
     expect(host.textContent).toContain('도보 500m');
@@ -212,24 +233,24 @@ describe('천안 실제 장소 선택', () => {
     await click(label);
     expect(button(label).getAttribute('aria-pressed')).toBe('true');
     expect(button(label).disabled).toBe(true);
-    expect(api.search).toHaveBeenLastCalledWith('cheonan-stop-285000686',destination.destinationId,expect.any(AbortSignal),sort);
+    expect(api.search).toHaveBeenLastCalledWith('cheonan-stop-285000685',destination.destinationId,expect.any(AbortSignal),sort);
     await act(async () => {pending.resolve(envelope({...search(),routeOptions:[second,first]}, 'static'));});
-    expect(Array.from(host.querySelectorAll('button > strong')).map(e => e.textContent)).toEqual(['201번','1번']);
+    expect(routeArrivals()).toEqual([expect.stringMatching(/^201번 버스 ·/), expect.stringMatching(/^1번 버스 ·/)]);
   });
 
-  it('시연 총시간·대기·첫 버스 도착값을 카드와 상세에서 일치시키고 선택을 유지한다', async () => {
+  it('대기 자료가 없는 경우 이동시간만 추정하고 선택을 유지한다', async () => {
     const option = {...search().routeOptions[0],estimatedTravelSeconds:900,walkingDistanceMeters:240,totalDistanceMeters:3400,
       boardStation:{stationId:'start',name:'종합터미널'},alightStation:{stationId:'end',name:'병원 앞'},
       features:['최소 이동시간 · 대기 제외']};
     vi.mocked(api.search).mockResolvedValue(envelope({...search(),routeOptions:[option]}, 'static'));
     await mount(); await click('목적지 찾기'); await click('병원');
     await act(async () => {Array.from(host.querySelectorAll('button')).find(b => b.querySelector('strong')?.textContent === displayText(destination.name))!.click();});
-    const card = Array.from(host.querySelectorAll('button')).find(b => b.querySelector('strong')?.textContent === '1번')!;
+    const card = routeCards()[0];
     expect(card.textContent).toContain('타는 곳 종합터미널');
     expect(card.textContent).toContain('내리는 곳 병원 앞');
-    expect(card.textContent).toContain('총 예상시간 18분');
-    expect(card.textContent).toContain('예상 대기시간 3분');
-    expect(card.textContent).toContain('1번 · 시연 · 약 3분 후 도착 예정');
+    expect(card.textContent).not.toContain('총 예상시간');
+    expect(card.textContent).toContain('예상 대기시간 확인되지 않음');
+    expect(card.textContent).toContain('1번 버스 · 도착 정보 확인 불가');
     expect(card.textContent).toContain('이동 추정 · 대기 제외 15분');
     expect(card.textContent).toContain('도보 거리 240m');
     expect(card.textContent).toContain('전체 이동거리 3.4km');
@@ -244,12 +265,12 @@ describe('천안 실제 장소 선택', () => {
     vi.mocked(api.live).mockResolvedValue(envelope(live, 'static'));
     await act(async () => {pending.resolve(envelope(detail, 'static'));});
     expect(heading()).toBe('이렇게 이동하세요');
-    expect(host.querySelector('[aria-label="도착·운행 정보"]')?.textContent).toContain('약 3분 후 도착 예정');
+    expect(host.querySelector('[aria-label="도착·운행 정보"]')?.textContent).toContain('도착 정보 확인 불가');
     await act(async () => {await vi.advanceTimersByTimeAsync(30_000);});
-    expect(host.querySelector('[aria-label="도착·운행 정보"]')?.textContent).toContain('약 3분 후 도착 예정');
+    expect(host.querySelector('[aria-label="도착·운행 정보"]')?.textContent).toContain('도착 정보 확인 불가');
   });
 
-  it('카드와 상세의 각 버스에 실제 도착값을 우선 표시하고 빠진 환승 버스만 시연값으로 채운다', async () => {
+  it('카드와 상세에서 실제 도착값을 표시하고 빠진 환승 정보는 확인 불가로 안내한다', async () => {
     const first = detail.segments[0];
     if (first.type !== 'bus') throw new Error('버스 테스트 구간이 필요합니다');
     const second = {...first, segmentId:'bus-2', routeId:'route-2', routeName:'2번', boardStation:first.alightStation};
@@ -271,18 +292,18 @@ describe('천안 실제 장소 선택', () => {
     vi.mocked(api.live).mockResolvedValue(envelope({...live,arrivals:observed}, 'static'));
     await mount(); await click('목적지 찾기'); await click('병원');
     await act(async () => {Array.from(host.querySelectorAll('button')).find(b => b.querySelector('strong')?.textContent === displayText(destination.name))!.click();});
-    const card = Array.from(host.querySelectorAll('button')).find(b => b.querySelector('strong')?.textContent === '1번 → 2번')!;
+    const card = routeCards()[0];
     expect(api.searchArrivals).toHaveBeenCalledWith('search-1', expect.any(AbortSignal));
-    expect(card.textContent).toContain('1번 · 최근 조회 약 2분 후 도착 예정');
-    expect(card.textContent).toContain('2번 (환승) · 시연 · 환승 정류장 도착 후 약 5분 대기');
+    expect(card.textContent).toContain('1번 버스 · 최근 조회 약 2분 후 도착 예정');
+    expect(card.textContent).toContain('2번 버스 (환승) · 도착 정보 확인 불가');
     await act(async () => {card.click();});
     const panel = host.querySelector('[aria-label="도착·운행 정보"]');
     expect(panel?.textContent).toContain('최근 조회 약 2분 후 도착 예정');
-    expect(panel?.textContent).toContain('시연 · 환승 정류장 도착 후 약 5분 대기');
-    expect(panel?.textContent).not.toContain('시연 · 약 3분 후 도착 예정');
+    expect(panel?.textContent).toContain('도착 정보 확인 불가');
+    expect(panel?.textContent).not.toContain('시연');
     await act(async () => {await vi.advanceTimersByTimeAsync(90_001);});
     expect(panel?.textContent).not.toContain('최근 조회 약 2분 후 도착 예정');
-    expect(panel?.textContent).toContain('시연 · 약 3분 후 도착 예정');
+    expect(panel?.textContent?.match(/도착 정보 확인 불가/g)).toHaveLength(2);
   });
 
   it('정렬 요청 실패 시 이전 경로를 새 순위로 표시하지 않고 같은 기준으로 재시도한다', async () => {
@@ -291,9 +312,9 @@ describe('천안 실제 장소 선택', () => {
     vi.mocked(api.search).mockRejectedValueOnce(new ApiError('NETWORK_ERROR',0,'연결을 확인해 주세요.',true));
     await click('최소 도보');
     expect(host.querySelector('[role="alert"]')?.textContent).toContain('연결을 확인해 주세요');
-    expect(Array.from(host.querySelectorAll('button > strong')).map(e => e.textContent)).not.toContain('1번');
+    expect(routeCards()).toHaveLength(0);
     await click('경로 다시 검색');
-    expect(api.search).toHaveBeenLastCalledWith('cheonan-stop-285000686',destination.destinationId,expect.any(AbortSignal),'walking');
+    expect(api.search).toHaveBeenLastCalledWith('cheonan-stop-285000685',destination.destinationId,expect.any(AbortSignal),'walking');
   });
 
   it('도보만 있는 후보에는 버스 승하차·도착 안내를 표시하지 않고 대기를 없음으로 표시한다', async () => {
@@ -301,7 +322,7 @@ describe('천안 실제 장소 선택', () => {
     vi.mocked(api.search).mockResolvedValue(envelope({...search(),routeOptions:[option]}, 'static'));
     await mount(); await click('목적지 찾기'); await click('병원');
     await act(async () => {Array.from(host.querySelectorAll('button')).find(b => b.querySelector('strong')?.textContent === displayText(destination.name))!.click();});
-    const card = Array.from(host.querySelectorAll('button')).find(b => b.querySelector('strong')?.textContent === '도보 이동')!;
+    const card = routeCards()[0];
     expect(card.textContent).toContain('현재 정류장에서 목적지까지 도보 이동');
     expect(card.textContent).toContain('총 예상시간 4분');
     expect(card.textContent).toContain('예상 대기시간 없음');
@@ -328,9 +349,9 @@ describe('천안 실제 장소 선택', () => {
     await mount(); await click('목적지 찾기'); await click('병원');
     await act(async () => { Array.from(host.querySelectorAll('button')).find(b => b.querySelector('strong')?.textContent === displayText(destination.name))!.click(); });
     await click('최소 도보');
-    expect(api.search).toHaveBeenLastCalledWith('cheonan-stop-285000686',destination.destinationId,expect.any(AbortSignal),'walking');
+    expect(api.search).toHaveBeenLastCalledWith('cheonan-stop-285000685',destination.destinationId,expect.any(AbortSignal),'walking');
     expect(button('최소 도보').getAttribute('aria-pressed')).toBe('true');
-    expect(Array.from(host.querySelectorAll('button > strong')).map(e => e.textContent)).toEqual(['201번','1번']);
+    expect(routeArrivals()).toEqual([expect.stringMatching(/^201번 버스 ·/), expect.stringMatching(/^1번 버스 ·/)]);
     expect(host.textContent).not.toMatch(/대기시간 제외|후보 중|비교 경로|원천 갱신|서버 수집/);
   });
 
@@ -340,11 +361,11 @@ describe('천안 실제 장소 선택', () => {
     vi.mocked(api.destinations).mockResolvedValue(envelope({destinations:[{...office,category:'other'}, {...second,category:'other'}]}));
     vi.mocked(api.search).mockResolvedValue(envelope({...search(),routeOptions:[]}));
     await mount(); await click('목적지 찾기'); await click('관공서');
-    expect(api.destinations).toHaveBeenCalledWith('cheonan-stop-285000686','', 'other', expect.any(AbortSignal), {kind:'office',sort:'walking'});
+    expect(api.destinations).toHaveBeenCalledWith('cheonan-stop-285000685','', 'other', expect.any(AbortSignal), {kind:'office',sort:'walking'});
     expect(host.textContent).toContain(office.address);
     const choose = Array.from(host.querySelectorAll('button')).find(b => b.querySelector('strong')?.textContent === office.name)!;
     await act(async () => {choose.click();});
-    expect(api.search).toHaveBeenCalledWith('cheonan-stop-285000686', office.destinationId, expect.any(AbortSignal), 'transfers');
+    expect(api.search).toHaveBeenCalledWith('cheonan-stop-285000685', office.destinationId, expect.any(AbortSignal), 'transfers');
     expect(host.querySelector('[aria-label="선택한 장소"]')?.textContent).toContain(office.address);
     expect(host.textContent).toContain('이용할 수 있는 경로를 찾지 못했어요');
     expect(host.textContent).not.toMatch(/시연|테스트용|가상 시설|더미 데이터/);
@@ -353,6 +374,7 @@ describe('천안 실제 장소 선택', () => {
     expect(Array.from(host.querySelectorAll('button[aria-pressed="true"]')).some(b => b.textContent?.includes(office.name))).toBe(true);
     const other = Array.from(host.querySelectorAll('button')).find(b => b.querySelector('strong')?.textContent === second.name)!;
     await act(async () => {other.click();});
+    expect(api.search).toHaveBeenLastCalledWith(ORIGIN_STATION_ID, second.destinationId, expect.any(AbortSignal), 'transfers');
     expect(host.querySelector('[aria-label="선택한 장소"]')?.textContent).toContain(second.name);
     await click('이전'); await click('이전');
     expect(Array.from(host.querySelectorAll('button[aria-pressed="true"]')).some(b => b.textContent?.includes('관공서'))).toBe(true);
@@ -370,7 +392,7 @@ describe('천안 실제 장소 선택', () => {
     expect(host.textContent).not.toContain('정적 노선 기반 경로예요');
     expect(host.textContent).not.toContain('경로 자료와 시간 기준');
     expect(host.querySelector('[aria-label="도착·운행 정보"]')).toBeNull();
-    await click('음성으로 듣기');
+    await click('음성안내');
     expect(voice.speak).toHaveBeenCalledWith(expect.not.stringMatching(/시연|테스트용|가상 시설|더미 데이터/));
   });
 });

@@ -45,22 +45,33 @@ def link(value):
 
 
 def complete_direct_walks():
-    """Fill missing origin-to-place paths without refreshing approved bus access."""
+    """Refresh origin-to-place paths without changing the approved alighting access."""
     CACHE.mkdir(parents=True, exist_ok=True)
     path = ROOT / 'shared/data/cheonan-walks.json'
     output = json.loads(path.read_text(encoding='utf-8'))
     transit = json.loads((ROOT / 'shared/data/cheonan-transport.json').read_text(encoding='utf-8'))
     places = json.loads((ROOT / 'shared/data/cheonan-places.json').read_text(encoding='utf-8'))['places']
+    origin = transit['origin']
+    if output.get('originStationId') != origin['stationId']:
+        output.pop('originAccess', None)
+        for entry in output['destinations'].values():
+            entry.pop('directWalk', None)
+            entry.pop('directWalkRetrievedAt', None)
+    output['originStationId'] = origin['stationId']
     with httpx.Client(timeout=40, headers={'User-Agent': 'CheonanSmartBus/0.1 local-reference-import'}) as client:
         for place in places:
             entry = output['destinations'].get(place['destinationId'])
             if entry is None or entry.get('directWalk'):
                 continue
-            data = matrix(client, place['destinationId'] + '-direct-v1',
-                [point(transit['origin']['coordinates'])], [point(place['coordinates'])])
-            walk = link(data['sources_to_targets'][0][0])
+            try:
+                data = matrix(client, place['destinationId'] + '-direct-' + origin['publicId'],
+                    [point(origin['coordinates'])], [point(place['coordinates'])])
+                walk = link(data['sources_to_targets'][0][0])
+            except (httpx.HTTPError, KeyError, ValueError, IndexError) as exc:
+                print(place['destinationId'], type(exc).__name__, flush=True)
+                continue
             if not walk:
-                raise ValueError('No pedestrian route for ' + place['destinationId'])
+                continue
             entry['directWalk'] = walk
             entry['directWalkRetrievedAt'] = datetime.now(timezone.utc).isoformat()
             print(place['destinationId'], walk, flush=True)
@@ -77,15 +88,9 @@ def main():
     output = {'schemaVersion': 1, 'sourceUrl': 'https://valhalla.openstreetmap.de/',
               'attribution': '© OpenStreetMap contributors (ODbL) · Valhalla / FOSSGIS',
               'costing': 'pedestrian', 'walkingSpeedKmh': 4.0,
-              'retrievedAt': datetime.now(timezone.utc).isoformat(), 'originAccess': [], 'destinations': {}, 'failures': []}
+              'retrievedAt': datetime.now(timezone.utc).isoformat(), 'originStationId': transit['origin']['stationId'],
+              'destinations': {}, 'failures': []}
     with httpx.Client(timeout=40, headers={'User-Agent': 'CheonanSmartBus/0.1 local-reference-import'}) as client:
-        origin_stops = sorted((sid for sid, pos in stations.items() if haversine_meters(origin, pos) <= 350),
-                              key=lambda sid: (haversine_meters(origin, stations[sid]), sid))[:8]
-        values = matrix(client, 'origin', [point(origin)], [point(stations[sid]) for sid in origin_stops])
-        for sid, value in zip(origin_stops, values['sources_to_targets'][0]):
-            walk = link(value)
-            if walk and walk['distanceMeters'] <= 600:
-                output['originAccess'].append({'stationId': sid, **walk})
         for place in places:
             coordinates = place.get('coordinates')
             if not coordinates:
@@ -94,18 +99,16 @@ def main():
             nearby = sorted((sid for sid, pos in stations.items() if haversine_meters(coordinates, pos) <= 1500),
                             key=lambda sid: (haversine_meters(coordinates, stations[sid]), sid))[:4]
             sources = [point(stations[sid]) for sid in nearby]
-            direct = True
-            if direct:
-                sources.append(point(origin))
+            sources.append(point(origin))
             try:
-                data = matrix(client, place['destinationId'] + '-all-direct-v2', sources, [point(coordinates)])
+                data = matrix(client, place['destinationId'] + '-all-direct-' + transit['origin']['publicId'], sources, [point(coordinates)])
                 walks = []
                 for sid, row in zip(nearby, data['sources_to_targets']):
                     walk = link(row[0])
                     if walk and walk['distanceMeters'] <= 2500:
                         walks.append({'stationId': sid, **walk})
                 output['destinations'][place['destinationId']] = {'access': walks,
-                    'directWalk': link(data['sources_to_targets'][-1][0]) if direct else None}
+                    'directWalk': link(data['sources_to_targets'][-1][0])}
                 print(place['destinationId'], len(walks), flush=True)
             except (httpx.HTTPError, KeyError, ValueError):
                 output['failures'].append(place['destinationId'])

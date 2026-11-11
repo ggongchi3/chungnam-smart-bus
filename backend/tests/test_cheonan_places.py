@@ -65,7 +65,7 @@ def test_terminal_complex_and_central_market_are_not_silent_duplicates():
 
 
 def test_real_catalog_partial_address_unicode_shortcuts_and_ai_stay_distance_sorted():
-    origin = 'cheonan-stop-285000686'
+    origin = 'cheonan-stop-285000685'
     app = create_app(Settings(database_url='sqlite:///:memory:'), ai_adapter=RuleBasedAIAdapter(),
                      place_catalog='cheonan', transport_catalog='cheonan')
     with TestClient(app) as client:
@@ -116,14 +116,14 @@ def test_origin_import_uses_official_row_and_fails_without_it():
     from backend.scripts.refresh_cheonan_transport import origin_from_stops
 
     snapshot = json.loads((Path(__file__).resolve().parents[2] / 'shared/data/cheonan-transport.json').read_text(encoding='utf-8'))
-    row = snapshot['stations']['285000686']
-    imported = origin_from_stops([{'STOP_ID': 285000686, 'STOP_NAME': row['name'], 'SERVICE_ID': row['arsId'],
+    row = snapshot['stations']['285000685']
+    imported = origin_from_stops([{'STOP_ID': 285000685, 'STOP_NAME': row['name'], 'SERVICE_ID': row['arsId'],
                                   'LAT': str(row['latitude']), 'LNG': str(row['longitude'])}])
     assert imported == snapshot['origin']
     with pytest.raises(RuntimeError, match='missing'):
         origin_from_stops([])
     with pytest.raises(ValueError, match='invalid'):
-        origin_from_stops([{'STOP_ID': 285000686, 'LAT': float('nan'), 'LNG': row['longitude']}])
+        origin_from_stops([{'STOP_ID': 285000685, 'LAT': float('nan'), 'LNG': row['longitude']}])
 
 
 def test_all_26_places_have_pedestrian_network_distance_and_sort_by_it():
@@ -131,7 +131,7 @@ def test_all_26_places_have_pedestrian_network_distance_and_sort_by_it():
                      place_catalog='cheonan', transport_catalog='cheonan')
     with TestClient(app) as client:
         response = client.get('/api/v1/destinations', params={
-            'originStationId':'cheonan-stop-285000686', 'sort':'walking'})
+            'originStationId':'cheonan-stop-285000685', 'sort':'walking'})
         assert response.status_code == 200
         rows = response.json()['data']['destinations']
         assert len(rows) == 26
@@ -140,8 +140,9 @@ def test_all_26_places_have_pedestrian_network_distance_and_sort_by_it():
         distances = {row['destinationId']:row['walkingDistanceMeters'] for row in rows}
         # Independently collected pedestrian-network results for remote places;
         # these are not the former straight-line proximity values.
-        assert distances['cheonan-byeongcheon-market'] == 17749
-        assert distances['cheonan-independence-hall'] == 10618
+        assert distances['cheonan-byeongcheon-market'] == 17815
+        assert distances['cheonan-independence-hall'] == 10684
+        assert app.state.transport.walks['originStationId'] == app.state.transport.origin['stationId']
         assert app.state.transport.walks['costing'] == 'pedestrian'
 
 

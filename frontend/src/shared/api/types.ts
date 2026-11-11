@@ -24,6 +24,7 @@ export interface Station {
   directionLabel: string;
   region: string | null;
   coordinates: Coordinates | null;
+  arsId?: string | null;
 }
 export interface StationData { station: Station }
 export interface Destination {
@@ -52,7 +53,8 @@ export interface Quality {
   fetchedAt: string | null;
   freshness: Freshness;
 }
-export interface StationRef { stationId: string; name: string }
+export interface StationRef { stationId: string; name: string; arsId?: string | null }
+export interface RouteStop extends StationRef { sequence: number; coordinates: Coordinates }
 export interface Bus {
   segmentId: string;
   type: 'bus';
@@ -64,6 +66,9 @@ export interface Bus {
   alightSequence: number;
   stopCount: number;
   durationSeconds: number | null;
+  directionLabel?: string | null;
+  stops?: RouteStop[];
+  path?: Coordinates[];
 }
 export interface Walk {
   segmentId: string;
@@ -87,6 +92,7 @@ export interface RouteOption {
   routeSnapshotVersion: string;
   journeyStatus: JourneyStatus;
   routeNames: string[];
+  directionLabels?: string[];
   transferCount: number;
   totalDurationSeconds: number | null;
   walkingDurationSeconds: number | null;

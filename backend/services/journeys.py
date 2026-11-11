@@ -38,13 +38,13 @@ def validated_expiry(search):
 
 def create_search(session, request, state, now, data_mode, *, transport=None):
     require_core(state)
-    if transport is not None and request.originStationId != transport.origin['stationId']:
+    if transport is not None:
         # Historical demo rows may remain in an existing SQLite file. They must
         # never fall through to synthetic routing under the real static mode.
-        raise ServiceError(400, 'INVALID_REQUEST', '기준 정류장 종합터미널을 출발지로 선택해 주세요.')
+        transport.require_origin(request.originStationId)
     catalog.station(session, request.originStationId)
     destination = catalog.destination(session, request.destinationId)
-    if transport is not None and request.originStationId == transport.origin['stationId']:
+    if transport is not None:
         return transport.search(session, request, destination, now, data_mode)
     if abs((request.departAt.astimezone(timezone.utc) - now.astimezone(timezone.utc)).total_seconds()) > 120:
         raise ServiceError(400, 'INVALID_REQUEST', '현재 시각에서 120초 이내의 출발 시각을 입력해 주세요.')

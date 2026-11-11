@@ -23,10 +23,10 @@ def test_station_remains_responsive_during_graph_calculation(monkeypatch):
     monkeypatch.setattr(app.state.transport, 'search', cold_search)
     with TestClient(app) as client, ThreadPoolExecutor(max_workers=2) as workers:
         search = workers.submit(client.post, '/api/v1/route-searches', json={
-            'originStationId': 'cheonan-stop-285000686', 'destinationId': 'cheonan-city-hall',
+            'originStationId': 'cheonan-stop-285000685', 'destinationId': 'cheonan-city-hall',
             'departAt': datetime.now(timezone.utc).isoformat()})
         assert entered.wait(timeout=5)
-        lookup = workers.submit(client.get, '/api/v1/stations/cheonan-stop-285000686')
+        lookup = workers.submit(client.get, '/api/v1/stations/cheonan-stop-285000685')
         try:
             try:
                 response = lookup.result(timeout=2)

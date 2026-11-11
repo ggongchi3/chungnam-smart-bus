@@ -1,15 +1,15 @@
 .keyboard {
   background: var(--keyboard-bg, #e7e7e7);
-  padding: 7cqw 3.7cqw 5cqw;
-  min-height:72cqw;
+  padding: 14.444cqw 6.944cqw 5cqw;
+  min-height:85.278cqw;
   width: 100%;
 }
 
 .keys { display: grid; gap: 1.852cqw; }
-.row { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)) repeat(2, minmax(0, 1.7fr)); gap: .9cqw; }
+.row { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)) repeat(2, minmax(0, 1.667fr)); gap: 1.111cqw; }
 .row button {
   min-width: 0;
-  min-height: max(40px, 8cqw);
+  height: var(--control-height);
   border: 1px solid var(--key-border, #b0b0b0);
   border-radius: .93cqw;
   background: var(--key-bg, #fff);
@@ -35,8 +35,8 @@
 .utility .icon { width:5.556cqw; height:5.556cqw; margin-right:.741cqw; }
 .submit {
   width: 44.35cqw;
-  min-height: max(48px, 11.85cqw);
-  margin: 9.259cqw auto 0;
+  height: var(--action-height);
+  margin: 9.352cqw auto 0;
   border: 0;
   border-radius: 1.85cqw;
   color: var(--button-text);

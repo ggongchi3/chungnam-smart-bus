@@ -5,43 +5,6 @@
   "costing": "pedestrian",
   "walkingSpeedKmh": 4.0,
   "retrievedAt": "2026-11-10T12:29:44.837728+00:00",
-  "originAccess": [
-    {
-      "stationId": "285000686",
-      "distanceMeters": 0,
-      "durationSeconds": 0
-    },
-    {
-      "stationId": "285010014",
-      "distanceMeters": 198,
-      "durationSeconds": 193
-    },
-    {
-      "stationId": "285010125",
-      "distanceMeters": 256,
-      "durationSeconds": 251
-    },
-    {
-      "stationId": "285000685",
-      "distanceMeters": 288,
-      "durationSeconds": 286
-    },
-    {
-      "stationId": "285000687",
-      "distanceMeters": 178,
-      "durationSeconds": 205
-    },
-    {
-      "stationId": "285000706",
-      "distanceMeters": 301,
-      "durationSeconds": 278
-    },
-    {
-      "stationId": "285000707",
-      "distanceMeters": 350,
-      "durationSeconds": 328
-    }
-  ],
   "destinations": {
     "cheonan-dankook-hospital": {
       "access": [
@@ -67,9 +30,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 3452,
-        "durationSeconds": 3338
-      }
+        "distanceMeters": 3553,
+        "durationSeconds": 3398
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:47:28.257165+00:00"
     },
     "cheonan-soonchunhyang-hospital": {
       "access": [
@@ -95,9 +59,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 3009,
-        "durationSeconds": 2825
-      }
+        "distanceMeters": 2907,
+        "durationSeconds": 2759
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:47:29.686045+00:00"
     },
     "cheonan-medical-center": {
       "access": [
@@ -123,10 +88,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 5865,
-        "durationSeconds": 5894
+        "distanceMeters": 5931,
+        "durationSeconds": 5938
       },
-      "directWalkRetrievedAt": "2026-11-10T14:14:13.591477+00:00"
+      "directWalkRetrievedAt": "2026-11-11T07:47:31.070181+00:00"
     },
     "cheonan-chungmu-hospital": {
       "access": [
@@ -152,9 +117,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 4014,
-        "durationSeconds": 3735
-      }
+        "distanceMeters": 3871,
+        "durationSeconds": 3584
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:47:32.463619+00:00"
     },
     "cheonan-bus-terminal": {
       "access": [
@@ -180,9 +146,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 533,
-        "durationSeconds": 508
-      }
+        "distanceMeters": 629,
+        "durationSeconds": 590
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:47:33.829466+00:00"
     },
     "cheonan-express-terminal": {
       "access": [
@@ -208,9 +175,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 197,
-        "durationSeconds": 244
-      }
+        "distanceMeters": 486,
+        "durationSeconds": 505
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:47:35.210433+00:00"
     },
     "cheonan-station": {
       "access": [
@@ -236,9 +204,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 1497,
-        "durationSeconds": 1475
-      }
+        "distanceMeters": 1404,
+        "durationSeconds": 1346
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:47:36.683154+00:00"
     },
     "cheonan-dujeong-station": {
       "access": [
@@ -264,9 +233,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 2190,
-        "durationSeconds": 2054
-      }
+        "distanceMeters": 2121,
+        "durationSeconds": 1966
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:47:38.144294+00:00"
     },
     "cheonan-bongmyeong-station": {
       "access": [
@@ -292,9 +262,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 3119,
-        "durationSeconds": 2923
-      }
+        "distanceMeters": 3026,
+        "durationSeconds": 2833
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:47:39.564902+00:00"
     },
     "cheonan-city-hall": {
       "access": [
@@ -320,9 +291,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 4790,
-        "durationSeconds": 4963
-      }
+        "distanceMeters": 4721,
+        "durationSeconds": 4794
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:47:40.978607+00:00"
     },
     "cheonan-dongnam-district-office": {
       "access": [
@@ -348,9 +320,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 1978,
-        "durationSeconds": 1859
-      }
+        "distanceMeters": 1794,
+        "durationSeconds": 1695
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:47:42.429181+00:00"
     },
     "cheonan-seobuk-district-office": {
       "access": [
@@ -376,10 +349,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 7733,
-        "durationSeconds": 7210
+        "distanceMeters": 7664,
+        "durationSeconds": 7109
       },
-      "directWalkRetrievedAt": "2026-11-10T14:14:15.001760+00:00"
+      "directWalkRetrievedAt": "2026-11-11T07:47:43.806779+00:00"
     },
     "cheonan-tax-office": {
       "access": [
@@ -405,9 +378,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 4663,
-        "durationSeconds": 4461
-      }
+        "distanceMeters": 4817,
+        "durationSeconds": 4460
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:47:45.186737+00:00"
     },
     "cheonan-national-pension-office": {
       "access": [
@@ -433,9 +407,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 4120,
-        "durationSeconds": 3909
-      }
+        "distanceMeters": 4173,
+        "durationSeconds": 3956
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:47:46.568713+00:00"
     },
     "cheonan-central-market": {
       "access": [
@@ -461,9 +436,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 2446,
-        "durationSeconds": 2261
-      }
+        "distanceMeters": 2225,
+        "durationSeconds": 2032
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:47:48.033128+00:00"
     },
     "cheonan-seongjeong-market": {
       "access": [
@@ -489,9 +465,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 2005,
-        "durationSeconds": 1836
-      }
+        "distanceMeters": 1920,
+        "durationSeconds": 1731
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:47:49.487591+00:00"
     },
     "cheonan-byeongcheon-market": {
       "access": [
@@ -517,10 +494,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 17749,
-        "durationSeconds": 17180
+        "distanceMeters": 17815,
+        "durationSeconds": 17224
       },
-      "directWalkRetrievedAt": "2026-11-10T14:14:16.544565+00:00"
+      "directWalkRetrievedAt": "2026-11-11T07:47:50.911433+00:00"
     },
     "cheonan-sinan-office": {
       "access": [
@@ -546,9 +523,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 489,
-        "durationSeconds": 508
-      }
+        "distanceMeters": 555,
+        "durationSeconds": 549
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:47:52.308156+00:00"
     },
     "cheonan-dankook-university": {
       "access": [
@@ -574,9 +552,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 2715,
-        "durationSeconds": 2623
-      }
+        "distanceMeters": 2811,
+        "durationSeconds": 2713
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:47:53.682150+00:00"
     },
     "cheonan-sangmyung-university": {
       "access": [
@@ -602,9 +581,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 3061,
-        "durationSeconds": 2985
-      }
+        "distanceMeters": 3162,
+        "durationSeconds": 3112
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:47:55.079651+00:00"
     },
     "cheonan-hoseo-university": {
       "access": [
@@ -630,9 +610,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 3283,
-        "durationSeconds": 3308
-      }
+        "distanceMeters": 3378,
+        "durationSeconds": 3412
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:47:56.464561+00:00"
     },
     "cheonan-koreatech": {
       "access": [
@@ -658,10 +639,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 16801,
-        "durationSeconds": 16349
+        "distanceMeters": 16867,
+        "durationSeconds": 16392
       },
-      "directWalkRetrievedAt": "2026-11-10T14:14:17.972841+00:00"
+      "directWalkRetrievedAt": "2026-11-11T07:47:57.862702+00:00"
     },
     "cheonan-independence-hall": {
       "access": [
@@ -687,10 +668,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 10618,
-        "durationSeconds": 10915
+        "distanceMeters": 10684,
+        "durationSeconds": 10959
       },
-      "directWalkRetrievedAt": "2026-11-10T14:14:19.391455+00:00"
+      "directWalkRetrievedAt": "2026-11-11T07:47:59.313277+00:00"
     },
     "cheonan-museum": {
       "access": [
@@ -716,9 +697,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 4181,
-        "durationSeconds": 3964
-      }
+        "distanceMeters": 4240,
+        "durationSeconds": 4027
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:48:00.703843+00:00"
     },
     "cheonan-arario-gallery": {
       "access": [
@@ -744,9 +726,10 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 137,
-        "durationSeconds": 127
-      }
+        "distanceMeters": 233,
+        "durationSeconds": 218
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:48:02.082137+00:00"
     },
     "cheonan-shinsegae": {
       "access": [
@@ -772,10 +755,12 @@
         }
       ],
       "directWalk": {
-        "distanceMeters": 514,
-        "durationSeconds": 487
-      }
+        "distanceMeters": 610,
+        "durationSeconds": 569
+      },
+      "directWalkRetrievedAt": "2026-11-11T07:48:03.453318+00:00"
     }
   },
-  "failures": []
+  "failures": [],
+  "originStationId": "cheonan-stop-285000685"
 }

@@ -49,12 +49,18 @@ async def interpret(boundary, text, destinations, data_mode, *, reload_destinati
         return fallback
 
 
+def spoken_stop(station):
+    return f'{station.name} {station.arsId}번 정류장' if station.arsId else station.name
+
+
 def template_text(segment):
     if segment.type == 'bus':
-        return (f'{segment.boardStation.name}에서 {segment.routeName} 버스를 타세요. '
-                f'{segment.stopCount}개 정류장을 지나 {segment.alightStation.name}에서 내리세요.')
+        direction = f'{segment.directionLabel}입니다. ' if segment.directionLabel else ''
+        movement = '이동 후' if direction else '지나'
+        return (f'{spoken_stop(segment.boardStation)}에서 {segment.routeName} 버스를 타세요. '
+                f'{direction}{segment.stopCount}개 정류장을 {movement} {spoken_stop(segment.alightStation)}에서 내리세요.')
     if segment.type == 'transfer':
-        return f'{segment.atStation.name}에서 다음 안내의 버스로 갈아타세요.'
+        return f'{spoken_stop(segment.atStation)}에서 다음 안내의 버스로 갈아타세요.'
     if segment.distanceMeters is None and segment.durationSeconds is None:
         return f'{segment.fromLabel}에서 {segment.toLabel}까지 걸어가세요. 거리와 이동 시간은 확인되지 않았습니다.'
     distance = (f' 거리는 {segment.distanceMeters}미터입니다.' if segment.distanceMeters is not None
@@ -75,6 +81,9 @@ def fixed_guidance(detail, data_mode='demo'):
     steps = [s.Step(segmentId=p.segmentId, text=template_text(p)) for p in detail.segments]
     if data_mode == 'demo' and steps:
         steps[0].text = s.NOTICE + '. ' + steps[0].text
+    elif detail.dataSource == 'cheonan-bis-static' and steps and detail.estimatedTravelSeconds is not None:
+        minutes = (detail.estimatedTravelSeconds + 59) // 60
+        steps[0].text = f'대기시간을 제외한 예상 이동시간은 약 {minutes}분입니다. ' + steps[0].text
     return s.GuidanceData(routeSnapshotVersion=detail.routeSnapshotVersion, mode='template_fallback', steps=steps)
 
 

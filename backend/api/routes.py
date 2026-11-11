@@ -31,11 +31,13 @@ def response(request, data):
         'dataMode': request.app.state.settings.data_mode}}
 
 
-@router.get('/stations/{stationId}', response_model=s.Envelope[s.StationData])
+@router.get('/stations/{stationId}', response_model=s.Envelope[s.StationData], response_model_exclude_unset=True)
 async def station(stationId: s.Identifier, request: Request, db: Session):
     now, provider = state(request)
     journeys.require_core(provider)
-    return response(request, s.StationData(station=catalog.station(db, stationId)))
+    transport = request.app.state.transport
+    station_data = transport.station(stationId) if transport else catalog.station(db, stationId)
+    return response(request, s.StationData(station=station_data))
 
 
 @router.get('/destinations', response_model=s.Envelope[s.DestinationData])
