@@ -163,6 +163,26 @@ BAD_GUIDANCE = {
 
 
 @unittest.skipIf(create_app is None, '백엔드 의존성 미설치')
+class WalkDurationTextTest(unittest.TestCase):
+    """도보 안내가 화면·인쇄와 같은 분 단위 올림을 적용하는지 확인한다."""
+
+    def test_walk_duration_wording(self):
+        from backend.models.schemas import Walk
+        from backend.services.ai import template_text
+        cases = [(45, '이동 시간은 45초입니다.'), (60, '이동 시간은 약 1분입니다.'),
+                 (89, '이동 시간은 약 2분입니다.'), (90, '이동 시간은 약 2분입니다.'),
+                 (420, '이동 시간은 약 7분입니다.')]
+        for seconds, expected in cases:
+            with self.subTest(seconds=seconds):
+                walk = Walk(segmentId='seg-walk', fromLabel='시연 병원 앞 정류장', toLabel='시연 병원',
+                            distanceMeters=350, durationSeconds=seconds)
+                text = template_text(walk)
+                self.assertTrue(text.endswith(expected), text)
+                self.assertIn('거리는 350미터입니다.', text)
+                self.assertEqual(walk.durationSeconds, seconds)  # 응답 필드는 초 그대로
+
+
+@unittest.skipIf(create_app is None, '백엔드 의존성 미설치')
 class BackendRejectsBadOutputTest(unittest.TestCase):
     def run_case(self, adapter, call):
         case = type('Case', (BackendCase,), {'adapter': adapter, 'runTest': lambda self: None})()

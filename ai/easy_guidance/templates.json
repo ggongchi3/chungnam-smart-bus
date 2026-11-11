@@ -1,5 +1,5 @@
 {
-  "version": "0.2",
+  "version": "0.3",
   "note": "문장은 백엔드가 검증한 값으로 슬롯을 채운다. AI는 templateId만 고른다. active만 선택 대상이며 proposal은 디자인 검토와 백엔드 허용 목록 반영 전까지 선택하지 않는다. example은 합성 시연 데이터로 채운 예시다.",
   "templates": [
     {
@@ -16,9 +16,10 @@
       "segmentType": "walk",
       "status": "active",
       "slots": ["fromLabel", "toLabel", "distanceMeters?", "durationSeconds?"],
-      "text": "{fromLabel}에서 {toLabel}까지 걸어가세요. (거리·시간은 확인된 값만, 없으면 '확인되지 않았습니다')",
+      "text": "{fromLabel}에서 {toLabel}까지 걸어가세요. (거리·시간은 확인된 값만, 없으면 '확인되지 않았습니다'. 시간은 60초 미만이면 'N초', 60초 이상이면 분 단위로 올림해 '약 N분')",
       "example": "시연 병원 앞 정류장에서 시연 병원까지 걸어가세요. 거리와 이동 시간은 확인되지 않았습니다.",
-      "source": "backend/services/ai.py template_text와 동일"
+      "exampleWithValues": "시연 병원 앞 정류장에서 시연 병원까지 걸어가세요. 거리는 350미터입니다. 이동 시간은 약 7분입니다.",
+      "source": "backend/services/ai.py template_text와 동일. 응답의 durationSeconds 필드는 초 그대로"
     },
     {
       "templateId": "transfer.basic",
@@ -55,6 +56,15 @@
       "text": "내린 곳에서 {toLabel}까지 걸어가세요.",
       "example": "내린 곳에서 시연 병원까지 걸어가세요.",
       "reviewNote": "바로 앞 구간이 bus일 때만 사용 가능. 거리·시간 미확인 문구를 뺄지(음성 길이 단축) 디자인·B와 결정 필요. 인쇄물에는 미확인 표시를 유지"
+    },
+    {
+      "templateId": "bus.print",
+      "segmentType": "bus",
+      "status": "proposal",
+      "slots": ["boardStation.name", "direction", "routeName", "stopCount", "previousStation.name", "alightStation.name"],
+      "text": "1. 여기서 타세요: {boardStation} ({direction} 방면) / {routeName} 버스 / {stopCount}개 정류장 이동 / 2. 여기서 내리세요: {alightStation} (전 정류장: {previousStation})",
+      "example": "1. 여기서 타세요: 시연 출발 정류장 (시연 병원 방면) / 시연 1번 버스 / 2개 정류장 이동 / 2. 여기서 내리세요: 시연 병원 앞 정류장 (전 정류장: 시연 시장 정류장)",
+      "reviewNote": "디자인 Print Guide(2026-11-05, 감열지 80mm·인쇄 폭 68mm·흑백) 구조에 맞춘 인쇄용 안. '/'는 출력물의 칸 구분. direction(운행 방향)과 previousStation(하차 직전 정류장)은 지금 백엔드 응답에 없으므로 백엔드가 실제 노선 순서로 채워야 한다. AI는 값을 만들지 않으며, 값이 없으면 해당 괄호를 빼고 출력한다. 환승 경로는 bus 구간마다 이 블록을 반복한다"
     }
   ]
 }

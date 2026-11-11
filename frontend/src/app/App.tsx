@@ -6,6 +6,7 @@ import type { Category, Destination, LiveData, OptionArrivals, RouteDetail, Rout
 import { currentArrival, effectiveFreshness, formatDateTime, formatDuration, formatDistance, formatTime } from '../shared/api/format';
 import { RouteCards } from '../features/route-search/RouteCards';
 import { useVoiceGuide } from '../features/voice-guide/useVoiceGuide';
+import { speechTexts } from '../features/voice-guide/speechText';
 import { PrintDocument } from '../features/print-guide/PrintDocument';
 import Keyboard from '../features/destination-search/Keyboard';
 import { IDLE_COUNTDOWN_SECONDS, IDLE_WARNING_MS, LIVE_REFRESH_MS, ORIGIN_STATION_ID, ORIGIN_ADDRESS, ORIGIN_PUBLIC_CODE } from '../../config/kiosk';
@@ -248,7 +249,8 @@ export function App() {
   const noRoutes = state.screen === 'routes' && !state.search?.routeOptions.length;
   const step = state.screen === 'routes' ? 1 : state.screen === 'detail' ? 2 : state.screen === 'print' ? 3 : 0;
   const screenSpeech: Record<State['screen'], string> = { home: '현재 정류장에서 목적지까지 가는 버스를 찾아드려요. 목적지 찾기 버튼을 눌러 주세요.', destinations: '어디로 가시나요? 검색하거나 목록에서 목적지를 선택해 주세요.', keyboard: '장소를 입력한 뒤 검색하기를 눌러 주세요.', results: `${state.resultTitle}. 검색 결과 ${state.results.length}건. 찾으시는 장소를 선택해 주세요.`, routes: `이용 가능한 경로 ${state.search?.routeOptions.length ?? 0}개. 이동할 경로를 선택해 주세요.`, detail: '타는 버스와 내리는 정류장을 확인해 주세요.', print: '종이 안내표를 출력해 드릴까요? 인쇄하기 버튼을 눌러 주세요.', done: '안내표를 확인해 주세요. 다시 인쇄하려면 계속 이용하기를 눌러 주세요.' };
-  const spokenText = ['detail', 'print', 'done'].includes(state.screen) && state.detail && state.guidance ? state.guidance.steps.map(x => x.text).join(' ') : screenSpeech[state.screen];
+  const spokenText = ['detail', 'print', 'done'].includes(state.screen) && state.detail && state.guidance
+    ? speechTexts(state.guidance, state.detail).join(' ') : screenSpeech[state.screen];
   const sortedResults = state.results;
   const distanceNotice = placeSort === 'name' ? '장소명순 · 표시는 길을 따라 걷는 거리예요.' : '현재 정류장에서 길을 따라 걷는 거리순이에요.';
   const options = (state.search?.routeOptions ?? []).map(option => ({...option,routeNames:option.routeNames.map(displayText)}));
