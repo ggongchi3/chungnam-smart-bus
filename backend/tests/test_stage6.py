@@ -242,7 +242,7 @@ def test_timeout_keeps_work_running_and_slot_shared_across_methods_until_complet
 
 @pytest.mark.parametrize('mutation,status,code',[
     ('expiry',410,'ROUTE_SEARCH_EXPIRED'),('route-name',409,'ROUTE_VERSION_CHANGED'),
-    ('cancellation',409,'ROUTE_VERSION_CHANGED'),('core-unavailable',503,'TRANSPORT_DATA_UNAVAILABLE'),
+    ('cancellation',409,'ROUTE_UNAVAILABLE'),('core-unavailable',503,'TRANSPORT_DATA_UNAVAILABLE'),
 ])
 def test_ai_success_cannot_bypass_post_call_path_revalidation(make_app,mutation,status,code):
     context={}
@@ -295,7 +295,7 @@ def test_print_uses_one_provider_observation_and_fixed_server_guidance(make_app)
 
 @pytest.mark.parametrize('guard,status,code',[
     ('expired',410,'ROUTE_SEARCH_EXPIRED'),('expected-version',409,'ROUTE_VERSION_CHANGED'),
-    ('not-running',409,'ROUTE_VERSION_CHANGED'),('core',503,'TRANSPORT_DATA_UNAVAILABLE'),
+    ('not-running',409,'ROUTE_UNAVAILABLE'),('core',503,'TRANSPORT_DATA_UNAVAILABLE'),
 ])
 def test_print_and_guidance_guards_run_before_any_ai_work(make_app,guard,status,code):
     adapter=ValidAdapter()
@@ -359,6 +359,7 @@ def test_destination_deleted_while_ai_waits_is_no_longer_an_allowed_candidate(ma
     (100, 59, '59초입니다.'),
     (None, 60, '약 1분입니다.'),
     (100, 90, '약 2분입니다.'),
+    (100, 181, '약 4분입니다.'),
     (100, 420, '약 7분입니다.'),
 ])
 def test_fixed_guidance_preserves_each_confirmed_walk_fact(env,distance,duration,expected_time):

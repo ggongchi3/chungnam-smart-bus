@@ -156,5 +156,5 @@ def test_unsupported_database_driver_is_rejected_before_connecting():
 def test_invalid_data_mode_is_rejected_from_configuration(monkeypatch, mode):
     monkeypatch.setenv('BUS_DATABASE_URL', 'sqlite:///:memory:')
     monkeypatch.setenv('BUS_DATA_MODE', mode)
-    with pytest.raises(ValueError, match='BUS_DATA_MODE must be demo or live'):
+    with pytest.raises(ValueError, match='BUS_DATA_MODE must be demo, static or live'):
         main_module.create_app(Settings.from_env())

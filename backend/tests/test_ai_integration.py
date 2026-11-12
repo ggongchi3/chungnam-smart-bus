@@ -91,11 +91,19 @@ def test_default_asgi_entrypoint_connects_real_adapter(monkeypatch):
     app.state.clock = Clock()
     app.state.provider = DemoProvider('normal')
     with TestClient(app) as client:
-        response = client.post(INTERPRET_PATH, json={'originStationId': 'demo-stop-001', 'text': '병원'})
+        response = client.post(INTERPRET_PATH, json={'originStationId': 'cheonan-stop-285000685', 'text': '단국대병원'})
         assert response.status_code == 200, response.text
         assert response.json()['data']['status'] == 'matched'
         assert response.json()['data']['reasonCode'] == 'MATCHED'
-        body, _ = selection(client, app.state.clock)
+        assert response.json()['data']['candidates'][0]['destinationId'] == 'cheonan-dankook-hospital'
+        # The production catalogue now has four hospitals, so the generic word
+        # must ask the user to choose rather than retaining the old single match.
+        multiple = client.post(INTERPRET_PATH, json={'originStationId': 'cheonan-stop-285000685', 'text': '병원'})
+        assert multiple.json()['data']['status'] == 'needs_confirmation'
+        assert len(multiple.json()['data']['candidates']) == 4
+        found = client.post('/api/v1/route-searches', json={'originStationId':'cheonan-stop-285000685', 'destinationId':'cheonan-dankook-hospital', 'departAt':app.state.clock().isoformat()}).json()['data']
+        option = found['routeOptions'][0]
+        body = {'routeSearchId':found['routeSearchId'], 'routeOptionId':option['routeOptionId'], 'expectedRouteSnapshotVersion':option['routeSnapshotVersion']}
         guidance = client.post('/api/v1/easy-guidance', json=body)
         assert guidance.status_code == 200, guidance.text
         assert guidance.json()['data']['mode'] == 'ai_assisted'

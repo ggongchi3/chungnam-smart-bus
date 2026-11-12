@@ -19,6 +19,10 @@ async def interpret(boundary, text, destinations, data_mode, *, reload_destinati
         ids = value.candidateDestinationIds
         if len(ids) != len(set(ids)) or not set(ids).issubset(allowed):
             return fallback
+        # Candidate order is part of the internal AI contract: choose a
+        # subsequence of the registered list, never introduce a model ranking.
+        if ids != [key for key in allowed if key in set(ids)]:
+            return fallback
         if (value.status in ('matched', 'needs_confirmation')) != bool(ids):
             return fallback
         if value.status == 'matched' and len(ids) != 1:
@@ -35,18 +39,28 @@ async def interpret(boundary, text, destinations, data_mode, *, reload_destinati
         # Never expose model-generated explanations; backend owns reason codes.
         reasons = {'matched': 'MATCHED', 'needs_confirmation': 'USER_CONFIRMATION_REQUIRED',
                    'no_match': 'NO_REGISTERED_MATCH', 'unavailable': 'AI_UNAVAILABLE'}
-        return s.InterpretationData(status=value.status, candidates=[allowed[k] for k in ids],
+        # The current catalog owns ordering as well as coordinates and distance.
+        # An adapter that completes after location updates must not restore its
+        # earlier ranking when the catalog has been reloaded.
+        candidates = [destination for key, destination in allowed.items() if key in set(ids)]
+        return s.InterpretationData(status=value.status, candidates=candidates,
                                      reasonCode=reasons[value.status])
     except (ValidationError, TypeError, ValueError):
         return fallback
 
 
+def spoken_stop(station):
+    return f'{station.name} {station.arsId}번 정류장' if station.arsId else station.name
+
+
 def template_text(segment):
     if segment.type == 'bus':
-        return (f'{segment.boardStation.name}에서 {segment.routeName} 버스를 타세요. '
-                f'{segment.stopCount}개 정류장을 지나 {segment.alightStation.name}에서 내리세요.')
+        direction = f'{segment.directionLabel}입니다. ' if segment.directionLabel else ''
+        movement = '이동 후' if direction else '지나'
+        return (f'{spoken_stop(segment.boardStation)}에서 {segment.routeName} 버스를 타세요. '
+                f'{direction}{segment.stopCount}개 정류장을 {movement} {spoken_stop(segment.alightStation)}에서 내리세요.')
     if segment.type == 'transfer':
-        return f'{segment.atStation.name}에서 다음 안내의 버스로 갈아타세요.'
+        return f'{spoken_stop(segment.atStation)}에서 다음 안내의 버스로 갈아타세요.'
     if segment.distanceMeters is None and segment.durationSeconds is None:
         return f'{segment.fromLabel}에서 {segment.toLabel}까지 걸어가세요. 거리와 이동 시간은 확인되지 않았습니다.'
     distance = (f' 거리는 {segment.distanceMeters}미터입니다.' if segment.distanceMeters is not None
@@ -57,7 +71,8 @@ def template_text(segment):
     elif seconds < 60:
         duration = f' 이동 시간은 {seconds}초입니다.'
     else:
-        minutes = (seconds + 30) // 60
+        # Match the kiosk and printed guide's rounded-up minute display.
+        minutes = (seconds + 59) // 60
         duration = f' 이동 시간은 약 {minutes}분입니다.'
     return f'{segment.fromLabel}에서 {segment.toLabel}까지 걸어가세요.' + distance + duration
 
@@ -66,6 +81,9 @@ def fixed_guidance(detail, data_mode='demo'):
     steps = [s.Step(segmentId=p.segmentId, text=template_text(p)) for p in detail.segments]
     if data_mode == 'demo' and steps:
         steps[0].text = s.NOTICE + '. ' + steps[0].text
+    elif detail.dataSource == 'cheonan-bis-static' and steps and detail.estimatedTravelSeconds is not None:
+        minutes = (detail.estimatedTravelSeconds + 59) // 60
+        steps[0].text = f'대기시간을 제외한 예상 이동시간은 약 {minutes}분입니다. ' + steps[0].text
     return s.GuidanceData(routeSnapshotVersion=detail.routeSnapshotVersion, mode='template_fallback', steps=steps)
 
 

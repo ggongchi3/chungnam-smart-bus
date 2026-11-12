@@ -224,7 +224,8 @@ def test_service_change_invalidates_all_selected_apis(env, scenario):
     provider.scenario = scenario
     for response in [client.get(path),client.get(path+'/live'),client.post('/api/v1/easy-guidance',json=body),
                      client.post('/api/v1/print-guides',json=body)]:
-        assert_error(response,409,'ROUTE_VERSION_CHANGED')
+        code = 'ROUTE_UNAVAILABLE' if scenario in ('cancellation', 'detour') else 'ROUTE_VERSION_CHANGED'
+        assert_error(response,409,code)
     assert search(client, clock).json()['data']['routeOptions'] == []
 
 

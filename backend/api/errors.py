@@ -13,3 +13,7 @@ def unavailable():
 
 def changed(message='경로 정보가 바뀌었습니다. 다시 검색해 주세요.'):
     raise ServiceError(409, 'ROUTE_VERSION_CHANGED', message, True)
+
+
+def route_unavailable():
+    raise ServiceError(409, 'ROUTE_UNAVAILABLE', '선택 경로를 이용할 수 없습니다. 다시 검색해 주세요.', True)

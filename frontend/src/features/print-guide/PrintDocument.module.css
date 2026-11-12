@@ -1,0 +1,44 @@
+.document { display: none; }
+
+@page { size: A4 portrait; margin: 15mm; }
+
+@media print {
+  .document {
+    display: block;
+    color: #000;
+    background: #fff;
+    font-family: Pretendard, 'Malgun Gothic', sans-serif;
+    font-size: 10pt;
+    font-weight: 400;
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+
+  .header {
+    break-inside: avoid;
+    break-after: avoid;
+    border-bottom: 2pt solid currentColor;
+    padding-bottom: 4mm;
+  }
+  .header h1 { margin: 0 0 3mm; font-size: 10pt; font-weight: 500; }
+  .journey, .instructions {
+    display: grid;
+    grid-template-columns: 34mm minmax(0, 1fr);
+    align-items: baseline;
+    gap: 1mm 3mm;
+    margin: 0;
+  }
+  .journey dt { font-size: 8pt; }
+  .journey dd, .instructions dd { margin: 0; }
+  .journey dd, .instructions .board { font-size: 17pt; font-weight: 700; }
+  .journey .destination { font-size: 19pt; }
+  .timestamp { margin: 3mm 0 0; font-size: 8pt; font-weight: 300; }
+
+  .steps { margin: 0; padding-inline-start: 10mm; }
+  .steps > li { break-inside: avoid; padding: 4mm 0; }
+  .steps > li + li { border-top: 1pt solid currentColor; }
+  .steps h2 { margin: 0 0 2mm; font-size: 10pt; font-weight: 400; }
+  .steps .bus, .instructions .alight { font-size: 25pt; font-weight: 800; }
+  .steps p { margin: 1.5mm 0 0; font-size: 8pt; }
+}

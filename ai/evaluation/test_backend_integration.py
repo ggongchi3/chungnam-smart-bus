@@ -164,13 +164,13 @@ BAD_GUIDANCE = {
 
 @unittest.skipIf(create_app is None, '백엔드 의존성 미설치')
 class WalkDurationTextTest(unittest.TestCase):
-    """합성 데이터는 거리·시간이 null이라 API로는 드러나지 않는 분 단위 표시(3cd2fd2)를 직접 확인한다."""
+    """도보 안내가 화면·인쇄와 같은 분 단위 올림을 적용하는지 확인한다."""
 
     def test_walk_duration_wording(self):
         from backend.models.schemas import Walk
         from backend.services.ai import template_text
         cases = [(45, '이동 시간은 45초입니다.'), (60, '이동 시간은 약 1분입니다.'),
-                 (89, '이동 시간은 약 1분입니다.'), (90, '이동 시간은 약 2분입니다.'),
+                 (89, '이동 시간은 약 2분입니다.'), (90, '이동 시간은 약 2분입니다.'),
                  (420, '이동 시간은 약 7분입니다.')]
         for seconds, expected in cases:
             with self.subTest(seconds=seconds):

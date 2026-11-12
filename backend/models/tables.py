@@ -29,6 +29,13 @@ class DestinationAlias(Base):
     alias: Mapped[str] = mapped_column(primary_key=True)
 
 
+class DestinationLocation(Base):
+    """Additive facility metadata; existing destination and routing tables stay intact."""
+    __tablename__ = 'destination_locations'
+    destination_id: Mapped[str] = mapped_column(ForeignKey('destinations.destination_id'), primary_key=True)
+    facts: Mapped[dict] = mapped_column(JSON)
+
+
 class Route(Base):
     __tablename__ = 'routes'
     route_id: Mapped[str] = mapped_column(primary_key=True)

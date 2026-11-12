@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="21" time="8.086" timestamp="2026-11-09T23:43:48.148524+09:00" hostname="DESKTOP-D6A344Q"><testcase classname="backend.tests.test_stage7_ai" name="test_interpretation_requires_registered_candidate_order[ids0-True]" time="0.476" /><testcase classname="backend.tests.test_stage7_ai" name="test_interpretation_requires_registered_candidate_order[ids1-True]" time="0.276" /><testcase classname="backend.tests.test_stage7_ai" name="test_interpretation_requires_registered_candidate_order[ids2-False]" time="0.227"><failure message="AssertionError: assert 'needs_confirmation' == 'unavailable'&#10;  &#10;  - unavailable&#10;  + needs_confirmation">make_app = &lt;function make_app.&lt;locals&gt;.make at 0x000001F7F05B8FE0&gt;
+ids = ['demo-destination-003', 'demo-destination-001'], accepted = False
+
+    @pytest.mark.parametrize('ids,accepted', [
+        (['demo-destination-001', 'demo-destination-003'], True),
+        (['demo-destination-002', 'demo-destination-003'], True),
+        (['demo-destination-003', 'demo-destination-001'], False),
+        (['demo-destination-003', 'demo-destination-002'], False),
+    ])
+    def test_interpretation_requires_registered_candidate_order(make_app, ids, accepted):
+        class Adapter:
+            def interpret_destination(self, payload):
+                assert [d['destinationId'] for d in payload['allowedDestinations']] == [
+                    'demo-destination-001', 'demo-destination-002', 'demo-destination-003']
+                return {'status': 'needs_confirmation', 'candidateDestinationIds': ids,
+                        'reasonCode': 'USER_CONFIRMATION_REQUIRED'}
+    
+        _, client, _, _ = make_app(adapter=Adapter())
+        response = client.post('/api/v1/destination-interpretations', json={
+            'originStationId': 'demo-stop-001', 'text': '병원 시장 터미널'})
+        assert response.status_code == 200, response.text
+        data = response.json()['data']
+&gt;       assert data['status'] == ('needs_confirmation' if accepted else 'unavailable')
+E       AssertionError: assert 'needs_confirmation' == 'unavailable'
+E         
+E         - unavailable
+E         + needs_confirmation
+
+backend\tests\test_stage7_ai.py:29: AssertionError</failure></testcase><testcase classname="backend.tests.test_stage7_ai" name="test_interpretation_requires_registered_candidate_order[ids3-False]" time="0.258"><failure message="AssertionError: assert 'needs_confirmation' == 'unavailable'&#10;  &#10;  - unavailable&#10;  + needs_confirmation">make_app = &lt;function make_app.&lt;locals&gt;.make at 0x000001F7F05B8EA0&gt;
+ids = ['demo-destination-003', 'demo-destination-002'], accepted = False
+
+    @pytest.mark.parametrize('ids,accepted', [
+        (['demo-destination-001', 'demo-destination-003'], True),
+        (['demo-destination-002', 'demo-destination-003'], True),
+        (['demo-destination-003', 'demo-destination-001'], False),
+        (['demo-destination-003', 'demo-destination-002'], False),
+    ])
+    def test_interpretation_requires_registered_candidate_order(make_app, ids, accepted):
+        class Adapter:
+            def interpret_destination(self, payload):
+                assert [d['destinationId'] for d in payload['allowedDestinations']] == [
+                    'demo-destination-001', 'demo-destination-002', 'demo-destination-003']
+                return {'status': 'needs_confirmation', 'candidateDestinationIds': ids,
+                        'reasonCode': 'USER_CONFIRMATION_REQUIRED'}
+    
+        _, client, _, _ = make_app(adapter=Adapter())
+        response = client.post('/api/v1/destination-interpretations', json={
+            'originStationId': 'demo-stop-001', 'text': '병원 시장 터미널'})
+        assert response.status_code == 200, response.text
+        data = response.json()['data']
+&gt;       assert data['status'] == ('needs_confirmation' if accepted else 'unavailable')
+E       AssertionError: assert 'needs_confirmation' == 'unavailable'
+E         
+E         - unavailable
+E         + needs_confirmation
+
+backend\tests\test_stage7_ai.py:29: AssertionError</failure></testcase><testcase classname="backend.tests.test_stage7_ai" name="test_malformed_or_empty_adapter_outputs_have_public_fallbacks[destination-interpretations-None]" time="0.575" /><testcase classname="backend.tests.test_stage7_ai" name="test_malformed_or_empty_adapter_outputs_have_public_fallbacks[destination-interpretations-]" time="0.380" /><testcase classname="backend.tests.test_stage7_ai" name="test_malformed_or_empty_adapter_outputs_have_public_fallbacks[destination-interpretations-{invalid JSON]" time="0.283" /><testcase classname="backend.tests.test_stage7_ai" name="test_malformed_or_empty_adapter_outputs_have_public_fallbacks[destination-interpretations-null]" time="0.323" /><testcase classname="backend.tests.test_stage7_ai" name="test_malformed_or_empty_adapter_outputs_have_public_fallbacks[destination-interpretations-raw4]" time="0.313" /><testcase classname="backend.tests.test_stage7_ai" name="test_malformed_or_empty_adapter_outputs_have_public_fallbacks[destination-interpretations-raw5]" time="0.323" /><testcase classname="backend.tests.test_stage7_ai" name="test_malformed_or_empty_adapter_outputs_have_public_fallbacks[destination-interpretations-0]" time="0.313" /><testcase classname="backend.tests.test_stage7_ai" name="test_malformed_or_empty_adapter_outputs_have_public_fallbacks[destination-interpretations-True]" time="0.277" /><testcase classname="backend.tests.test_stage7_ai" name="test_malformed_or_empty_adapter_outputs_have_public_fallbacks[easy-guidance-None]" time="0.369" /><testcase classname="backend.tests.test_stage7_ai" name="test_malformed_or_empty_adapter_outputs_have_public_fallbacks[easy-guidance-]" time="0.357" /><testcase classname="backend.tests.test_stage7_ai" name="test_malformed_or_empty_adapter_outputs_have_public_fallbacks[easy-guidance-{invalid JSON]" time="0.302" /><testcase classname="backend.tests.test_stage7_ai" name="test_malformed_or_empty_adapter_outputs_have_public_fallbacks[easy-guidance-null]" time="0.286" /><testcase classname="backend.tests.test_stage7_ai" name="test_malformed_or_empty_adapter_outputs_have_public_fallbacks[easy-guidance-raw4]" time="0.326" /><testcase classname="backend.tests.test_stage7_ai" name="test_malformed_or_empty_adapter_outputs_have_public_fallbacks[easy-guidance-raw5]" time="0.391" /><testcase classname="backend.tests.test_stage7_ai" name="test_malformed_or_empty_adapter_outputs_have_public_fallbacks[easy-guidance-0]" time="0.396" /><testcase classname="backend.tests.test_stage7_ai" name="test_malformed_or_empty_adapter_outputs_have_public_fallbacks[easy-guidance-True]" time="0.380" /><testcase classname="backend.tests.test_stage7_ai" name="test_json_text_from_adapter_is_not_treated_as_valid_parsed_output" time="0.261" /></testsuite></testsuites>

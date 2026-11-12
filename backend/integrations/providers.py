@@ -145,3 +145,10 @@ class UnconnectedLiveProvider:
     def read(self, now):
         return ProviderState(False, False, None, None,
             s.ServiceChanges(coverageStatus='unknown', items=[], dataQuality=quality(None, None, now, None)))
+
+
+class StaticReferenceProvider:
+    """Published reference graph is available; no synthetic live observations."""
+    def read(self, now):
+        return ProviderState(True, False, None, None,
+            s.ServiceChanges(coverageStatus='unknown', items=[], dataQuality=quality(None, None, now, 'cheonan-bis-static')))
