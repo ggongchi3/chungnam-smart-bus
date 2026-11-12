@@ -1,6 +1,6 @@
 {
   "version": "0.1",
-  "note": "모든 목적지는 합성 시연 데이터다. demo 목록은 backend/integrations/demo-data.json과 같다. ambiguous 목록은 동명·유사 후보를 시험하기 위한 평가 전용 합성 목록이다.",
+  "note": "모든 목적지는 합성 시연 데이터다. demo 목록은 backend/integrations/demo-data.json과 같다. ambiguous 목록은 동명·유사 후보를 시험하기 위한 평가 전용 합성 목록이다. cheonan 목록은 실제 등록 장소(shared/data/cheonan-places.json)에 백엔드가 붙이는 분류 별칭(backend/services/places.py)을 더한 것으로, 백엔드가 AI에 넘기는 allowedDestinations와 같다(2026-11-12 기준).",
   "destinationSets": {
     "demo": [
       {"destinationId": "demo-destination-001", "name": "시연 병원", "aliases": ["시연 큰 병원"]},
@@ -15,6 +15,34 @@
     "withoutMarket": [
       {"destinationId": "demo-destination-001", "name": "시연 병원", "aliases": ["시연 큰 병원"]},
       {"destinationId": "demo-destination-003", "name": "시연 터미널", "aliases": ["시연 버스터미널"]}
+    ],
+    "cheonan": [
+      {"destinationId": "cheonan-dankook-hospital", "name": "단국대학교병원", "aliases": ["단국대병원", "단대병원", "단국대학교의과대학부속병원", "병원", "의료시설"]},
+      {"destinationId": "cheonan-soonchunhyang-hospital", "name": "순천향대학교 부속 천안병원", "aliases": ["순천향병원", "순천향대병원", "순천향대학교천안병원", "병원", "의료시설"]},
+      {"destinationId": "cheonan-medical-center", "name": "충청남도천안의료원", "aliases": ["천안의료원", "충청남도 천안의료원", "병원", "의료시설"]},
+      {"destinationId": "cheonan-chungmu-hospital", "name": "천안충무병원", "aliases": ["충무병원", "천안 충무병원", "병원", "의료시설"]},
+      {"destinationId": "cheonan-bus-terminal", "name": "천안종합버스터미널", "aliases": ["천안종합터미널", "천안시외버스터미널", "천안터미널", "터미널"]},
+      {"destinationId": "cheonan-express-terminal", "name": "천안고속버스터미널", "aliases": ["천안고속터미널", "천안 고속버스터미널", "터미널"]},
+      {"destinationId": "cheonan-station", "name": "천안역", "aliases": ["천안 역", "기차역", "철도역", "전철역", "지하철역"]},
+      {"destinationId": "cheonan-dujeong-station", "name": "두정역", "aliases": ["두정 역", "기차역", "철도역", "전철역", "지하철역"]},
+      {"destinationId": "cheonan-bongmyeong-station", "name": "봉명역", "aliases": ["봉명 역", "기차역", "철도역", "전철역", "지하철역"]},
+      {"destinationId": "cheonan-city-hall", "name": "천안시청", "aliases": ["천안 시청", "관공서", "공공기관"]},
+      {"destinationId": "cheonan-dongnam-district-office", "name": "천안시 동남구청", "aliases": ["동남구청", "천안 동남구청", "관공서", "공공기관"]},
+      {"destinationId": "cheonan-seobuk-district-office", "name": "천안시 서북구청", "aliases": ["서북구청", "천안 서북구청", "관공서", "공공기관"]},
+      {"destinationId": "cheonan-tax-office", "name": "천안세무서", "aliases": ["천안 세무서", "관공서", "공공기관"]},
+      {"destinationId": "cheonan-national-pension-office", "name": "국민연금공단 천안지사", "aliases": ["국민연금 천안지사", "천안 국민연금", "관공서", "공공기관"]},
+      {"destinationId": "cheonan-central-market", "name": "천안중앙시장", "aliases": ["천안 중앙시장", "남산중앙시장", "남산 중앙시장", "시장"]},
+      {"destinationId": "cheonan-seongjeong-market", "name": "성정시장", "aliases": ["성정 시장", "별빛우물 성정시장", "시장"]},
+      {"destinationId": "cheonan-byeongcheon-market", "name": "병천시장", "aliases": ["병천 시장", "아우내장터", "아우내 장터", "시장"]},
+      {"destinationId": "cheonan-sinan-office", "name": "신안동 행정복지센터", "aliases": ["신안동 주민센터", "관공서", "공공기관"]},
+      {"destinationId": "cheonan-dankook-university", "name": "단국대학교 천안캠퍼스", "aliases": ["단국대", "단국대학교", "대학교", "대학", "교육시설"]},
+      {"destinationId": "cheonan-sangmyung-university", "name": "상명대학교 천안캠퍼스", "aliases": ["상명대", "상명대학교", "대학교", "대학", "교육시설"]},
+      {"destinationId": "cheonan-hoseo-university", "name": "호서대학교 천안캠퍼스", "aliases": ["호서대", "호서대학교", "대학교", "대학", "교육시설"]},
+      {"destinationId": "cheonan-koreatech", "name": "한국기술교육대학교", "aliases": ["한기대", "코리아텍", "대학교", "대학", "교육시설"]},
+      {"destinationId": "cheonan-independence-hall", "name": "독립기념관", "aliases": ["기념관", "관광", "문화시설", "관광지"]},
+      {"destinationId": "cheonan-museum", "name": "천안박물관", "aliases": ["박물관", "문화시설", "관광", "관광지"]},
+      {"destinationId": "cheonan-arario-gallery", "name": "아라리오갤러리 천안", "aliases": ["아라리오", "갤러리", "미술관", "문화시설", "관광", "관광지"]},
+      {"destinationId": "cheonan-shinsegae", "name": "신세계백화점 천안아산점", "aliases": ["신세계", "백화점", "쇼핑"]}
     ]
   },
   "interpretation": [
@@ -49,7 +77,7 @@
     {"id": "i29", "group": "구어체·사투리", "set": "demo", "text": "오늘 장날이라 가봐야 혀", "status": "matched", "ids": ["demo-destination-002"]},
     {"id": "i30", "group": "구어체·사투리", "set": "demo", "text": "고속버스 타러 가요", "status": "matched", "ids": ["demo-destination-003"]},
     {"id": "i31", "group": "구어체·사투리", "set": "demo", "text": "병원 갈라고 하는디유", "status": "matched", "ids": ["demo-destination-001"]},
-    {"id": "i32", "group": "구어체·사투리", "set": "demo", "text": "장에 가요", "status": "no_match", "ids": [], "limitation": "한 글자 표현(장)은 연결하지 않는다"},
+    {"id": "i32", "group": "구어체·사투리", "set": "demo", "text": "장에 가요", "status": "needs_confirmation", "ids": ["demo-destination-002"], "note": "띄어 쓴 낱말 '장에'는 시장으로 추정한다. 한 글자 추정이라 확인을 요청한다 (2026-11-06 정답 변경, 이전: no_match)"},
     {"id": "i33", "group": "부정 표현", "set": "demo", "text": "시장은 말고 터미널", "status": "matched", "ids": ["demo-destination-003"]},
     {"id": "i34", "group": "부정 표현", "set": "demo", "text": "병원이 아니라 시장이요", "status": "matched", "ids": ["demo-destination-002"]},
     {"id": "i35", "group": "부정 표현", "set": "demo", "text": "병원 말고", "status": "no_match", "ids": []},
@@ -60,7 +88,14 @@
     {"id": "i40", "group": "오타", "set": "demo", "text": "시청", "status": "no_match", "ids": []},
     {"id": "i41", "group": "오타", "set": "demo", "text": "시간", "status": "no_match", "ids": []},
     {"id": "i42", "group": "오타", "set": "demo", "text": "시정", "status": "needs_confirmation", "ids": ["demo-destination-002"], "limitation": "자모 1개 차이인 다른 단어도 오타로 볼 수 있다. 확인 필요 결과로 돌려 사용자가 거른다"},
-    {"id": "i43", "group": "오타", "set": "demo", "text": "병원이랑 시잔", "status": "matched", "ids": ["demo-destination-001"], "limitation": "정확히 맞는 표현이 하나라도 있으면 오타 추정을 하지 않는다"}
+    {"id": "i43", "group": "오타", "set": "demo", "text": "병원이랑 시잔", "status": "needs_confirmation", "ids": ["demo-destination-001", "demo-destination-002"], "note": "정확히 맞는 표현 밖의 오타도 본다. '병원이랑 시장'(i14)과 같은 결과 (2026-11-06 정답 변경, 이전: matched 병원)"},
+    {"id": "i44", "group": "구어체·사투리", "set": "demo", "text": "정류장에 가요", "status": "no_match", "ids": [], "note": "붙여 쓴 '정류장에'는 시장 추정에 해당하지 않는다"},
+    {"id": "i45", "group": "구어체·사투리", "set": "demo", "text": "주차장에서 기다려요", "status": "no_match", "ids": [], "note": "붙여 쓴 '주차장에서'는 시장 추정에 해당하지 않는다"},
+    {"id": "i46", "group": "부정 표현", "set": "demo", "text": "장에 말고 병원", "status": "matched", "ids": ["demo-destination-001"], "note": "부정한 한 글자 추정은 뺀다"},
+    {"id": "i47", "group": "오타", "set": "demo", "text": "큰 병원 가요", "status": "matched", "ids": ["demo-destination-001"], "note": "나머지 부분 오타 확인이 정확한 결과를 흐리지 않는다"},
+    {"id": "i48", "group": "오타", "set": "demo", "text": "정류장 어디예요", "status": "no_match", "ids": [], "note": "띄어쓰기를 넘는 '장 어디'(→장어)를 장터의 오타로 보지 않는다 (이전 결과: needs_confirmation 시장)"},
+    {"id": "i49", "group": "오타", "set": "demo", "text": "장례식장 가요", "status": "no_match", "ids": [], "note": "낱말 중간의 '식장'을 시장의 오타로 보지 않는다 (이전 결과: needs_confirmation 시장)"},
+    {"id": "i50", "group": "오타", "set": "demo", "text": "병원 가는 정류장 어디예요", "status": "matched", "ids": ["demo-destination-001"], "note": "정확한 표현 밖 오타 확인이 정류장 문장에 시장을 더하지 않는다"}
   ],
   "malformedInterpretation": [
     {"id": "m01", "payload": null},
@@ -117,6 +152,97 @@
       "구간 누락·추가·순서 변경·틀린 templateId면 template_fallback",
       "1초 예산 초과 시 결과를 채택하지 않음",
       "어댑터 예외·비JSON 반환 시 대체 동작"
+    ]
+  },
+  "conversation": {
+    "note": "경로·경로 선택지는 2026-11-12 천안 정적 데이터(cheonan-bis-static)에서 백엔드가 낸 실제 값을 줄여 담았다(path·stops 제외). 문장 기대값은 ai/conversation/phrases.json 0.1 기준이다.",
+    "routes": {
+      "market_transfer": {"estimatedTravelSeconds": null, "segments": [{"segmentId": "bus-1", "type": "bus", "routeName": "982", "boardStation": {"stationId": "cheonan-stop-285000685", "name": "종합터미널", "arsId": "685"}, "alightStation": {"stationId": "cheonan-stop-285000649", "name": "방죽안오거리", "arsId": "649"}, "stopCount": 1, "durationSeconds": null, "distanceMeters": 1294, "directionLabel": "월랑1리 마을회관 방면"}, {"segmentId": "transfer-1", "type": "transfer", "atStation": {"stationId": "cheonan-stop-285000649", "name": "방죽안오거리", "arsId": "649"}}, {"segmentId": "bus-2", "type": "bus", "routeName": "500", "boardStation": {"stationId": "cheonan-stop-285000649", "name": "방죽안오거리", "arsId": "649"}, "alightStation": {"stationId": "cheonan-stop-285000664", "name": "중앙시장", "arsId": "664"}, "stopCount": 6, "durationSeconds": 280, "distanceMeters": 1924, "directionLabel": "병천3리 방면"}, {"segmentId": "destination-walk", "type": "walk", "fromLabel": "중앙시장 (664번) 정류장", "toLabel": "천안중앙시장", "distanceMeters": 190, "durationSeconds": 178}]},
+      "express_transfer": {"estimatedTravelSeconds": 840, "segments": [{"segmentId": "bus-1", "type": "bus", "routeName": "72", "boardStation": {"stationId": "cheonan-stop-285000685", "name": "종합터미널", "arsId": "685"}, "alightStation": {"stationId": "cheonan-stop-285071555", "name": "신부동회차지", "arsId": "71555"}, "stopCount": 4, "durationSeconds": 255, "distanceMeters": 2286, "directionLabel": "신부동회차지 방면"}, {"segmentId": "transfer-1", "type": "transfer", "atStation": {"stationId": "cheonan-stop-285071555", "name": "신부동회차지", "arsId": "71555"}}, {"segmentId": "bus-2", "type": "bus", "routeName": "16", "boardStation": {"stationId": "cheonan-stop-285071555", "name": "신부동회차지", "arsId": "71555"}, "alightStation": {"stationId": "cheonan-stop-285000687", "name": "고속터미널", "arsId": "687"}, "stopCount": 5, "durationSeconds": 489, "distanceMeters": 2331, "directionLabel": "단국대 삼거리 방면"}, {"segmentId": "destination-walk", "type": "walk", "fromLabel": "고속터미널 (687번) 정류장", "toLabel": "천안고속버스터미널", "distanceMeters": 65, "durationSeconds": 96}]},
+      "express_direct_same_name": {"estimatedTravelSeconds": 4021, "segments": [{"segmentId": "bus-1", "type": "bus", "routeName": "121", "boardStation": {"stationId": "cheonan-stop-285000685", "name": "종합터미널", "arsId": "685"}, "alightStation": {"stationId": "cheonan-stop-285010125", "name": "종합터미널", "arsId": "2357"}, "stopCount": 46, "durationSeconds": 3544, "distanceMeters": 21466, "directionLabel": "나은필병원(대림한숲아파트) 방면"}, {"segmentId": "destination-walk", "type": "walk", "fromLabel": "종합터미널 (2357번) 정류장", "toLabel": "천안고속버스터미널", "distanceMeters": 454, "durationSeconds": 477}]},
+      "dankook_direct": {"estimatedTravelSeconds": 655, "segments": [{"segmentId": "bus-1", "type": "bus", "routeName": "201", "boardStation": {"stationId": "cheonan-stop-285000685", "name": "종합터미널", "arsId": "685"}, "alightStation": {"stationId": "cheonan-stop-285000639", "name": "단국대학교병원", "arsId": "639"}, "stopCount": 6, "durationSeconds": 413, "distanceMeters": 3500, "directionLabel": "안성시청(한마음세차장) 방면"}, {"segmentId": "destination-walk", "type": "walk", "fromLabel": "단국대학교병원 (639번) 정류장", "toLabel": "단국대학교병원", "distanceMeters": 273, "durationSeconds": 242}]}
+    },
+    "routeOptions": {
+      "market_transfer": {"transferCount": 1, "transferStations": [{"stationId": "cheonan-stop-285000649", "name": "방죽안오거리", "arsId": "649"}], "walkingDistanceMeters": 190, "estimatedTravelSeconds": null, "features": ["최소 환승", "최소 도보"], "routeNames": ["982", "500"]},
+      "express_transfer": {"transferCount": 1, "transferStations": [{"stationId": "cheonan-stop-285071555", "name": "신부동회차지", "arsId": "71555"}], "walkingDistanceMeters": 65, "estimatedTravelSeconds": 840, "features": ["최소 도보"], "routeNames": ["72", "16"]},
+      "express_direct_same_name": {"transferCount": 0, "transferStations": [], "walkingDistanceMeters": 454, "estimatedTravelSeconds": 4021, "features": ["최소 환승"], "routeNames": ["121"]},
+      "dankook_direct": {"transferCount": 0, "transferStations": [], "walkingDistanceMeters": 273, "estimatedTravelSeconds": 655, "features": ["최소 이동시간 · 대기 제외", "최소 환승"], "routeNames": ["201"]}
+    },
+    "understand": [
+      {"id": "u01", "set": "cheonan", "text": "중앙시장 가는데 많이 안 걷고 싶어요", "status": "matched", "ids": ["cheonan-central-market"], "sort": "walking"},
+      {"id": "u02", "set": "cheonan", "text": "터미널 가고 싶어요", "status": "needs_confirmation", "ids": ["cheonan-bus-terminal", "cheonan-express-terminal"], "sort": null},
+      {"id": "u03", "set": "cheonan", "text": "고속터미널 가요", "status": "matched", "ids": ["cheonan-express-terminal"], "sort": null},
+      {"id": "u04", "set": "cheonan", "text": "종합버스터미널", "status": "matched", "ids": ["cheonan-bus-terminal"], "sort": null},
+      {"id": "u05", "set": "cheonan", "text": "갈아타기 싫어요 단국대병원", "status": "matched", "ids": ["cheonan-dankook-hospital"], "sort": "transfers"},
+      {"id": "u06", "set": "cheonan", "text": "다리가 아파서 덜 걷는 길로 천안의료원", "status": "matched", "ids": ["cheonan-medical-center"], "sort": "walking"},
+      {"id": "u07", "set": "cheonan", "text": "성정시장 급해요", "status": "matched", "ids": ["cheonan-seongjeong-market"], "sort": "fastest"},
+      {"id": "u08", "set": "cheonan", "text": "한 번에 가는 버스로 순천향병원", "status": "matched", "ids": ["cheonan-soonchunhyang-hospital"], "sort": "transfers"},
+      {"id": "u09", "set": "cheonan", "text": "빨리 가야 돼요", "status": "no_match", "ids": [], "sort": "fastest"},
+      {"id": "u10", "set": "cheonan", "text": "걷기 힘들어요", "status": "no_match", "ids": [], "sort": "walking"},
+      {"id": "u11", "set": "cheonan", "text": "천안역 빨리 안 가도 돼요", "status": "matched", "ids": ["cheonan-station"], "sort": null},
+      {"id": "u12", "set": "cheonan", "text": "시간 오래 안 걸리는 길로 시청", "status": "matched", "ids": ["cheonan-city-hall"], "sort": "fastest"},
+      {"id": "u13", "set": "cheonan", "text": "무릎이 아파서 병원 가요", "status": "needs_confirmation", "ids": ["cheonan-dankook-hospital", "cheonan-soonchunhyang-hospital", "cheonan-medical-center", "cheonan-chungmu-hospital"], "sort": "walking"},
+      {"id": "u14", "set": "cheonan", "text": "시장 갈래", "status": "needs_confirmation", "ids": ["cheonan-central-market", "cheonan-seongjeong-market", "cheonan-byeongcheon-market"], "sort": null},
+      {"id": "u15", "set": "cheonan", "text": "환승 없이 독립기념관", "status": "matched", "ids": ["cheonan-independence-hall"], "sort": "transfers"},
+      {"id": "u16", "set": "cheonan", "text": "오늘 날씨 좋네요", "status": "no_match", "ids": [], "sort": null},
+      {"id": "u17", "set": "cheonan", "text": "버스 정류장 어디예요", "status": "no_match", "ids": [], "sort": null},
+      {"id": "u18", "set": "cheonan", "text": "남산 중앙시장 걷는 거 힘들어", "status": "matched", "ids": ["cheonan-central-market"], "sort": "walking"},
+      {"id": "u19", "set": "cheonan", "text": "병원 말고 시장 빨리", "status": "needs_confirmation", "ids": ["cheonan-central-market", "cheonan-seongjeong-market", "cheonan-byeongcheon-market"], "sort": "fastest"},
+      {"id": "u20", "set": "cheonan", "text": "바쁜데 천안 시청", "status": "matched", "ids": ["cheonan-city-hall"], "sort": "fastest"}
+    ],
+    "clarify": [
+      {"id": "c01", "candidateIds": ["cheonan-bus-terminal", "cheonan-express-terminal"], "question": "천안종합버스터미널과 천안고속버스터미널 중 어디로 가시나요?"},
+      {"id": "c02", "candidateIds": ["cheonan-station"], "question": "천안역으로 가시나요?"},
+      {"id": "c03", "candidateIds": ["cheonan-central-market", "cheonan-seongjeong-market", "cheonan-byeongcheon-market"], "question": "천안중앙시장, 성정시장, 병천시장 중 어디로 가시나요?"},
+      {"id": "c04", "candidateIds": ["cheonan-dankook-hospital", "cheonan-soonchunhyang-hospital", "cheonan-medical-center", "cheonan-chungmu-hospital"], "question": "단국대학교병원, 순천향대학교 부속 천안병원, 충청남도천안의료원, 천안충무병원 중 어디로 가시나요?"},
+      {"id": "c05", "candidateIds": ["cheonan-dankook-university", "cheonan-sangmyung-university", "cheonan-hoseo-university", "cheonan-koreatech", "cheonan-independence-hall"], "question": "가시려는 곳을 아래에서 골라 주세요."},
+      {"id": "c06", "candidateIds": ["cheonan-city-hall"], "question": "천안시청으로 가시나요?"}
+    ],
+    "explain": [
+      {"id": "e01", "route": "dankook_direct", "sort": "fastest", "text": "말씀하신 대로 가장 빨리 가는 길이에요. 대기시간을 빼고 약 11분 걸려요. 이 버스는 갈아탈 필요가 없어요. 내린 뒤 250m 정도 걸으면 돼요."},
+      {"id": "e02", "route": "dankook_direct", "sort": null, "text": "이 버스는 갈아탈 필요가 없어요. 내린 뒤 250m 정도 걸으면 돼요."},
+      {"id": "e03", "route": "market_transfer", "sort": "walking", "text": "말씀하신 대로 걷는 거리가 가장 짧은 길이에요. 걷는 거리는 모두 200m 정도예요. 방죽안오거리에서 한 번 갈아타요."},
+      {"id": "e04", "route": "market_transfer", "sort": "transfers", "text": "말씀하신 대로 갈아타는 횟수가 가장 적은 길이에요. 방죽안오거리에서 한 번 갈아타요. 걷는 거리는 모두 200m 정도예요."},
+      {"id": "e05", "route": "express_transfer", "sort": "walking", "text": "말씀하신 대로 걷는 거리가 가장 짧은 길이에요. 걷는 거리는 모두 50m 정도예요. 신부동회차지에서 한 번 갈아타요."},
+      {"id": "e06", "route": "express_direct_same_name", "sort": "transfers", "text": "말씀하신 대로 갈아타는 횟수가 가장 적은 길이에요. 이 버스는 갈아탈 필요가 없어요. 내린 뒤 450m 정도 걸으면 돼요."},
+      {"id": "e07", "route": "express_transfer", "sort": "fastest", "text": "대기시간을 빼고 약 14분 걸려요. 신부동회차지에서 한 번 갈아타요. 걷는 거리는 모두 50m 정도예요."},
+      {"id": "e08", "route": "market_transfer", "sort": "fastest", "text": "방죽안오거리에서 한 번 갈아타요. 걷는 거리는 모두 200m 정도예요."}
+    ],
+    "answer": [
+      {"id": "a01", "route": "dankook_direct", "question": "몇 번 버스 타요?", "intent": "which_bus", "text": "종합터미널 정류장에서 201번 버스를 타세요."},
+      {"id": "a02", "route": "dankook_direct", "question": "몇 번 타요?", "intent": "how_many", "text": "버스를 한 번만 타요. 갈아타지 않아요."},
+      {"id": "a03", "route": "dankook_direct", "question": "어디서 내려요?", "intent": "where_alight", "text": "단국대학교병원 정류장에서 내리세요."},
+      {"id": "a04", "route": "dankook_direct", "question": "어디서 타요?", "intent": "where_board", "text": "종합터미널 정류장에서 201번 버스를 타세요."},
+      {"id": "a05", "route": "dankook_direct", "question": "얼마나 걸어요?", "intent": "walk", "text": "내린 뒤 단국대학교병원까지 250m, 약 5분 걸어요."},
+      {"id": "a06", "route": "dankook_direct", "question": "얼마나 걸려요?", "intent": "duration", "text": "대기시간을 빼고 약 11분 걸려요."},
+      {"id": "a07", "route": "dankook_direct", "question": "몇 정거장 가요?", "intent": "stop_count", "text": "6개 정류장을 지나 단국대학교병원 정류장에서 내려요."},
+      {"id": "a08", "route": "express_transfer", "question": "몇 번 버스 타요?", "intent": "which_bus", "text": "종합터미널 정류장에서 72번 버스를 타고, 신부동회차지 정류장에서 16번으로 갈아타세요."},
+      {"id": "a09", "route": "express_transfer", "question": "몇 번 타요?", "intent": "how_many", "text": "버스를 두 번 타요. 신부동회차지 정류장에서 한 번 갈아타요."},
+      {"id": "a10", "route": "express_transfer", "question": "어디서 내려요?", "intent": "where_alight", "text": "먼저 신부동회차지 정류장에서 내려 16번으로 갈아타고, 고속터미널 정류장에서 내리세요."},
+      {"id": "a11", "route": "express_transfer", "question": "어디서 타요?", "intent": "where_board", "text": "종합터미널 정류장에서 72번 버스를 타세요."},
+      {"id": "a12", "route": "express_transfer", "question": "얼마나 걸어요?", "intent": "walk", "text": "내린 뒤 천안고속버스터미널까지 50m, 약 2분 걸어요."},
+      {"id": "a13", "route": "express_transfer", "question": "얼마나 걸려요?", "intent": "duration", "text": "대기시간을 빼고 약 14분 걸려요."},
+      {"id": "a14", "route": "express_transfer", "question": "몇 정거장 가요?", "intent": "stop_count", "text": "처음 버스는 4개, 갈아탄 버스는 5개 정류장을 지나요."},
+      {"id": "a15", "route": "express_direct_same_name", "question": "몇 번 버스 타요?", "intent": "which_bus", "text": "종합터미널 정류장에서 121번 버스를 타세요."},
+      {"id": "a16", "route": "express_direct_same_name", "question": "어디서 내려요?", "intent": "where_alight", "text": "종합터미널(2357번) 정류장에서 내리세요."},
+      {"id": "a17", "route": "express_direct_same_name", "question": "얼마나 걸려요?", "intent": "duration", "text": "대기시간을 빼고 약 68분 걸려요."},
+      {"id": "a18", "route": "market_transfer", "question": "몇 번 버스 타요?", "intent": "which_bus", "text": "종합터미널 정류장에서 982번 버스를 타고, 방죽안오거리 정류장에서 500번으로 갈아타세요."},
+      {"id": "a19", "route": "market_transfer", "question": "어디서 내려요?", "intent": "where_alight", "text": "먼저 방죽안오거리 정류장에서 내려 500번으로 갈아타고, 중앙시장 정류장에서 내리세요."},
+      {"id": "a20", "route": "market_transfer", "question": "얼마나 걸려요?", "intent": "duration", "text": "걸리는 시간은 확인되지 않았어요. 화면의 도착 정보를 봐 주세요."},
+      {"id": "a21", "route": "dankook_direct", "question": "다시 말해 주세요", "intent": "repeat", "text": "단국대학교병원 정류장에서 내리세요.", "previousAnswer": "단국대학교병원 정류장에서 내리세요."},
+      {"id": "a22", "route": "dankook_direct", "question": "뭐라고요?", "intent": "repeat", "text": "종합터미널 정류장에서 201번 버스를 타세요."},
+      {"id": "a23", "route": "dankook_direct", "question": "오늘 날씨 어때요", "intent": "unknown", "text": "잘 못 알아들었어요. '몇 번 버스 타요?', '어디서 내려요?'처럼 물어봐 주세요."},
+      {"id": "a24", "route": "dankook_direct", "question": "어디서 갈아타요?", "intent": "how_many", "text": "버스를 한 번만 타요. 갈아타지 않아요."},
+      {"id": "a25", "route": "dankook_direct", "question": "16번 버스 맞아요?", "intent": "unknown", "text": "잘 못 알아들었어요. '몇 번 버스 타요?', '어디서 내려요?'처럼 물어봐 주세요."},
+      {"id": "a26", "route": "dankook_direct", "question": "어디서 기다려요", "intent": "where_board", "text": "종합터미널 정류장에서 201번 버스를 타세요."},
+      {"id": "a27", "route": "dankook_direct", "question": "몇 분 걸려요", "intent": "duration", "text": "대기시간을 빼고 약 11분 걸려요."},
+      {"id": "a28", "route": "dankook_direct", "question": "하차는 어디", "intent": "where_alight", "text": "단국대학교병원 정류장에서 내리세요."}
+    ],
+    "headline": [
+      {"id": "h01", "route": "market_transfer", "text": "982번 버스 → 방죽안오거리에서 500번으로 갈아타기 → 중앙시장에서 내리세요"},
+      {"id": "h02", "route": "express_transfer", "text": "72번 버스 → 신부동회차지에서 16번으로 갈아타기 → 고속터미널에서 내리세요"},
+      {"id": "h03", "route": "express_direct_same_name", "text": "121번 버스 → 종합터미널(2357번)에서 내리세요"},
+      {"id": "h04", "route": "dankook_direct", "text": "201번 버스 → 단국대학교병원에서 내리세요"}
     ]
   }
 }

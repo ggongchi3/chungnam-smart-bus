@@ -1,0 +1,42 @@
+{
+  "version": "0.1",
+  "note": "대화 기능의 고정 문구. {중괄호}에는 백엔드 값만 들어간다. 조사는 words.josa로 앞말에 맞춰 붙인 뒤 넣는다. 문구를 바꾸면 ai/evaluation/cases.json의 conversation 기대 문장도 함께 바꾼다.",
+  "phrases": {
+    "clarify.one": "{place} 가시나요?",
+    "clarify.two": "{first} {second} 중 어디로 가시나요?",
+    "clarify.few": "{names} 중 어디로 가시나요?",
+    "clarify.many": "가시려는 곳을 아래에서 골라 주세요.",
+
+    "explain.preference.walking": "말씀하신 대로 걷는 거리가 가장 짧은 길이에요.",
+    "explain.preference.transfers": "말씀하신 대로 갈아타는 횟수가 가장 적은 길이에요.",
+    "explain.preference.fastest": "말씀하신 대로 가장 빨리 가는 길이에요.",
+    "explain.direct": "이 버스는 갈아탈 필요가 없어요.",
+    "explain.transfer.at": "{station}에서 한 번 갈아타요.",
+    "explain.transfer": "한 번 갈아타요.",
+    "explain.walk.after": "내린 뒤 {meters}m 정도 걸으면 돼요.",
+    "explain.walk.after.short": "내린 뒤 조금만 걸으면 돼요.",
+    "explain.walk.total": "걷는 거리는 모두 {meters}m 정도예요.",
+    "explain.walk.total.short": "걷는 거리는 아주 짧아요.",
+    "explain.time": "대기시간을 빼고 약 {minutes}분 걸려요.",
+
+    "answer.which_bus.one": "{board}에서 {bus} 타세요.",
+    "answer.which_bus.two": "{board}에서 {first} 타고, {transfer}에서 {second} 갈아타세요.",
+    "answer.how_many.one": "버스를 한 번만 타요. 갈아타지 않아요.",
+    "answer.how_many.two": "버스를 두 번 타요. {transfer}에서 한 번 갈아타요.",
+    "answer.where_board": "{board}에서 {bus} 타세요.",
+    "answer.where_alight.one": "{alight}에서 내리세요.",
+    "answer.where_alight.two": "먼저 {transfer}에서 내려 {second} 갈아타고, {alight}에서 내리세요.",
+    "answer.stop_count.one": "{stops}개 정류장을 지나 {alight}에서 내려요.",
+    "answer.stop_count.two": "처음 버스는 {first}개, 갈아탄 버스는 {second}개 정류장을 지나요.",
+    "answer.walk": "내린 뒤 {to}까지 {meters}m, 약 {minutes}분 걸어요.",
+    "answer.walk.no_time": "내린 뒤 {to}까지 {meters}m 정도 걸어요.",
+    "answer.walk.short": "내린 뒤 {to}까지 조금만 걸으면 돼요.",
+    "answer.walk.none": "걸어가는 거리는 확인되지 않았어요.",
+    "answer.duration": "대기시간을 빼고 약 {minutes}분 걸려요.",
+    "answer.duration.none": "걸리는 시간은 확인되지 않았어요. 화면의 도착 정보를 봐 주세요.",
+    "answer.unknown": "잘 못 알아들었어요. '몇 번 버스 타요?', '어디서 내려요?'처럼 물어봐 주세요.",
+
+    "headline.one": "{bus} → {alight}에서 내리세요",
+    "headline.two": "{first} → {transfer}에서 {second} 갈아타기 → {alight}에서 내리세요"
+  }
+}

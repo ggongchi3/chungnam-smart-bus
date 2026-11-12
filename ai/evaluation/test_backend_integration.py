@@ -210,5 +210,75 @@ class BackendRejectsBadOutputTest(unittest.TestCase):
                 self.assertLess(elapsed, 1.5)
 
 
+class RecordingAdapter(RuleBasedAIAdapter):
+    """백엔드가 AI에 넘긴 allowedDestinations를 기록한다."""
+    seen = None
+
+    def interpret_destination(self, payload):
+        RecordingAdapter.seen = payload['allowedDestinations']
+        return super().interpret_destination(payload)
+
+
+@unittest.skipIf(create_app is None, '백엔드 의존성 미설치')
+class CheonanConversationTest(unittest.TestCase):
+    """실제 천안 정적 데이터로 대화 기능을 이어 본다: 말 → 목적지·조건 → 경로 검색 → 이유·답·한 줄.
+
+    백엔드는 아직 대화 기능을 부르지 않는다. 여기서는 백엔드 응답을 그대로 어댑터에 넣어
+    형식이 맞는지만 확인한다(제안: ai/contracts/README.md).
+    """
+    ORIGIN = 'cheonan-stop-285000685'
+
+    def setUp(self):
+        from ai.evaluation.run_eval import load_cases
+        self.cases = load_cases()
+        app = create_app(Settings(database_url='sqlite:///:memory:', data_mode='static'),
+                         ai_adapter=RecordingAdapter(), place_catalog='cheonan', transport_catalog='cheonan')
+        self.client = self.enterContext(TestClient(app))
+        self.adapter = RuleBasedAIAdapter()
+
+    def post(self, path, body):
+        response = self.client.post('/api/v1' + path, json=body)
+        self.assertEqual(response.status_code, 200, response.text)
+        return response.json()['data']
+
+    def test_cases_use_backend_allowed_destinations(self):
+        """cases.json의 cheonan 목록이 백엔드가 AI에 넘기는 목록과 같아야 평가가 의미 있다."""
+        self.post('/destination-interpretations', {'originStationId': self.ORIGIN, 'text': '시장'})
+        def shape(items):  # 순서는 백엔드가 다시 맞추므로 내용만 비교
+            return {d['destinationId']: (d['name'], sorted(d['aliases'])) for d in items}
+        self.assertEqual(shape(RecordingAdapter.seen), shape(self.cases['destinationSets']['cheonan']))
+
+    def test_end_to_end_sentences(self):
+        allowed = self.cases['destinationSets']['cheonan']
+        for text in ['중앙시장 가는데 많이 안 걷고 싶어요', '갈아타기 싫어요 단국대병원', '성정시장 급해요', '고속터미널 가요']:
+            with self.subTest(text=text):
+                understood = self.adapter.understand_request({'text': text, 'dataMode': 'static',
+                                                              'allowedDestinations': allowed})
+                self.assertEqual(understood['destination']['status'], 'matched')
+                sort = understood['preference']['sort'] or 'transfers'
+                search = self.post('/route-searches', {
+                    'originStationId': self.ORIGIN, 'destinationId': understood['destination']['candidateDestinationIds'][0],
+                    'departAt': datetime.now(timezone.utc).isoformat(), 'sort': sort})
+                self.assertEqual(search['sortedBy'], sort)
+                option = search['routeOptions'][0]
+                reason = self.adapter.explain_route({'routeOption': option, 'sort': understood['preference']['sort']})
+                self.assertEqual(reason['status'], 'ok', option)
+                detail = self.client.get(f"/api/v1/route-searches/{search['routeSearchId']}/options/"
+                                         f"{option['routeOptionId']}").json()['data']
+                headline = self.adapter.print_headline({'routeDetail': detail})
+                self.assertEqual(headline['status'], 'ok')
+                self.assertIn(option['routeNames'][0], headline['text'])
+                for question in ['몇 번 버스 타요?', '어디서 내려요?', '얼마나 걸어요?', '얼마나 걸려요?']:
+                    answer = self.adapter.answer_question({'question': question, 'routeDetail': detail})
+                    self.assertEqual(answer['status'], 'ok', (question, answer))
+
+    def test_clarify_uses_backend_candidates(self):
+        data = self.post('/destination-interpretations', {'originStationId': self.ORIGIN, 'text': '터미널 가고 싶어요'})
+        self.assertEqual(data['status'], 'needs_confirmation')
+        out = self.adapter.clarify_destination({'candidates': data['candidates']})
+        self.assertEqual(out['question'], '천안종합버스터미널과 천안고속버스터미널 중 어디로 가시나요?')
+        self.assertEqual([o['destinationId'] for o in out['options']], [c['destinationId'] for c in data['candidates']])
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -20,6 +20,18 @@ CATEGORY_TERMS = {
     '터미널': ('터미널', '버스터미널', '시외버스터미널', '고속버스터미널', '시외버스', '고속버스'),
 }
 
+# 한 글자 표현은 띄어 쓴 낱말 전체가 아래와 같을 때만 그 분류로 추정한다('장에 가요' → 시장).
+# 붙여 쓴 '정류장에'·'주차장에'는 낱말이 달라 해당하지 않는다. 추정이므로 확인을 요청한다.
+WORD_GUESSES = {
+    '시장': ('장', '장에', '장엘', '장으로', '장에서'),
+}
+
+# 등록 이름 앞의 지역명. 어르신은 '천안중앙시장'을 '중앙시장'으로 말하므로 앞의 지역명을 뺀
+# 나머지도 그 장소의 표현으로 본다('천안 시청' → '시청'). 남는 부분이 MIN_REGION_REST 글자보다
+# 짧으면 쓰지 않는다('천안역' → '역'은 너무 넓다).
+REGION_PREFIXES = ('충청남도', '충남', '천안시', '천안', '남산')
+MIN_REGION_REST = 2
+
 # 표현 바로 뒤에 오면 그 장소를 빼라는 뜻으로 본다('병원 말고 시장').
 PARTICLES = ('은', '는', '이', '가', '을', '를', '에', '으로', '로', '도')
 NEGATIONS = ('말고', '말구', '빼고', '아니고', '아니구', '아니라', '아닌')
@@ -86,25 +98,55 @@ def _valid_destinations(value):
     return value
 
 
+def _owners(head, destinations):
+    """이름·별칭의 핵심어에 head가 들어간 후보 ID 집합."""
+    return {item['destinationId'] for item in destinations
+            if any(head in core(label) for label in [item['name'], *item.get('aliases', [])])}
+
+
+def _word_guesses(text, destinations):
+    """띄어 쓴 낱말 단위의 한 글자 표현 추정. 바로 뒤 낱말이 부정이면 뺀다."""
+    words = normalize(text).split(' ')
+    guessed = set()
+    for i, word in enumerate(words):
+        following = words[i + 1] if i + 1 < len(words) else ''
+        if following.startswith(NEGATIONS):
+            continue
+        for head, forms in WORD_GUESSES.items():
+            if word in forms:
+                guessed |= _owners(head, destinations)
+    return guessed
+
+
+def without_region(term):
+    """'천안중앙시장' → ['중앙시장']. 맞는 지역명마다 하나씩('천안시청' → ['시청'])."""
+    return [term[len(prefix):] for prefix in REGION_PREFIXES
+            if term.startswith(prefix) and len(term) - len(prefix) >= MIN_REGION_REST]
+
+
 def _terms(destinations):
-    """검색어 → 후보 ID 집합. 이름·별칭 전체, 접두어를 뺀 핵심어, 분류 표현."""
+    """검색어 → 후보 ID 집합. 이름·별칭 전체, 접두어·지역명을 뺀 핵심어, 분류 표현.
+
+    분류 표현이 어떤 장소의 이름·별칭과 똑같으면('고속버스터미널') 이름 쪽을 따른다.
+    분류 이름 자체('병원'·'시장'·'터미널')는 이름과 같아도 그 분류의 후보를 모두 고른다.
+    """
     terms = {}
 
     def add(term, key):
-        if len(term) >= MIN_TERM_LENGTH and term != DEMO_PREFIX:
+        if term and len(term) >= MIN_TERM_LENGTH and term != DEMO_PREFIX:
             terms.setdefault(term, set()).add(key)
 
     for item in destinations:
         for label in [item['name'], *item.get('aliases', [])]:
-            add(compact(label), item['destinationId'])
-            add(core(label), item['destinationId'])
+            for term in (compact(label), core(label)):
+                for each in (term, *without_region(term)):
+                    add(each, item['destinationId'])
+    named = set(terms)
     for head, expressions in CATEGORY_TERMS.items():
-        owners = set()
-        for item in destinations:
-            labels = [core(label) for label in [item['name'], *item.get('aliases', [])]]
-            if any(head in label for label in labels):
-                owners.add(item['destinationId'])
+        owners = _owners(head, destinations)
         for expression in expressions:
+            if expression != head and expression in named:
+                continue
             for key in owners:
                 add(expression, key)
     return terms
@@ -135,17 +177,39 @@ def _negated(text, end):
     return False
 
 
-def _match(text, terms):
-    """(후보 ID 집합, 오타 추정 여부). 부정 표현이 붙은 장소는 뺀다."""
-    fuzzy = False
-    hits = _hits(text, terms)
-    if not hits:
-        hits, fuzzy = _hits(text, terms, fuzzy=True), True
+def _word_spans(text):
+    """띄어 쓴 낱말들의 compact 문자열 안 (시작, 끝) 위치."""
+    spans, position = [], 0
+    for word in normalize(text).split(' '):
+        if word:
+            spans.append((position, position + len(word)))
+            position += len(word)
+    return spans
+
+
+def _match(text, terms, spans):
+    """(후보 ID 집합, 추정 여부). text는 compact 문자열, spans는 낱말 위치. 부정 표현이 붙은 장소는 뺀다.
+
+    정확히 맞는 표현이 있어도, 그 범위와 겹치지 않는 나머지 부분의 오타를 함께 본다
+    ('병원이랑 시잔' → 병원·시장). 오타로 새 후보가 더해지면 추정 결과로 표시한다.
+    오타는 낱말 첫 글자부터 낱말 안에서만 본다. 낱말 경계를 넘거나('장 어디'→'장어'≈'장터')
+    낱말 중간에서 시작하는 것('장례식장'의 '식장'≈'시장')은 오타로 보지 않는다.
+    """
+    exact = _hits(text, terms)
     kept = set()
-    for start, end, keys in hits:
+    for start, end, keys in exact:
         if not _negated(text, end):
             kept |= keys
-    return kept, fuzzy
+    guessed = False
+    for start, end, keys in _hits(text, terms, fuzzy=True):
+        if not any(s == start and end <= e for s, e in spans):
+            continue
+        if any(start < e and s < end for s, e, _ in exact) or _negated(text, end):
+            continue
+        if not keys <= kept:
+            kept |= keys
+            guessed = True
+    return kept, guessed
 
 
 def interpret(payload):
@@ -156,7 +220,10 @@ def interpret(payload):
         destinations = _valid_destinations(payload.get('allowedDestinations'))
         if type(text) is not str or not text.strip() or len(text) > MAX_TEXT_LENGTH or destinations is None:
             return result('unavailable')
-        matched, fuzzy = _match(compact(text), _terms(destinations))
+        matched, fuzzy = _match(compact(text), _terms(destinations), _word_spans(text))
+        word_guessed = _word_guesses(text, destinations) - matched
+        if word_guessed:
+            matched, fuzzy = matched | word_guessed, True
         # allowedDestinations 순서를 유지해 같은 입력에 같은 출력을 낸다.
         ids = [d['destinationId'] for d in destinations if d['destinationId'] in matched]
         if not ids:

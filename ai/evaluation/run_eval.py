@@ -72,6 +72,44 @@ def run(cases=None, adapter=None):
         actual = ((out['status'], [s['templateId'] for s in out['steps']])
                   if type(out) is dict and type(out.get('steps')) is list else out)
         rows.append((case['id'], case['group'], expected == actual, expected, actual, seconds))
+    if 'conversation' in cases and hasattr(adapter, 'understand_request'):
+        rows += conversation_rows(cases, adapter)
+    return rows
+
+
+def conversation_rows(cases, adapter):
+    """대화 기능(ai/conversation) 사례. 문장은 고정 문구라 글자 그대로 비교한다."""
+    conv, rows = cases['conversation'], []
+    for case in conv['understand']:
+        payload = {'text': case['text'], 'dataMode': 'static', 'allowedDestinations': cases['destinationSets'][case['set']]}
+        out, seconds = timed(adapter.understand_request, payload)
+        expected = (case['status'], case['ids'], case['sort'])
+        actual = ((out['destination']['status'], out['destination']['candidateDestinationIds'], out['preference']['sort'])
+                  if type(out) is dict else out)
+        rows.append((case['id'], '대화: 목적지와 조건', expected == actual, expected, actual, seconds))
+    names = {d['destinationId']: d['name'] for d in cases['destinationSets']['cheonan']}
+    for case in conv['clarify']:
+        payload = {'candidates': [{'destinationId': key, 'name': names[key]} for key in case['candidateIds']]}
+        out, seconds = timed(adapter.clarify_destination, payload)
+        actual = out.get('question') if type(out) is dict else out
+        rows.append((case['id'], '대화: 다시 묻기', actual == case['question'], case['question'], actual, seconds))
+    for case in conv['explain']:
+        payload = {'routeOption': conv['routeOptions'][case['route']], 'sort': case['sort']}
+        out, seconds = timed(adapter.explain_route, payload)
+        actual = out.get('text') if type(out) is dict else out
+        rows.append((case['id'], '대화: 추천 이유', actual == case['text'], case['text'], actual, seconds))
+    for case in conv['answer']:
+        payload = {'question': case['question'], 'routeDetail': conv['routes'][case['route']]}
+        if 'previousAnswer' in case:
+            payload['previousAnswer'] = case['previousAnswer']
+        out, seconds = timed(adapter.answer_question, payload)
+        expected = (case['intent'], case['text'])
+        actual = (out.get('intent'), out.get('text')) if type(out) is dict else out
+        rows.append((case['id'], '대화: 묻고 듣기', expected == actual, expected, actual, seconds))
+    for case in conv['headline']:
+        out, seconds = timed(adapter.print_headline, {'routeDetail': conv['routes'][case['route']]})
+        actual = out.get('text') if type(out) is dict else out
+        rows.append((case['id'], '대화: 인쇄표 한 줄', actual == case['text'], case['text'], actual, seconds))
     return rows
 
 
