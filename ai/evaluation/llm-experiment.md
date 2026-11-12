@@ -95,3 +95,7 @@ ai/adapter.py: class GeminiAIAdapter:
 - 정확도 자체는 규칙 기준선과 비슷하거나 낮다. 합성 사례가 규칙 기준선에 맞춰 만들어졌다는 한계가 있으므로, 비교는 4절의 실제 표현 묶음을 모은 뒤 다시 한다.
 - **응답 시간이 1초 예산과 거의 같다.** 연결 재사용·`thinkingLevel: minimal`로 약 0.8~1.0초까지 줄었지만 예산 안에 안정적으로 들어오지 않는다. 키오스크 네트워크에서는 더 느릴 수 있다.
 - 무료 한도(분당 15회)는 시연 한 대에는 충분하지만 반복 평가에는 대기가 필요하다.
+
+## 8. 대화 기능에서의 선택 옵션 (2026-11-12)
+
+`ai.adapter:RuleFirstGeminiAdapter` — 규칙을 먼저 쓰고 규칙이 모를 때만 Gemini를 부른다(목적지 `no_match`, 조건 없음, 질문 `unknown`). Gemini는 정해진 값(목적지 ID, `walking`·`transfers`·`fastest`·`none`, 질문 intent) 중 하나만 고르고 문장은 만들지 않는다. 오프라인 테스트는 [test_conversation.py](test_conversation.py)의 `RuleFirstGeminiTest`. 실제 키로는 아직 측정하지 않았다. 조건을 말하지 않은 요청마다 호출이 하나 늘어 1초 예산·분당 15회 한도에 부담이 있으므로 시연 기본값은 규칙 기반으로 둔다.

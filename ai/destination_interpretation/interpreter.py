@@ -26,6 +26,12 @@ WORD_GUESSES = {
     '시장': ('장', '장에', '장엘', '장으로', '장에서'),
 }
 
+# 등록 이름 앞의 지역명. 어르신은 '천안중앙시장'을 '중앙시장'으로 말하므로 앞의 지역명을 뺀
+# 나머지도 그 장소의 표현으로 본다('천안 시청' → '시청'). 남는 부분이 MIN_REGION_REST 글자보다
+# 짧으면 쓰지 않는다('천안역' → '역'은 너무 넓다).
+REGION_PREFIXES = ('충청남도', '충남', '천안시', '천안', '남산')
+MIN_REGION_REST = 2
+
 # 표현 바로 뒤에 오면 그 장소를 빼라는 뜻으로 본다('병원 말고 시장').
 PARTICLES = ('은', '는', '이', '가', '을', '를', '에', '으로', '로', '도')
 NEGATIONS = ('말고', '말구', '빼고', '아니고', '아니구', '아니라', '아닌')
@@ -112,21 +118,35 @@ def _word_guesses(text, destinations):
     return guessed
 
 
+def without_region(term):
+    """'천안중앙시장' → ['중앙시장']. 맞는 지역명마다 하나씩('천안시청' → ['시청'])."""
+    return [term[len(prefix):] for prefix in REGION_PREFIXES
+            if term.startswith(prefix) and len(term) - len(prefix) >= MIN_REGION_REST]
+
+
 def _terms(destinations):
-    """검색어 → 후보 ID 집합. 이름·별칭 전체, 접두어를 뺀 핵심어, 분류 표현."""
+    """검색어 → 후보 ID 집합. 이름·별칭 전체, 접두어·지역명을 뺀 핵심어, 분류 표현.
+
+    분류 표현이 어떤 장소의 이름·별칭과 똑같으면('고속버스터미널') 이름 쪽을 따른다.
+    분류 이름 자체('병원'·'시장'·'터미널')는 이름과 같아도 그 분류의 후보를 모두 고른다.
+    """
     terms = {}
 
     def add(term, key):
-        if len(term) >= MIN_TERM_LENGTH and term != DEMO_PREFIX:
+        if term and len(term) >= MIN_TERM_LENGTH and term != DEMO_PREFIX:
             terms.setdefault(term, set()).add(key)
 
     for item in destinations:
         for label in [item['name'], *item.get('aliases', [])]:
-            add(compact(label), item['destinationId'])
-            add(core(label), item['destinationId'])
+            for term in (compact(label), core(label)):
+                for each in (term, *without_region(term)):
+                    add(each, item['destinationId'])
+    named = set(terms)
     for head, expressions in CATEGORY_TERMS.items():
         owners = _owners(head, destinations)
         for expression in expressions:
+            if expression != head and expression in named:
+                continue
             for key in owners:
                 add(expression, key)
     return terms

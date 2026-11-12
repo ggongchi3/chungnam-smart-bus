@@ -4,10 +4,11 @@
 
 | 폴더·파일 | 내용 |
 | --- | --- |
-| [adapter.py](adapter.py) | 백엔드 `AIAdapter`에 주입하는 `RuleBasedAIAdapter` |
+| [adapter.py](adapter.py) | 백엔드 `AIAdapter`에 주입하는 `RuleBasedAIAdapter`(대화 기능 메서드 포함), 실험용 `GeminiAIAdapter`·`RuleFirstGeminiAdapter` |
 | [contracts/](contracts/README.md) | 두 함수의 입출력 계약, JSON Schema, 연결 결정과 후속 검토, [결과별 화면·음성 문구안](contracts/fallback-copy.md) |
 | [destination_interpretation/](destination_interpretation/README.md) | 목적지 표현 해석 규칙 |
 | [easy_guidance/](easy_guidance/README.md) | 안내 템플릿 목록과 선택 규칙 |
+| [conversation/](conversation/README.md) | 대화 기능(제안): 말로 목적지·조건 찾기, 되묻기, 추천 이유, 묻고 듣기, 인쇄표 핵심 한 줄 |
 | [evaluation/](evaluation/README.md) | 평가 사례, 평가 스크립트, 테스트, 백엔드 연결 확인, [LLM 비교 실험 설계](evaluation/llm-experiment.md) |
 
 ## 백엔드 연결

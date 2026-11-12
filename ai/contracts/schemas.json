@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "chungnam-smart-bus AI contract v0.1",
+  "title": "chungnam-smart-bus AI contract v0.2 (대화 기능 제안 포함)",
   "$defs": {
     "identifier": {"type": "string", "minLength": 1, "maxLength": 200},
     "InterpretDestinationInput": {
@@ -78,6 +78,17 @@
         }
       },
       "additionalProperties": false
-    }
+    },
+    "UnderstandInput": {"$ref": "#/$defs/InterpretDestinationInput"},
+    "UnderstandOutput": {"type": "object", "required": ["destination", "preference"], "properties": {"destination": {"$ref": "#/$defs/InterpretDestinationOutput"}, "preference": {"type": "object", "required": ["sort", "matchedPhrase"], "properties": {"sort": {"enum": ["walking", "transfers", "fastest", null]}, "matchedPhrase": {"type": ["string", "null"]}}, "additionalProperties": false}}, "additionalProperties": false},
+    "ClarifyInput": {"type": "object", "required": ["candidates"], "properties": {"candidates": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["destinationId", "name"], "properties": {"destinationId": {"$ref": "#/$defs/identifier"}, "name": {"type": "string", "minLength": 1}}}}}},
+    "ClarifyOutput": {"type": "object", "required": ["status", "question", "options"], "properties": {"status": {"enum": ["ok", "unavailable"]}, "question": {"type": ["string", "null"]}, "options": {"type": "array", "items": {"type": "object", "required": ["destinationId", "label"], "properties": {"destinationId": {"$ref": "#/$defs/identifier"}, "label": {"type": "string"}}, "additionalProperties": false}}}, "additionalProperties": false},
+    "ExplainRouteInput": {"type": "object", "required": ["routeOption"], "properties": {"routeOption": {"type": "object", "description": "백엔드 RouteOption 그대로. 쓰는 필드만 적는다.", "required": ["transferCount"], "properties": {"transferCount": {"enum": [0, 1]}, "transferStations": {"type": "array", "items": {"type": "object", "required": ["name"], "properties": {"name": {"type": "string", "minLength": 1}, "arsId": {"type": ["string", "null"]}}}}, "walkingDistanceMeters": {"type": ["number", "null"], "minimum": 0}, "estimatedTravelSeconds": {"type": ["number", "null"], "minimum": 0}, "features": {"type": "array", "items": {"type": "string"}}}}, "sort": {"enum": ["walking", "transfers", "fastest", null]}}},
+    "ExplainRouteOutput": {"type": "object", "required": ["status", "text", "sentences"], "properties": {"status": {"enum": ["ok", "unavailable"]}, "text": {"type": ["string", "null"]}, "sentences": {"type": "array", "items": {"type": "string"}}}, "additionalProperties": false},
+    "RouteDetailForText": {"type": "object", "description": "백엔드 RouteDetail 그대로. 쓰는 필드만 적는다. bus 구간은 1~2개.", "required": ["segments"], "properties": {"estimatedTravelSeconds": {"type": ["number", "null"], "minimum": 0}, "segments": {"type": "array", "items": {"type": "object", "required": ["type"], "properties": {"type": {"enum": ["bus", "walk", "transfer"]}, "routeName": {"type": "string"}, "boardStation": {"type": "object", "required": ["name"], "properties": {"name": {"type": "string", "minLength": 1}, "arsId": {"type": ["string", "null"]}}}, "alightStation": {"type": "object", "required": ["name"], "properties": {"name": {"type": "string", "minLength": 1}, "arsId": {"type": ["string", "null"]}}}, "stopCount": {"type": "integer", "minimum": 1}, "toLabel": {"type": "string"}, "distanceMeters": {"type": ["number", "null"], "minimum": 0}, "durationSeconds": {"type": ["number", "null"], "minimum": 0}}}}}},
+    "AnswerQuestionInput": {"type": "object", "required": ["question", "routeDetail"], "properties": {"question": {"type": "string", "minLength": 1, "maxLength": 200}, "routeDetail": {"$ref": "#/$defs/RouteDetailForText"}, "previousAnswer": {"type": "string"}}},
+    "AnswerQuestionOutput": {"type": "object", "required": ["status", "intent", "text"], "properties": {"status": {"enum": ["ok", "unavailable"]}, "intent": {"enum": ["repeat", "stop_count", "which_bus", "how_many", "where_alight", "where_board", "walk", "duration", "unknown", null]}, "text": {"type": ["string", "null"]}}, "additionalProperties": false},
+    "PrintHeadlineInput": {"type": "object", "required": ["routeDetail"], "properties": {"routeDetail": {"$ref": "#/$defs/RouteDetailForText"}}},
+    "PrintHeadlineOutput": {"type": "object", "required": ["status", "text"], "properties": {"status": {"enum": ["ok", "unavailable"]}, "text": {"type": ["string", "null"]}}, "additionalProperties": false}
   }
 }
