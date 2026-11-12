@@ -82,7 +82,8 @@ export function RouteCards({options, selected, busy, simulate, sortByWait, check
   });
   return <div className={s.routeList} role="group" aria-label="이용 가능 경로">{uniqueCards.map(({option, firstArrival}) => {
     const timing = routeTiming(option, simulate);
-    const stops = [option.boardStation, ...(option.transferStations ?? []), option.alightStation].filter(stop => stop != null);
+    const stops = option.boardStation && option.alightStation
+      ? [option.boardStation, ...(option.transferStations ?? []), option.alightStation] : [];
     const arrival = firstArrival?.label ?? (simulate && arrivals ? simulatedArrivalLabel(option.routeOptionId, 0)
       : checkingArrivals ? '도착 정보 확인 중' : '도착 정보 확인 불가');
     return <button key={option.routeOptionId} className={s.comparisonCard} aria-pressed={selected === option.routeOptionId}
@@ -92,10 +93,17 @@ export function RouteCards({options, selected, busy, simulate, sortByWait, check
         action={<span className={s.cardAction}>이 경로 선택하기 <Icon file="d682b.svg" /></span>} />
       {stops.length >= 2 ? <span className={`${s.routeStations} ${stops.length > 2 ? s.routeTransferStations : ''}`}>
         <Icon file={stops.length > 2 ? '51494.svg' : '26246.svg'} className={s.routeStationLine} />
-        {stops.map((stop, index) => <span className={s.routeStation} key={`${stop.stationId}-${index}`}>
-          <Icon file={index === 0 ? '92c82.svg' : 'a8aeb.svg'} />
-          {stationLabel(stop)}
-        </span>)}
+        {stops.map((stop, index) => {
+          const last = index === stops.length - 1;
+          const direction = last ? null : option.directionLabels?.[index];
+          return <span className={s.routeStation} key={`${stop.stationId}-${index}`}>
+            <Icon file={index === 0 ? '92c82.svg' : 'a8aeb.svg'} />
+            <span className={s.routeStationDetails}>
+              <span>{stationLabel(stop)}</span>
+              {direction && <small>{index > 0 ? '환승 · ' : ''}{direction}</small>}
+            </span>
+          </span>;
+        })}
       </span> : <span className={s.routeStationText}>{option.routeNames.length
         ? '정류장은 상세 안내에서 확인해 주세요.' : '현재 정류장에서 목적지까지 도보 이동'}</span>}
     </button>;

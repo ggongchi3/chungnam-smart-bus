@@ -270,7 +270,8 @@ describe('천안 실제 장소 선택', () => {
     if (first.type !== 'bus') throw new Error('버스 테스트 구간이 필요합니다');
     const second = {...first, segmentId:'bus-2', routeId:'route-2', routeName:'2번', boardStation:first.alightStation};
     const option = {...search().routeOptions[0], routeNames:['1번','2번'], transferCount:1,
-      boardStation:first.boardStation, transferStations:[second.boardStation]};
+      boardStation:first.boardStation, transferStations:[second.boardStation], alightStation:second.alightStation,
+      directionLabels:['천안역 방면','병원 방면']};
     const observed: LiveData['arrivals'] = [{
       segmentId:first.segmentId, routeId:first.routeId, boardStationId:first.boardStation.stationId,
       arrivalStatus:'available', etaSeconds:120, expectedArrivalAt:'2026-11-10T04:02:00Z', operationStatus:'unknown',
@@ -290,6 +291,8 @@ describe('천안 실제 장소 선택', () => {
     const card = routeCards()[0];
     expect(api.searchArrivals).toHaveBeenCalledWith('search-1', expect.any(AbortSignal));
     expect(card.textContent).toContain('환승 1회1번2번');
+    expect(card.textContent).toContain('천안역 방면');
+    expect(card.textContent).toContain('환승 · 병원 방면');
     expect(card.textContent).toContain('최근 조회 약 2분 후 도착 예정');
     await act(async () => {card.click();});
     const panel = host.querySelector('[aria-label="선택한 경로"]');

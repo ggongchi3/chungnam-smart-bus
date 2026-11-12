@@ -168,6 +168,8 @@ em { font-style:normal; color:var(--accent); }
 .routeStations { position:relative; display:flex; flex-direction:column; gap:5.463cqw; width:100%; }
 .routeTransferStations { gap:2.778cqw; }
 .routeStation { position:relative; display:flex; align-items:center; gap:1.852cqw; min-height:3.519cqw; }
+.routeStationDetails { display:flex; flex-wrap:wrap; align-items:baseline; column-gap:1.2cqw; }
+.routeStationDetails small { font-size:2.6cqw; font-weight:500; }
 .routeStationLine { position:absolute; left:1.667cqw; top:3.519cqw; width:.185cqw; height:7.5cqw; }
 .routeTransferStations .routeStationLine { height:11.111cqw; }
 .routeStation, .routeStationText { color:var(--sub); font-size:2.963cqw; font-weight:600; word-break:keep-all; overflow-wrap:anywhere; }

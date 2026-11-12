@@ -12,7 +12,7 @@ from backend.main import create_app
 from backend.models import schemas as s
 from backend.models.tables import RouteSearch, Station
 from backend.seed import seed
-from backend.services.cheonan_routing import sort_key
+from backend.services.cheonan_routing import CheonanNetwork, sort_key
 from backend.services.geo import haversine_meters
 from backend.services.places import load_places
 
@@ -130,6 +130,7 @@ def test_all_places_have_real_directed_paths_and_no_synthetic_edges(real_service
                 assert end - start == bus['stopCount'] > 0
                 assert [stop['stationId'] for stop in bus['stops']] == [
                     'cheonan-stop-' + sid for sid in route['stops'][start-1:end]]
+                assert OPPOSITE not in {stop['stationId'] for stop in bus['stops']}
                 assert [stop['sequence'] for stop in bus['stops']] == list(range(start, end + 1))
                 assert bus['directionLabel']
                 for actual, key in [(bus['stops'][0], 'boardStation'), (bus['stops'][-1], 'alightStation')]:
@@ -181,17 +182,17 @@ def test_hospital_uses_the_seven_verified_directions_and_real_distance(real_serv
 
 
 @pytest.mark.parametrize(('mode', 'field'), [('transfers', 'transferCount'), ('distance', 'totalDistanceMeters')])
-def test_soonchunhyang_identical_trips_share_one_path_group(real_service, mode, field):
+def test_medical_center_forward_trips_share_one_path_group(real_service, mode, field):
     _, client, clock = real_service
-    found = search(client, clock, 'cheonan-soonchunhyang-hospital', mode)
+    found = search(client, clock, 'cheonan-medical-center', mode)
     options = found['routeOptions']
     values = [option[field] for option in options]
     assert values == sorted(values, key=lambda value: (value is None, value))
     assert len({option['routeOptionId'] for option in options}) == len(options)
-    shared = [option for option in options if option['routeNames'] in (['72', '16'], ['74', '16'])
-              and option['alightStation']['arsId'] == '71987'
-              and [stop['arsId'] for stop in option['transferStations']] == ['71555']]
-    assert {tuple(option['routeNames']) for option in shared} == {('72', '16'), ('74', '16')}
+    shared = [option for option in options if option['routeNames'] in (['982', '500'], ['982', '512'])
+              and option['alightStation']['arsId'] == '743'
+              and [stop['arsId'] for stop in option['transferStations']] == ['649']]
+    assert {tuple(option['routeNames']) for option in shared} == {('982', '500'), ('982', '512')}
     assert len({option['pathGroupId'] for option in shared}) == 1
     assert len({option['pathGroupId'] for option in options}) > 1
     for option in shared:
@@ -201,6 +202,86 @@ def test_soonchunhyang_identical_trips_share_one_path_group(real_service, mode, 
         detail = response.json()['data']
         assert detail['routeSnapshotVersion'] == option['routeSnapshotVersion']
         assert [leg['routeName'] for leg in detail['segments'] if leg['type'] == 'bus'] == option['routeNames']
+
+
+def test_removes_terminal_loop_and_medical_center_reverse_transfer_in_every_sort(real_service):
+    _, client, clock = real_service
+    for mode in ('transfers', 'distance', 'fastest', 'walking'):
+        # The 72 → 72 round trip in the screenshot leaves 685 and returns to 686.
+        assert not search(client, clock, 'cheonan-bus-terminal', mode)['routeOptions']
+        # The 24 → 24 detour returns through 686 before continuing to the hospital.
+        medical = search(client, clock, 'cheonan-medical-center', mode)['routeOptions']
+        assert ['24', '24'] not in [o['routeNames'] for o in medical]
+        assert any(o['routeNames'] == ['982', '500'] and o['transferStations'][0]['arsId'] == '649' for o in medical)
+        # These routes do not need the opposite terminal stop to be a detour.
+        chungmu = search(client, clock, 'cheonan-chungmu-hospital', mode)['routeOptions']
+        assert any(o['routeNames'] == ['982', '10'] for o in chungmu)
+        assert not any(o['routeNames'][0] in {'72', '121'} for o in chungmu)
+
+
+def test_direct_ride_wins_over_transfer_with_negligible_distance_gain(real_service):
+    _, client, clock = real_service
+    options = search(client, clock, 'cheonan-station', 'distance')['routeOptions']
+    assert options
+    assert all(o['transferCount'] == 0 for o in options)
+    assert options[0]['routeNames'] == ['982']
+    campus = search(client, clock, 'cheonan-dankook-university')['routeOptions']
+    assert campus[0]['transferCount'] == 0
+    assert any(o['transferCount'] == 1 and o['walkingDistanceMeters'] < campus[0]['walkingDistanceMeters'] for o in campus)
+
+
+def test_opposite_side_of_traveled_corridor_is_a_reverse_transfer():
+    # Test only the geographic check. The two sides of the road have
+    # different IDs, and a small turn near the interchange remains valid.
+    positions = {
+        'start': (36.82, 127.150),
+        'earlier': (36.82, 127.156),
+        'earlier-opposite': (36.8203, 127.156),
+        'transfer': (36.82, 127.164),
+        'short-turn': (36.821, 127.163),
+        'end': (36.855, 127.162),
+    }
+    stations = {sid: {'name': sid, 'arsId': sid, 'latitude': lat, 'longitude': lon}
+                for sid, (lat, lon) in positions.items()}
+    start = {key: stations['start'][key] for key in ('latitude', 'longitude')}
+    source = {
+        'origin': {'publicId': 'start', 'stationId': 'cheonan-stop-start', 'name': 'start',
+                   'arsId': 'start', 'coordinates': start},
+        'stations': stations, 'routes': [], 'retrievedAt': datetime.now(timezone.utc).isoformat(),
+    }
+    network = CheonanNetwork(source=source, walks={})
+    first = ('start', 'earlier', 'transfer')
+
+    def remaining(sid):
+        return haversine_meters(stations[sid], stations['end'])
+
+    assert network.makes_forward_progress((first, ('transfer', 'short-turn', 'end')), remaining, 800)
+    assert not network.makes_forward_progress((first, ('transfer', 'earlier-opposite', 'end')), remaining, 800)
+
+
+def test_swapping_direction_uses_the_return_side_and_return_route(real_service):
+    app, _, _ = real_service
+    network = app.state.transport
+    hospital_return, terminal_return = '285000640', '285000686'
+    # Use actual stop-to-stop endpoints so the reverse direction does not
+    # invent a facility access link or change the production kiosk origin.
+    source = {**network.data, 'origin': {
+        'publicId': hospital_return, 'stationId': 'cheonan-stop-' + hospital_return,
+        'name': '단국대학교병원', 'arsId': '640', 'coordinates': network.coordinates(hospital_return),
+    }}
+    walks = {'destinations': {'return-terminal': {'access': [
+        {'stationId': terminal_return, 'distanceMeters': 0, 'durationSeconds': 0},
+    ]}}}
+    return_network = CheonanNetwork(source=source, walks=walks)
+    terminal = s.Destination(destinationId='return-terminal', name='종합터미널', category='terminal',
+                             aliases=[], coordinates=network.coordinates(terminal_return))
+    rows = return_network.destination_candidates(terminal)
+    legs = [segments[0] for _, option, segments in rows if option.routeNames == ['13']]
+    assert len(legs) == 1
+    bus = legs[0]
+    assert bus.routeId == 'cheonan-route-285000010'
+    assert bus.boardStation.arsId == '640' and bus.alightStation.arsId == '686'
+    assert bus.boardSequence < bus.alightSequence
 
 
 def test_four_real_metrics_change_order_and_preserve_detail_ai_and_print(real_service):

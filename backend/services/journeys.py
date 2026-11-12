@@ -93,7 +93,8 @@ def checked_detail(session, search_id, option_id, state, now, data_mode, expecte
     if search.data_mode != data_mode:
         changed()
     if transport is not None and search.origin_station_id == transport.origin['stationId']:
-        return transport.checked_detail(search, option_id, now, expected)
+        destination = catalog.destination(session, search.destination_id)
+        return transport.checked_detail(search, option_id, destination, expected)
     try:
         saved = SavedRouteOption.model_validate(search.snapshot[option_id])
     except (ValidationError, TypeError, ValueError):

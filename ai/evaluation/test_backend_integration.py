@@ -250,16 +250,27 @@ class CheonanConversationTest(unittest.TestCase):
 
     def test_end_to_end_sentences(self):
         allowed = self.cases['destinationSets']['cheonan']
-        for text in ['중앙시장 가는데 많이 안 걷고 싶어요', '갈아타기 싫어요 단국대병원', '성정시장 급해요', '고속터미널 가요']:
+        examples = [
+            ('중앙시장 가는데 많이 안 걷고 싶어요', 'cheonan-central-market', True),
+            ('갈아타기 싫어요 단국대병원', 'cheonan-dankook-hospital', True),
+            ('성정시장 급해요', 'cheonan-seongjeong-market', False),
+            ('고속터미널 가요', 'cheonan-express-terminal', False),
+        ]
+        for text, destination_id, has_route in examples:
             with self.subTest(text=text):
                 understood = self.adapter.understand_request({'text': text, 'dataMode': 'static',
                                                               'allowedDestinations': allowed})
                 self.assertEqual(understood['destination']['status'], 'matched')
+                self.assertEqual(understood['destination']['candidateDestinationIds'], [destination_id])
                 sort = understood['preference']['sort'] or 'transfers'
                 search = self.post('/route-searches', {
-                    'originStationId': self.ORIGIN, 'destinationId': understood['destination']['candidateDestinationIds'][0],
+                    'originStationId': self.ORIGIN, 'destinationId': destination_id,
                     'departAt': datetime.now(timezone.utc).isoformat(), 'sort': sort})
                 self.assertEqual(search['sortedBy'], sort)
+                if not has_route:
+                    self.assertEqual(search['routeOptions'], [])
+                    continue
+                self.assertTrue(search['routeOptions'])
                 option = search['routeOptions'][0]
                 reason = self.adapter.explain_route({'routeOption': option, 'sort': understood['preference']['sort']})
                 self.assertEqual(reason['status'], 'ok', option)
