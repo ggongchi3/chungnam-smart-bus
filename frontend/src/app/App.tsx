@@ -3,9 +3,8 @@ import type { CSSProperties, ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import { api, ApiError, isAbortError } from '../shared/api/client';
 import type { Category, Destination, LiveData, OptionArrivals, RouteDetail, RouteOption, SearchArrivals, SelectionRequest, RouteSort, PlaceSort } from '../shared/api/types';
-import { currentArrival, effectiveFreshness, formatBusLabel, formatDateTime, formatDuration, formatDistance, formatStation, formatTime } from '../shared/api/format';
-import { RouteCards } from '../features/route-search/RouteCards';
-import { RouteMap } from '../features/route-search/RouteMap';
+import { currentArrival, effectiveFreshness, formatBusLabel, formatDuration, formatDistance, formatStation, formatTime } from '../shared/api/format';
+import { RouteCardHeader, RouteCards } from '../features/route-search/RouteCards';
 import { useVoiceGuide } from '../features/voice-guide/useVoiceGuide';
 import { speechTexts } from '../features/voice-guide/speechText';
 import { PrintDocument } from '../features/print-guide/PrintDocument';
@@ -32,30 +31,27 @@ function Progress({ step }: { step: number }) {
 function Heading({ title, subtitle }: { title: ReactNode; subtitle: ReactNode }) {
   return <div className={s.heading}><h1 tabIndex={-1}>{title}</h1><p>{subtitle}</p></div>;
 }
-function LiveInfo({ live, cached, retry, verified, detail }: {
+function SelectedRoute({ live, cached, retry, verified, detail }: {
   live: LiveData | null; cached?: OptionArrivals; retry: () => void; verified: boolean; detail: RouteDetail;
 }) {
   const {dataMode, liveChecked} = useContext(StateContext);
   const simulate = prototypeEnabled(dataMode);
-  if (!verified) return null;
   const buses = detail.segments.filter(segment => segment.type === 'bus');
   const matchingCache = cached?.routeSnapshotVersion === detail.routeSnapshotVersion ? cached : undefined;
   const arrivals = live?.arrivals ?? matchingCache?.arrivals ?? [];
-  const rows = buses.map(bus => ({bus, arrival:currentArrival(arrivals.find(value =>
-    value.segmentId === bus.segmentId && value.routeId === bus.routeId && value.boardStationId === bus.boardStation.stationId))}));
+  const first = buses[0];
+  const arrival = first && verified ? currentArrival(arrivals.find(value =>
+    value.segmentId === first.segmentId && value.routeId === first.routeId && value.boardStationId === first.boardStation.stationId)) : null;
+  const arrivalText = !first || !verified ? undefined : arrival?.label ?? (!liveChecked && !matchingCache ? '도착 정보 확인 중'
+    : simulate ? simulatedArrivalLabel(detail.routeOptionId, 0) : '도착 정보 확인 불가');
   const changes = live?.serviceChanges.items.filter(change => effectiveFreshness(change.dataQuality) === 'fresh') ?? [];
-  if (!buses.length && !changes.length) return null;
-  return <section className={s.live} aria-label="도착·운행 정보">
-    <h2>버스 도착 안내</h2>
-    {rows.map(({bus, arrival}, index) => <div key={bus.segmentId} className={s.arrival}>
-      <p>{bus.routeName} · {formatStation(bus.boardStation)}</p>
-      <strong>{arrival?.label ?? (!liveChecked && !matchingCache ? '도착 정보 확인 중'
-        : simulate ? simulatedArrivalLabel(detail.routeOptionId, index) : '도착 정보 확인 불가')}</strong>
-      {arrival?.queriedAt && <p>조회 {formatTime(arrival.queriedAt)}</p>}
-    </div>)}
-    {rows.slice(1).some(row => row.arrival) && <p>환승 버스의 도착 예정은 환승 정류장의 현재 조회 기준이에요.</p>}
-    {changes.map(change => <div key={change.changeId}><strong>{change.title}</strong><p>{change.description}</p></div>)}
-    <button onClick={retry}>새로고침</button>
+  const duration = detail.estimatedTravelSeconds ?? null;
+  return <section className={s.selectedRoute} aria-label="선택한 경로">
+    <RouteCardHeader names={buses.map(bus => bus.routeName)} transferCount={Math.max(0, buses.length - 1)}
+      duration={duration} arrival={arrivalText} action={verified && first && <button className={s.refreshRoute} onClick={retry}>
+        <Asset file="fcc0c.svg" className={s.refreshIcon} />새로고침
+      </button>} />
+    {changes.map(change => <div key={change.changeId} className={s.serviceChange}><strong>{change.title}</strong><p>{change.description}</p></div>)}
   </section>;
 }
 function Summary() {
@@ -72,58 +68,58 @@ function Summary() {
         <strong>{state.destination?.name}</strong>
       </div>
     </div>
-    {state.destination && <PlaceDetails destination={state.destination} />}
   </div>;
 }
 function JourneySteps({ detail, high }: { detail: RouteDetail; high: boolean }) {
   const busIcon = high ? '31cc0.svg' : '322d1.svg';
   const pinIcon = high ? 'bd9ef.svg' : 'e6b90.svg';
   const transfers = detail.segments.filter(segment => segment.type === 'transfer');
+  let step = 0;
   return <section className={s.journey}>
-    <h2>이동 순서</h2>
-    {detail.dataSource === 'cheonan-bis-static' && <p className={s.journeyFacts}>
-      <strong>예상 이동시간 {formatDuration(detail.estimatedTravelSeconds)}</strong> · 대기시간 제외
-      {transfers.length ? ` · 환승 ${transfers.length}회` : ' · 환승 없음'}
-    </p>}
+    <h2>경로 안내</h2>
     <ol className={s.journeyList} role="list" aria-label="이동 단계">
-      {detail.segments.filter(segment => segment.type !== 'transfer').map((segment, index) => (
-        <li className={s.journeyStep} key={segment.segmentId}>
-          <div className={s.journeyEvent}>
-            <span className={s.stepIcon} aria-hidden="true">
-              <Asset file={segment.type === 'bus' ? busIcon : pinIcon} className={s.stepArt} />
-              <span className={s.stepNumber}>{index + 1}</span>
-            </span>
-            <div>
-              {segment.type === 'bus' && <>
-                <h3>{formatBusLabel(segment.routeName)}</h3>
-                {segment.directionLabel && <p>운행 방향 <strong>{segment.directionLabel}</strong></p>}
-                <p>{transfers.some(transfer => transfer.toSegmentId === segment.segmentId) ? '갈아타는 곳' : '타는 곳'} <strong>{formatStation(segment.boardStation)}</strong></p>
-              </>}
-              {segment.type === 'walk' && <>
-                <h3>{segment.toLabel}까지 걸어가세요</h3>
-                {(segment.distanceMeters !== null || segment.durationSeconds !== null) && <p>{[
-                  segment.distanceMeters !== null ? `도보 ${formatDistance(segment.distanceMeters)}` : null,
-                  segment.durationSeconds !== null ? `약 ${formatDuration(segment.durationSeconds)}` : null,
-                ].filter(Boolean).join(' · ')}</p>}
-              </>}
-            </div>
-          </div>
-          {segment.type === 'bus' && <>
-            {segment.stops?.length ? <details className={s.rideCount}>
-              <summary>{segment.stopCount}개 정류장 이동 · 정차 순서 보기</summary>
-              <ol className={s.orderedStops} aria-label={`${formatBusLabel(segment.routeName)} 정차 순서`}>
-                {segment.stops.map(stop => <li key={stop.sequence}>
-                  {formatStation(stop)}{stop.sequence === segment.boardSequence ? ' · 승차' : stop.sequence === segment.alightSequence ? ' · 하차' : ''}
-                </li>)}
-              </ol>
-            </details> : <p className={s.rideCount}>{segment.stopCount}개 정류장 이동</p>}
+      {detail.segments.filter(segment => segment.type !== 'transfer').map(segment => {
+        const boardStep = ++step;
+        const alightStep = segment.type === 'bus' ? ++step : undefined;
+        const transfer = transfers.some(item => item.toSegmentId === segment.segmentId);
+        return (
+          <li className={s.journeyStep} key={segment.segmentId}>
             <div className={s.journeyEvent}>
-              <span className={s.stepIcon}><Asset file={pinIcon} className={s.stepArt} /></span>
-              <div><h3>{formatStation(segment.alightStation)}</h3><p>내리는 곳</p></div>
+              <span className={s.stepIcon} aria-hidden="true">
+                <Asset file={segment.type === 'bus' ? busIcon : pinIcon} className={s.stepArt} />
+                <span className={s.stepNumber}>{boardStep}</span>
+              </span>
+              <div>
+                {segment.type === 'bus' && <>
+                  <h3>{formatBusLabel(segment.routeName).replace(/ 버스$/, '')} {transfer ? formatStation(segment.boardStation) : segment.boardStation.name} 승차</h3>
+                  {segment.directionLabel && <p className={s.direction}>운행 방향 <strong>{segment.directionLabel}</strong></p>}
+                </>}
+                {segment.type === 'walk' && <>
+                  <h3>{segment.toLabel}까지 걸어가세요</h3>
+                  {(segment.distanceMeters !== null || segment.durationSeconds !== null) && <p>{[
+                    segment.distanceMeters !== null ? `도보 ${formatDistance(segment.distanceMeters)}` : null,
+                    segment.durationSeconds !== null ? `약 ${formatDuration(segment.durationSeconds)}` : null,
+                  ].filter(Boolean).join(' · ')}</p>}
+                </>}
+              </div>
             </div>
-          </>}
-        </li>
-      ))}
+            {segment.type === 'bus' && <>
+              {segment.stops?.length ? <details className={s.rideCount}>
+                <summary><span>{segment.stopCount}개 정류장 이동</span><span className={s.stopOrderButton}>정차 순서 보기</span></summary>
+                <ol className={s.orderedStops} aria-label={`${formatBusLabel(segment.routeName)} 정차 순서`}>
+                  {segment.stops.map(stop => <li key={stop.sequence}>
+                    {formatStation(stop)}{stop.sequence === segment.boardSequence ? ' · 승차' : stop.sequence === segment.alightSequence ? ' · 하차' : ''}
+                  </li>)}
+                </ol>
+              </details> : <p className={s.rideCount}>{segment.stopCount}개 정류장 이동</p>}
+              <div className={s.journeyEvent}>
+                <span className={s.stepIcon} aria-hidden="true"><Asset file={pinIcon} className={s.stepArt} /><span className={s.stepNumber}>{alightStep}</span></span>
+                <div><h3>{formatStation(segment.alightStation)} 하차</h3><p>내리는 곳</p></div>
+              </div>
+            </>}
+          </li>
+        );
+      })}
     </ol>
   </section>;
 }
@@ -131,6 +127,7 @@ function selection(detail: RouteDetail): SelectionRequest {
   return { routeSearchId: detail.routeSearchId, routeOptionId: detail.routeOptionId, expectedRouteSnapshotVersion: detail.routeSnapshotVersion };
 }
 const categoryNames: Record<Category, string> = { hospital: '병원', market: '시장', terminal: '터미널', station: '역', other: '기타' };
+type RouteOrder = Extract<RouteSort, 'transfers' | 'distance'> | 'waiting';
 
 export function App() {
   usePressFeedback();
@@ -141,7 +138,7 @@ export function App() {
   const [idle, setIdle] = useState<number | null>(null);
   const [doneSeconds, setDoneSeconds] = useState(30);
   const [showVoice, setShowVoice] = useState(false);
-  const [sort, setSort] = useState<RouteSort>('transfers');
+  const [sort, setSort] = useState<RouteOrder>('transfers');
   const [placeSort, setPlaceSort] = useState<PlaceSort>('walking');
   const [searchArrivals, setSearchArrivals] = useState<SearchArrivals | null>(null);
   const shell = useRef<HTMLDivElement>(null);
@@ -276,10 +273,10 @@ export function App() {
       if (!signal.aborted) patch({ results:prepareDestinations(results, ordering, prototypeEnabled(list.meta.dataMode)), resultTitle: `“${query.trim()}”`, screen: 'results', dataMode: list.meta.dataMode });
     });
   }
-  function findRoutes(destination: Destination, ordering: RouteSort = 'transfers') {
+  function findRoutes(destination: Destination, ordering: RouteOrder = 'transfers') {
     patch({destination, selectedRouteOptionId:null, search:null, detail:null, live:null, guidance:null, print:null});
     setSort(ordering);
-    void run(async signal => { const r = await api.search(ORIGIN_STATION_ID, destination.destinationId, signal, ordering); if (!signal.aborted) { patch({ destination, search: r.data, detail: null, live: null, guidance: null, print: null, screen: 'routes', dataMode: r.meta.dataMode }); } });
+    void run(async signal => { const r = await api.search(ORIGIN_STATION_ID, destination.destinationId, signal, ordering === 'waiting' ? 'transfers' : ordering); if (!signal.aborted) { patch({ destination, search: r.data, detail: null, live: null, guidance: null, print: null, screen: 'routes', dataMode: r.meta.dataMode }); } });
   }
   function chooseRoute(option: RouteOption) {
     if (!state.search) return;
@@ -314,7 +311,7 @@ export function App() {
   const noResults = state.screen === 'results' && !state.results.length;
   const noRoutes = state.screen === 'routes' && !state.busy && !state.search?.routeOptions.length;
   const printPending = state.screen === 'print' && state.busy;
-  const step = state.screen === 'routes' || state.screen === 'detail' ? 1 : state.screen === 'print' ? 3 : 0;
+  const step = state.screen === 'routes' ? 1 : state.screen === 'detail' ? 2 : state.screen === 'print' ? 3 : 0;
   const topBack = state.screen === 'keyboard' || (state.screen === 'print' && !printPending)
     || (state.screen === 'results' && !noResults && state.selectedCategory !== null)
     || (state.screen === 'routes' && !noRoutes);
@@ -323,7 +320,7 @@ export function App() {
     results: noResults ? s.emptyResults : state.selectedCategory ? '' : s.searchResults,
     routes: '', detail: s.detailScreen, print: s.printScreen, done: s.done,
   }[state.screen];
-  const screenSpeech: Record<State['screen'], string> = { home: '현재 정류장에서 목적지까지 가는 버스를 찾아드려요. 목적지 찾기 버튼을 눌러 주세요.', destinations: '어디로 가시나요? 검색하거나 목록에서 목적지를 선택해 주세요.', keyboard: '장소를 입력한 뒤 검색하기를 눌러 주세요.', results: `${state.resultTitle}. 검색 결과 ${state.results.length}건. 찾으시는 장소를 선택해 주세요.`, routes: `이용 가능한 경로 ${state.search?.routeOptions.length ?? 0}개. 이동할 경로를 선택해 주세요.`, detail: '타는 버스와 내리는 정류장을 확인해 주세요.', print: '종이 안내표를 출력해 드릴까요? 인쇄하기 버튼을 눌러 주세요.', done: '안내표를 확인해 주세요. 다시 인쇄하려면 계속 이용하기를 눌러 주세요.' };
+  const screenSpeech: Record<State['screen'], string> = { home: '현재 정류장에서 목적지까지 가는 버스를 찾아드려요. 목적지 찾기 버튼을 눌러 주세요.', destinations: '어디로 가시나요? 검색하거나 목록에서 목적지를 선택해 주세요.', keyboard: '장소를 입력한 뒤 검색하기를 눌러 주세요.', results: `${state.resultTitle}. 검색 결과 ${state.results.length}건. 찾으시는 장소를 선택해 주세요.`, routes: `이용 가능한 경로 ${state.search?.routeOptions.length ?? 0}개. 이동할 경로를 선택해 주세요.`, detail: '선택한 경로를 확인해 주세요. 아래 경로로 이동하시겠어요?', print: '종이 안내표를 출력해 드릴까요? 출력하기 버튼을 눌러 주세요.', done: '안내표를 확인해 주세요. 다시 인쇄하려면 계속 이용하기를 눌러 주세요.' };
   const spokenText = ['detail', 'print', 'done'].includes(state.screen) && state.detail && state.guidance
     ? speechTexts(state.guidance, state.detail).join(' ') : screenSpeech[state.screen];
   const sortedResults = state.results;
@@ -332,7 +329,6 @@ export function App() {
   const optionArrivals = searchArrivals?.routeSearchId === state.search?.routeSearchId ? searchArrivals?.options : undefined;
   const originName = state.station?.name ?? ORIGIN_NAME;
   const originCode = !state.station || state.station.stationId === ORIGIN_STATION_ID ? ORIGIN_PUBLIC_CODE : null;
-  const routeOrigin = originCode ? `${originName} ${originCode}` : originName;
 
   function toggleVoice() {
     setShowVoice(true);
@@ -403,7 +399,7 @@ export function App() {
           <div className={s.empty}>
             <img src="/assets/a3ca0.png" alt="회색 버스" />
             <p>{state.search ? '이용할 수 있는 경로를 찾지 못했어요.' : '경로를 다시 검색해 주세요.'}</p>
-            {state.destination && <PlaceDetails destination={state.destination} />}
+            {state.destination && <p aria-label="선택한 장소">{state.destination.name}</p>}
             <div className={s.actions}>
               <Primary secondary onClick={() => go(state.results.length ? 'results' : 'destinations')}>이전</Primary>
               <Primary disabled={!state.destination || state.busy} onClick={() => state.destination && findRoutes(state.destination, sort)}>경로 다시 검색</Primary>
@@ -415,26 +411,22 @@ export function App() {
           <div className={s.listHeading}>
             <span>이용 가능 경로</span>
             <span className={s.routeSort} aria-label="경로 정렬">
-              {([['fastest', '이동시간순 · 대기 제외'], ['transfers', '최소 환승'], ['walking', '최소 도보'], ['distance', '최단 거리']] as const).map(([value, label]) =>
+              {([['transfers', '최소 환승'], ['waiting', '최소 대기'], ['distance', '최단 거리']] as const).map(([value, label]) =>
                 <button key={value} className={s.chip} aria-pressed={sort === value} disabled={state.busy}
-                  onClick={() => state.destination && findRoutes(state.destination, value)}>{label}</button>)}
+                  title={value === 'waiting' ? '첫 버스 도착 예정 순' : undefined}
+                  onClick={() => value === 'waiting' ? setSort(value) : state.destination && findRoutes(state.destination, value)}>{label}</button>)}
             </span>
           </div>
-          <RouteCards options={options} destination={state.destination?.name ?? ''} selected={state.selectedRouteOptionId}
-            busy={state.busy} simulate={prototypeEnabled(state.dataMode)} arrivals={optionArrivals} onChoose={chooseRoute} />
+          <RouteCards options={options} selected={state.selectedRouteOptionId} busy={state.busy}
+            simulate={prototypeEnabled(state.dataMode)} sortByWait={sort === 'waiting'} now={Date.now()}
+            checkingArrivals={state.dataMode === 'static' && !optionArrivals} arrivals={optionArrivals} onChoose={chooseRoute} />
         </>)}
         {state.screen === 'detail' && state.detail && <>
-          <Heading title="이렇게 이동하세요" subtitle="타는 버스와 내리는 정류장을 확인해 주세요." />
+          <Heading title="선택한 경로를 확인해 주세요." subtitle="아래 경로로 이동하시겠어요?" />
           <div className={s.detailBody} tabIndex={0} role="region" aria-label="경로 안내">
-            <div className={s.detailSummary} role="group" aria-label="출발 정류장과 목적지">
-              <strong>{originName}</strong>
-              <Asset file={high ? '4a54e.svg' : 'ad3c1.svg'} className={s.arrow} />
-              <strong>{state.destination?.name}</strong>
-            </div>
-            <JourneySteps detail={state.detail} high={high} />
-            <RouteMap detail={state.detail} />
-            <LiveInfo detail={state.detail} live={state.live} cached={optionArrivals?.[state.detail.routeOptionId]}
+            <SelectedRoute detail={state.detail} live={state.live} cached={optionArrivals?.[state.detail.routeOptionId]}
               verified={state.dataMode === 'live' || state.dataMode === 'static'} retry={() => void refreshLive()} />
+            <JourneySteps detail={state.detail} high={high} />
           </div>
           <div className={s.actions}>
             <Primary secondary onClick={() => go('routes')}>이전</Primary>
@@ -449,12 +441,11 @@ export function App() {
           <Heading title="종이 안내표를 출력해 드릴까요?" subtitle={<>타는 버스와 내리는 정류장을<br />종이로 확인할 수 있어요.</>} />
           <div className={s.printerArt}><img src="/assets/7144f.png" alt="안내표를 출력하는 키오스크" /></div>
           <div className={s.printSummary}>
-            <strong>{routeOrigin} → {state.destination?.name}</strong>
-            <p>인쇄 시각 {formatDateTime(state.print.generatedAt)}</p>
+            <span>{originName}</span><Asset file="4c4ca.svg" className={s.printDash} /><span>{state.destination?.name}</span>
           </div>
           <div className={s.actions}>
-            <Primary secondary onClick={() => go('detail')}>인쇄 안 함</Primary>
-            <Primary disabled={state.busy} onClick={printNow}>인쇄하기</Primary>
+            <Primary secondary onClick={() => go('detail')}>괜찮아요</Primary>
+            <Primary disabled={state.busy} onClick={printNow}>출력하기</Primary>
           </div>
         </>}
         {state.screen === 'done' && <>
@@ -478,8 +469,4 @@ function IdleDialog({ count, resume, end }: { count: number; resume: () => void;
   const dialog = useRef<HTMLDivElement>(null);
   useEffect(() => { const previous = document.activeElement as HTMLElement; dialog.current?.querySelector('button')?.focus(); return () => previous?.focus(); }, []);
   return <div className={s.overlay}><div ref={dialog} className={s.dialog} role="dialog" aria-modal="true" aria-labelledby="idle-title" onKeyDown={e => { if (e.key === 'Escape') resume(); if (e.key === 'Tab') { const buttons = dialog.current?.querySelectorAll('button'); if (buttons && ((e.shiftKey && document.activeElement === buttons[0]) || (!e.shiftKey && document.activeElement === buttons[1]))) { e.preventDefault(); buttons[e.shiftKey ? 1 : 0].focus(); } } }}><h2 id="idle-title">곧 처음 화면으로 돌아가요</h2><p>움직임이 없어서 종료될 예정이에요.<br />계속 이용하시겠어요?</p><img src="/assets/b49ad.png" alt="시계" /><p><em>{count}</em>초 후 처음으로 돌아가요</p><Primary onClick={resume}>계속 이용하기</Primary><Primary secondary onClick={end}>종료하기</Primary></div></div>;
-}
-
-function PlaceDetails({destination}:{destination:Destination}) {
-  return <section className={s.placeDetails} aria-label="선택한 장소"><p className={s.selectionLabel}>선택한 장소</p><h2>{destination.name}</h2>{destination.address && <p>{destination.address}</p>}{destination.locationNote && <p>{destination.locationNote}</p>}</section>;
 }

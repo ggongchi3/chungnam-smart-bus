@@ -67,14 +67,14 @@ export function currentArrival(arrival: Arrival | undefined, now = Date.now()) {
     && freshness !== 'stale' && age >= 0 && age < 90_000;
   const queriedAt = arrival.dataQuality.fetchedAt;
   if (arrival.operationStatus === 'not_running') {
-    return freshness === 'fresh' ? {label:'운행하지 않아요', queriedAt} : null;
+    return freshness === 'fresh' ? {label:'운행하지 않아요', queriedAt, waitSeconds:null} : null;
   }
   if (arrival.arrivalStatus !== 'available' || arrival.etaSeconds == null || (freshness !== 'fresh' && !recentQuery)) return null;
   const expected = parsed(arrival.expectedArrivalAt);
   const seconds = expected ? (expected.getTime() - now) / 1000 : arrival.etaSeconds;
   if (seconds < 0 && arrival.etaSeconds !== 0) return null;
   const timeLabel = seconds <= 0 ? '곧 도착 예정' : `약 ${formatDuration(seconds)} 후 도착 예정`;
-  return {label: freshness === 'fresh' ? timeLabel : `최근 조회 ${timeLabel}`, queriedAt};
+  return {label: freshness === 'fresh' ? timeLabel : `최근 조회 ${timeLabel}`, queriedAt, waitSeconds:Math.max(0, seconds)};
 }
 export function formatStation(station: StationRef): string {
   return station.arsId ? `${station.name} (${station.arsId}번)` : station.name;

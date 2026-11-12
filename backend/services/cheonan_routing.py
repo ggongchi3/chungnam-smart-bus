@@ -135,7 +135,7 @@ class CheonanNetwork:
                 raise ValueError('A published route references an unknown stop')
             for index, sid in enumerate(route['stops']):
                 self.occurrences[sid].append((route['routeId'], index))
-        self.revision = digest(['directed-stops-v3', self.data, self.walks])
+        self.revision = digest(['directed-stops-v4', self.data, self.walks])
         self.retrieved = datetime.fromisoformat(self.data['retrievedAt'])
         self._positions = {}
 
@@ -258,6 +258,7 @@ class CheonanNetwork:
         for path in paths:
             legs, access, _ = path
             family = tuple(rid for rid, _, _ in legs)
+            stop_sequences = tuple(tuple(self.routes[rid]['stops'][board:alight+1]) for rid, board, alight in legs)
             buses = [self.bus(rid, board, alight, 'bus') for rid, board, alight in legs]
             walking = access['distanceMeters']
             walk_time = access['durationSeconds']
@@ -275,20 +276,25 @@ class CheonanNetwork:
             for mode in SORTS:
                 key = ranking_key(metrics, mode, identity)
                 if family not in best[mode] or key < best[mode][family][0]:
-                    best[mode][family] = (key, path)
+                    best[mode][family] = (key, path, stop_sequences)
         shortlist = {}
         for ranked in best.values():
-            for _, path in sorted(ranked.values(), key=lambda value: value[0])[:3]:
-                legs, access, _ = path
-                shortlist[digest([legs, access])] = path
+            ordered = sorted(ranked.values(), key=lambda value: value[0])
+            groups = {}
+            for row in ordered:
+                groups.setdefault(row[2], []).append(row)
+            # An identical boarding-to-alighting sequence consumes one place
+            # in the shortlist. Keep its bus variants for arrival comparison.
+            for variants in list(groups.values())[:3]:
+                for key, path, stop_sequences in variants:
+                    shortlist[key[-1]] = (path, stop_sequences)
         # A direct line is a useful alternative when the user is waiting at the
         # kiosk, even if several other lines have similar movement estimates.
         direct = (value for family, value in best['transfers'].items() if len(family) == 1)
-        for _, path in sorted(direct, key=lambda value: value[0])[:MAX_OPTIONS]:
-            legs, access, _ = path
-            shortlist[digest([legs, access])] = path
+        for key, path, stop_sequences in sorted(direct, key=lambda value: value[0])[:MAX_OPTIONS]:
+            shortlist[key[-1]] = (path, stop_sequences)
         candidates = []
-        for legs, access, transfer in shortlist.values():
+        for option_id, ((legs, access, transfer), stop_sequences) in shortlist.items():
             segments = []
             for index, (rid, board, alight) in enumerate(legs):
                 identity = f'bus-{index+1}'
@@ -302,8 +308,8 @@ class CheonanNetwork:
                 toLabel=destination_name, distanceMeters=access['distanceMeters'], durationSeconds=access['durationSeconds']))
             buses = [p for p in segments if p.type == 'bus']
             walks = [p for p in segments if p.type == 'walk']
-            identity = 'cheonan-option-' + digest([legs, access])
-            option = s.RouteOption(routeOptionId=identity, routeSnapshotVersion='cheonan-v-' + digest([self.revision, [p.model_dump(mode='json') for p in segments]]),
+            option = s.RouteOption(routeOptionId=option_id, routeSnapshotVersion='cheonan-v-' + digest([self.revision, [p.model_dump(mode='json') for p in segments]]),
+                pathGroupId='cheonan-path-' + digest(stop_sequences),
                 journeyStatus='ready', routeNames=[p.routeName for p in buses], directionLabels=[p.directionLabel for p in buses],
                 transferCount=max(0,len(legs)-1),
                 totalDurationSeconds=None, walkingDurationSeconds=total([p.durationSeconds for p in walks]),
@@ -323,33 +329,23 @@ class CheonanNetwork:
         if abs((request.departAt - now).total_seconds()) > 120:
             raise ServiceError(400, 'INVALID_REQUEST', '현재 시각에서 120초 이내의 출발 시각을 입력해 주세요.')
         all_candidates = self.candidates(destination.destinationId, destination.name)
-        # Keep the best distinct families for every supported criterion before
-        # applying the requested order; never truncate to an old top-three first.
-        selected = {}
         minima = {mode: min((option_metrics(option)[mode] for _, option, _ in all_candidates
                     if option_metrics(option)[mode] is not None), default=None) for mode in SORTS}
-        for mode in SORTS:
-            families = set()
-            for family, option, segments in sorted(all_candidates, key=lambda row: sort_key(row[1], mode)):
-                if family in families:
-                    continue
-                families.add(family)
-                selected[option.routeOptionId] = (family, option, segments)
-                if len(families) == 3:
-                    break
-        selected_families = {family for family, _, _ in selected.values()}
+        groups, families = set(), set()
+        representatives, variants = [], []
         for family, option, segments in sorted(all_candidates, key=lambda row: sort_key(row[1], request.sort)):
-            if len(selected_families) >= MAX_OPTIONS:
-                break
-            if len(family) == 1 and family not in selected_families:
-                selected[option.routeOptionId] = (family, option, segments)
-                selected_families.add(family)
-        # Display one option per family in this order, capped at twelve.
-        values, families = [], set()
-        for family, option, segments in sorted(selected.values(), key=lambda row: sort_key(row[1], request.sort)):
             if family in families:
                 continue
             families.add(family)
+            if option.pathGroupId in groups:
+                variants.append((option, segments))
+            else:
+                groups.add(option.pathGroupId)
+                representatives.append((option, segments))
+        # Give different paths space before adding equivalent bus variants.
+        selected = (representatives + variants)[:MAX_OPTIONS]
+        values = []
+        for option, segments in sorted(selected, key=lambda row: sort_key(row[0], request.sort)):
             features = {'fastest': '최소 이동시간 · 대기 제외', 'transfers': '최소 환승', 'walking': '최소 도보', 'distance': '최단 이동거리'}
             metrics = option_metrics(option)
             option = option.model_copy(update={'features': [features[mode] for mode in SORTS

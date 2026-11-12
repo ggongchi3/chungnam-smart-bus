@@ -1,72 +1,103 @@
-import type { OptionArrivals, RouteOption } from '../../shared/api/types';
-import { currentArrival, formatBusLabel, formatDistance, formatDuration, formatStation } from '../../shared/api/format';
+import { Fragment, type ReactNode } from 'react';
+import type { OptionArrivals, RouteOption, StationRef } from '../../shared/api/types';
+import { currentArrival, formatBusLabel, formatDuration } from '../../shared/api/format';
 import { routeTiming, simulatedArrivalLabel } from '../../shared/prototypeTiming';
-import styles from '../../app/App.module.css';
+import s from '../../app/App.module.css';
 
 interface Props {
   options: RouteOption[];
-  destination: string;
   selected: string | null;
   busy: boolean;
-  simulate?: boolean;
+  simulate: boolean;
+  sortByWait: boolean;
+  checkingArrivals: boolean;
+  now: number;
   arrivals?: Record<string, OptionArrivals>;
   onChoose: (option: RouteOption) => void;
 }
 
-function RouteOverview({ destination, timing }: {
-  destination: string; timing: ReturnType<typeof routeTiming>;
+function Icon({file, className = ''}: {file: string; className?: string}) {
+  return <span className={`${s.asset} ${s.cardIcon} ${className}`} aria-hidden="true"><img src={`/assets/${file}`} alt="" /></span>;
+}
+
+export function RouteCardHeader({names, transferCount, duration, arrival, action}: {
+  names: string[]; transferCount: number; duration: number | null; arrival?: string; action: ReactNode;
 }) {
-  const duration = timing.total ?? timing.movement;
-  const durationLabel = timing.total != null ? (timing.simulated ? '총시간 시연' : '총 예상시간') : '이동 추정';
-  return <span className={styles.routeOverview}>
-    <span className={styles.routeDestination}><small>목적지</small><strong>{destination}</strong></span>
-    <span className={styles.routeDuration}><small>{durationLabel}</small>{formatDuration(duration)}</span>
+  return <span className={s.routeCardHeader}>
+    <span className={s.routeCardInfo}>
+      <span className={s.routeLine}>
+        <span className={s.routeKind}>{names.length ? (transferCount ? `환승 ${transferCount}회` : '직행') : '도보'}</span>
+        {names.map((name, index) => <Fragment key={index}>
+          {index > 0 && <Icon file="3aff1.svg" className={s.routeBusArrow} />}
+          <strong>{formatBusLabel(name).replace(/ 버스$/, '')}</strong>
+        </Fragment>)}
+      </span>
+      <span className={s.routeTimes}>
+        <strong aria-label={`예상 이동시간 ${formatDuration(duration)}`}>{duration == null ? '이동시간 확인 불가' : `약 ${formatDuration(duration)}`}</strong>
+        {arrival && <span>{arrival}</span>}
+      </span>
+    </span>
+    {action}
   </span>;
 }
 
-export function RouteCards({options, destination, selected, busy, simulate = false, arrivals, onChoose}: Props) {
-  return <div className={styles.routeList} role="group" aria-label="이용 가능 경로">{options.map(option => {
-    const timing = routeTiming(option, simulate);
+function stationLabel(station: StationRef) {
+  return station.arsId ? `${station.name} ${station.arsId}` : station.name;
+}
+
+function visibleRoute(option: RouteOption) {
+  if (!option.boardStation || !option.alightStation) return null;
+  return JSON.stringify([
+    option.routeNames.map(formatBusLabel),
+    option.boardStation.stationId,
+    (option.transferStations ?? []).map(stop => stop.stationId),
+    option.alightStation.stationId,
+  ]);
+}
+
+export function RouteCards({options, selected, busy, simulate, sortByWait, checkingArrivals, now, arrivals, onChoose}: Props) {
+  const cards = options.map(option => {
     const snapshot = arrivals?.[option.routeOptionId];
-    const boardings = snapshot?.routeSnapshotVersion === option.routeSnapshotVersion
-      && snapshot.arrivals.length === option.routeNames.length ? snapshot.arrivals : [];
-    return <button key={option.routeOptionId} className={styles.comparisonCard} aria-pressed={selected === option.routeOptionId}
+    const boarding = snapshot?.arrivals[0];
+    const firstArrival = snapshot?.routeSnapshotVersion === option.routeSnapshotVersion
+      && snapshot.arrivals.length === option.routeNames.length
+      && (!option.boardStation || boarding?.boardStationId === option.boardStation.stationId)
+      ? currentArrival(boarding, now) : null;
+    return {option, firstArrival, wait: firstArrival?.waitSeconds ?? Infinity};
+  });
+  if (sortByWait) cards.sort((a, b) => a.wait === b.wait ? 0 : a.wait - b.wait);
+  const groups = new Map<string, typeof cards>();
+  for (const card of cards) {
+    const group = card.option.pathGroupId ?? card.option.routeOptionId;
+    const variants = groups.get(group);
+    if (variants) variants.push(card);
+    else groups.set(group, [card]);
+  }
+  const shownRoutes = new Set<string>();
+  const uniqueCards = Array.from(groups.values()).flatMap(variants => {
+    const labels = variants.map(({option}) => visibleRoute(option)).filter(label => label !== null);
+    if (labels.some(label => shownRoutes.has(label))) return [];
+    for (const label of labels) shownRoutes.add(label);
+    return [variants[0]];
+  });
+  return <div className={s.routeList} role="group" aria-label="이용 가능 경로">{uniqueCards.map(({option, firstArrival}) => {
+    const timing = routeTiming(option, simulate);
+    const stops = [option.boardStation, ...(option.transferStations ?? []), option.alightStation].filter(stop => stop != null);
+    const arrival = firstArrival?.label ?? (simulate && arrivals ? simulatedArrivalLabel(option.routeOptionId, 0)
+      : checkingArrivals ? '도착 정보 확인 중' : '도착 정보 확인 불가');
+    return <button key={option.routeOptionId} className={s.comparisonCard} aria-pressed={selected === option.routeOptionId}
       disabled={busy || option.journeyStatus !== 'ready'} onClick={() => onChoose(option)}>
-      <RouteOverview destination={destination} timing={timing} />
-      <span className={styles.routeBadges}>
-        {option.features?.map(label => <span key={label}>{label}</span>)}
-        {timing.simulated && <span>총시간·대기 시연</span>}
-      </span>
-      <span className={styles.routeStopsGroup}>
-        {!option.routeNames.length ? <span className={styles.routeStops}>현재 정류장에서 목적지까지 도보 이동</span> : <>
-          {option.boardStation && <span className={styles.routeStops}>타는 곳 <b>{formatStation(option.boardStation)}</b></span>}
-          {!!option.transferStations?.length && <span className={styles.routeStops}>갈아타는 곳 <b>{option.transferStations.map(formatStation).join(' → ')}</b></span>}
-          {option.alightStation && <span className={styles.routeStops}>내리는 곳 <b>{formatStation(option.alightStation)}</b></span>}
-          {(!option.boardStation || !option.alightStation) && <span className={styles.routeStops}>정류장은 상세 안내에서 확인해 주세요.</span>}
-        </>}
-      </span>
-      <span className={styles.routeMetrics}>
-        {timing.total != null && <span>총 예상시간 <b>{formatDuration(timing.total)}</b></span>}
-        <span>이동 추정 · 대기 제외 <b>{formatDuration(timing.movement)}</b></span>
-        <span>예상 대기시간 <b>{!option.routeNames.length ? '없음' : formatDuration(timing.waiting)}</b></span>
-        <span>환승 <b>{option.transferCount}회{option.transferCount === 0 && option.routeNames.length > 0 ? ' · 직통' : ''}</b></span>
-        <span>도보 거리 <b>{formatDistance(option.walkingDistanceMeters)}</b></span>
-        <span>전체 이동거리 <b>{formatDistance(option.totalDistanceMeters)}</b></span>
-      </span>
-      <span className={styles.routeFooter}>
-        {option.routeNames.map((routeName, index) => {
-          const station = index === 0 ? option.boardStation : option.transferStations?.[index - 1];
-          const boarding = boardings[index];
-          const observed = !station || boarding?.boardStationId === station.stationId ? currentArrival(boarding) : null;
-          const fallback = simulate ? (arrivals ? simulatedArrivalLabel(option.routeOptionId, index) : '도착 정보 확인 중')
-            : '도착 정보 확인 불가';
-          return <span className={styles.routeStops} key={index}>
-            <b>{formatBusLabel(routeName)}</b>{index > 0 ? ' (환승)' : ''}
-            {option.directionLabels?.[index] && ` · ${option.directionLabels[index]}`} · {observed?.label ?? fallback}
-          </span>;
-        })}
-        <span className={styles.cardAction}>상세 이동 안내 보기 →</span>
-      </span>
+      <RouteCardHeader names={option.routeNames} transferCount={option.transferCount} duration={timing.total ?? timing.movement}
+        arrival={option.routeNames.length > 0 ? arrival : undefined}
+        action={<span className={s.cardAction}>이 경로 선택하기 <Icon file="d682b.svg" /></span>} />
+      {stops.length >= 2 ? <span className={`${s.routeStations} ${stops.length > 2 ? s.routeTransferStations : ''}`}>
+        <Icon file={stops.length > 2 ? '51494.svg' : '26246.svg'} className={s.routeStationLine} />
+        {stops.map((stop, index) => <span className={s.routeStation} key={`${stop.stationId}-${index}`}>
+          <Icon file={index === 0 ? '92c82.svg' : 'a8aeb.svg'} />
+          {stationLabel(stop)}
+        </span>)}
+      </span> : <span className={s.routeStationText}>{option.routeNames.length
+        ? '정류장은 상세 안내에서 확인해 주세요.' : '현재 정류장에서 목적지까지 도보 이동'}</span>}
     </button>;
   })}</div>;
 }

@@ -180,6 +180,29 @@ def test_hospital_uses_the_seven_verified_directions_and_real_distance(real_serv
         assert detail['estimatedTravelSeconds'] == option['estimatedTravelSeconds'] == bus['durationSeconds'] + walk['durationSeconds']
 
 
+@pytest.mark.parametrize(('mode', 'field'), [('transfers', 'transferCount'), ('distance', 'totalDistanceMeters')])
+def test_soonchunhyang_identical_trips_share_one_path_group(real_service, mode, field):
+    _, client, clock = real_service
+    found = search(client, clock, 'cheonan-soonchunhyang-hospital', mode)
+    options = found['routeOptions']
+    values = [option[field] for option in options]
+    assert values == sorted(values, key=lambda value: (value is None, value))
+    assert len({option['routeOptionId'] for option in options}) == len(options)
+    shared = [option for option in options if option['routeNames'] in (['72', '16'], ['74', '16'])
+              and option['alightStation']['arsId'] == '71987'
+              and [stop['arsId'] for stop in option['transferStations']] == ['71555']]
+    assert {tuple(option['routeNames']) for option in shared} == {('72', '16'), ('74', '16')}
+    assert len({option['pathGroupId'] for option in shared}) == 1
+    assert len({option['pathGroupId'] for option in options}) > 1
+    for option in shared:
+        path = f"/api/v1/route-searches/{found['routeSearchId']}/options/{option['routeOptionId']}"
+        response = client.get(path)
+        assert response.status_code == 200, response.text
+        detail = response.json()['data']
+        assert detail['routeSnapshotVersion'] == option['routeSnapshotVersion']
+        assert [leg['routeName'] for leg in detail['segments'] if leg['type'] == 'bus'] == option['routeNames']
+
+
 def test_four_real_metrics_change_order_and_preserve_detail_ai_and_print(real_service):
     _, client, clock = real_service
     orders = []

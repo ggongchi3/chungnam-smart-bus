@@ -90,6 +90,7 @@ export type Segment = Bus | Walk | Transfer;
 export interface RouteOption {
   routeOptionId: string;
   routeSnapshotVersion: string;
+  pathGroupId?: string | null;
   journeyStatus: JourneyStatus;
   routeNames: string[];
   directionLabels?: string[];

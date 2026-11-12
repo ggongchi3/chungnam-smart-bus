@@ -140,6 +140,7 @@ Segment = Annotated[Bus | Walk | Transfer, Field(discriminator='type')]
 class RouteOption(Model):
     routeOptionId: Identifier
     routeSnapshotVersion: str
+    pathGroupId: Identifier | None = None
     journeyStatus: JourneyStatus
     routeNames: list[str]
     directionLabels: list[str] = Field(default_factory=list)
