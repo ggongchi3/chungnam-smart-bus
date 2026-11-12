@@ -118,9 +118,9 @@ describe('연결된 키오스크 사용자 흐름', () => {
     expect(steps[0].textContent).not.toContain('타는 곳');
     expect(host.querySelector('[aria-label="3단계: 상세 이동 안내"]')).not.toBeNull();
     expect(steps[0].textContent).toContain('단국대학교병원 방면');
-    expect(Array.from(steps[0].querySelectorAll('ol > li'), stop => stop.textContent)).toEqual([
-      '종합터미널 (685번) · 승차', '나은필병원 (706번)', '단국대학교병원 (1715번) · 하차',
-    ]);
+    expect(steps[0].querySelector(`.${styles.rideCount}`)?.textContent).toBe('2개 정류장 이동');
+    expect(steps[0].textContent).not.toContain('정차 순서 보기');
+    expect(steps[0].querySelector('details')).toBeNull();
     expect(host.querySelector('[aria-label="버스 운행 경로"]')).toBeNull();
     expect(host.querySelector('[aria-label="선택한 경로"]')?.textContent).toContain('약 11분');
     expect(Array.from(host.querySelectorAll(`.${styles.stepNumber}`), badge => badge.textContent)).toEqual(['1','2','3']);

@@ -104,14 +104,7 @@ function JourneySteps({ detail, high }: { detail: RouteDetail; high: boolean }) 
               </div>
             </div>
             {segment.type === 'bus' && <>
-              {segment.stops?.length ? <details className={s.rideCount}>
-                <summary><span>{segment.stopCount}개 정류장 이동</span><span className={s.stopOrderButton}>정차 순서 보기</span></summary>
-                <ol className={s.orderedStops} aria-label={`${formatBusLabel(segment.routeName)} 정차 순서`}>
-                  {segment.stops.map(stop => <li key={stop.sequence}>
-                    {formatStation(stop)}{stop.sequence === segment.boardSequence ? ' · 승차' : stop.sequence === segment.alightSequence ? ' · 하차' : ''}
-                  </li>)}
-                </ol>
-              </details> : <p className={s.rideCount}>{segment.stopCount}개 정류장 이동</p>}
+              <p className={s.rideCount}>{segment.stopCount}개 정류장 이동</p>
               <div className={s.journeyEvent}>
                 <span className={s.stepIcon} aria-hidden="true"><Asset file={pinIcon} className={s.stepArt} /><span className={s.stepNumber}>{alightStep}</span></span>
                 <div><h3>{formatStation(segment.alightStation)} 하차</h3><p>내리는 곳</p></div>

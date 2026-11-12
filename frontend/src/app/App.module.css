@@ -89,12 +89,6 @@
 .high .journeyStep p, .high .journeyStep .direction { color:var(--sub); }
 .journeyStep .rideCount { position:relative; display:flex; align-items:center; min-height:19.815cqw; padding-left:18.519cqw; margin:0; }
 .rideCount::before { content:''; position:absolute; top:2.222cqw; bottom:2.222cqw; left:6.019cqw; width:.926cqw; border-radius:1cqw; background:var(--border); }
-.journeyStep details.rideCount { flex-direction:column; align-items:flex-start; justify-content:center; padding-block:1.1cqw; font-size:2.963cqw; color:var(--sub); }
-.rideCount summary { display:flex; flex-wrap:wrap; align-items:center; gap:.926cqw 1.852cqw; cursor:pointer; min-height:5cqw; font-weight:500; color:#888; }
-.high .rideCount summary { color:var(--sub); }
-.stopOrderButton { display:inline-flex; align-items:center; min-height:5cqw; padding:.3cqw 1.389cqw; border:.185cqw solid var(--accent); border-radius:2.315cqw; color:var(--accent); }
-.rideCount[open] .stopOrderButton { background:var(--accent); color:var(--button-text); }
-.orderedStops { margin:0 0 2cqw; padding-left:4.3cqw; line-height:1.65; }
 .actions { display:flex; flex-wrap:wrap; gap:3.889cqw; justify-content:space-between; margin-top:5cqw; }
 .actions > .primary { flex:1; min-width:0; word-break:keep-all; }
 .error button { border:.185cqw solid var(--accent); border-radius:1cqw; background:var(--surface); color:var(--accent); padding:1.5cqw 2.2cqw; min-height:44px; font-size:3cqw; }
