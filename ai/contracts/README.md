@@ -83,3 +83,5 @@
 6. **category 미전달**: 입력에 Destination의 `category`가 없어 분류 표현은 이름·별칭의 핵심어로 연결한다. category를 함께 받으면 분류 매칭을 더 명확히 할 수 있다(선택).
 7. **도보 시간 단위**: `walk.basic`의 백엔드 문장은 60초 미만이면 초로 읽고, 60초 이상이면 화면·인쇄와 같이 분 단위로 올림한다. 89초는 약 2분이다. 응답의 `durationSeconds`는 초 단위를 유지한다.
 8. **인쇄 안내표 슬롯(제안, 디자인 Print Guide 2026-11-05)**: 출력물(감열지 80mm, 인쇄 폭 68mm)에 **운행 방향(방면)**과 **하차 직전 정류장**이 들어간다. 둘 다 지금 백엔드 응답에 없으므로 `templates.json`에 proposal `bus.print`(슬롯 `direction`, `previousStation.name`)로 기록했다. 값은 백엔드가 실제 노선 순서로 채우고, AI는 값을 만들지 않는다.
+   - 현재 상태(2026-11-09, PR #9 기준): 프론트 B의 `PrintPaper.tsx`는 `routeDetail`을 바로 그리며 방면·직전 정류장은 표시하지 않는다. `bus.print`는 쓰이지 않는 proposal로 남아 있고, 채택 여부는 프론트 B·디자인과 정한다.
+9. **음성 안내가 의존하는 문구(유지 필요)**: 프론트 `frontend/src/features/voice-guide/speechText.ts`는 bus 안내 문장에서 `{routeName} 버스를 타세요`를 그대로 찾아 노선 번호만 발음용으로 바꾼다(예: `1번` → `일번`). bus 템플릿 문구를 바꾸거나 LLM이 안내 문장을 직접 쓰게 되면 오류 없이 발음 처리만 빠지므로, 이 구절은 유지한다. `test_ai.py`(템플릿 파일)와 `test_backend_integration.py`(실제 `/print-guides` 응답)가 이를 확인한다.

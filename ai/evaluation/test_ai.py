@@ -69,6 +69,16 @@ class GuidanceContractTest(unittest.TestCase):
         self.assertEqual(selector.ACTIVE, {'bus': ['bus.basic'], 'walk': ['walk.basic'],
                                            'transfer': ['transfer.basic']})
 
+    def test_bus_templates_keep_voice_phrase(self):
+        # frontend/src/features/voice-guide/speechText.ts가 이 글자를 그대로 찾아
+        # 노선 번호만 발음용으로 바꾼다. 문구가 바뀌면 오류 없이 발음 처리만 빠진다.
+        catalog = json.loads(selector.CATALOG_PATH.read_text(encoding='utf-8'))
+        for item in catalog['templates']:
+            # bus.print는 종이 안내표용이라 음성 원고에 쓰이지 않는다.
+            if item['segmentType'] == 'bus' and item['templateId'] != 'bus.print':
+                with self.subTest(template=item['templateId']):
+                    self.assertIn('{routeName} 버스를 타세요', item['text'])
+
 
 class BudgetTest(unittest.TestCase):
     def test_well_within_one_second_budget(self):
