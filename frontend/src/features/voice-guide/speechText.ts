@@ -1,3 +1,4 @@
+import { formatBusLabel } from '../../shared/api/format'
 import type { GuidanceData, RouteDetail } from '../../shared/api/types'
 
 const digits = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구']
@@ -24,6 +25,28 @@ function readNumber(value: string): string {
 
 export function pronounceRouteName(routeName: string) {
   return routeName.replace(/\d+(?:-\d+)*/g, (number) => number.split('-').map(readNumber).join(' 다시 '))
+}
+
+function stopName(name: string, number?: string | null) {
+  if (number) return `${name} ${number}번 정류장`
+  return name.endsWith('정류장') ? name : `${name} 정류장`
+}
+
+export function routeSpeech(detail: RouteDetail) {
+  return detail.segments.map(segment => {
+    if (segment.type === 'bus') {
+      const sameName = segment.boardStation.name === segment.alightStation.name
+      const board = stopName(segment.boardStation.name, sameName ? segment.boardStation.arsId : null)
+      const alight = stopName(segment.alightStation.name, sameName ? segment.alightStation.arsId : null)
+      const bus = pronounceRouteName(formatBusLabel(segment.routeName))
+      return `${board}에서 ${bus}를 타세요. ${segment.stopCount}개 정류장을 이동한 뒤 ${alight}에서 내리시면 됩니다.`
+    }
+    if (segment.type === 'transfer') {
+      return `${stopName(segment.atStation.name)}에서 다음 버스로 갈아타세요.`
+    }
+    const distance = segment.distanceMeters == null ? '' : ` 약 ${segment.distanceMeters}미터를 이동해요.`
+    return `${segment.toLabel}까지 걸어가세요.${distance}`
+  }).join(' ')
 }
 
 export function speechTexts(guidance: GuidanceData, detail: RouteDetail) {

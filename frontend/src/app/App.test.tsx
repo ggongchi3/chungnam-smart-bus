@@ -121,9 +121,9 @@ describe('연결된 키오스크 사용자 흐름', () => {
       await click('말로 찾기');
       await click('말하기');
       await act(async () => { await vi.advanceTimersByTimeAsync(3000); });
-      expect(button('듣고 있어요').disabled).toBe(false);
+      expect(button('듣고 있어요').disabled).toBe(true);
       expect(api.transcribe).not.toHaveBeenCalled();
-      await click('듣고 있어요');
+      await act(async () => { await vi.advanceTimersByTimeAsync(6000); });
       expect(getUserMedia).toHaveBeenCalledWith({ audio: true });
       expect(stopTrack).toHaveBeenCalledOnce();
       expect(api.transcribe).toHaveBeenCalledWith(expect.objectContaining({ type: 'audio/webm;codecs=opus' }), expect.any(AbortSignal));
@@ -158,7 +158,7 @@ describe('연결된 키오스크 사용자 흐름', () => {
       firstAttempt.onerror?.({ error: 'no-speech' });
       firstAttempt.onend?.();
     });
-    expect(button('듣고 있어요').getAttribute('aria-pressed')).toBe('true');
+    expect(button('듣고 있어요').disabled).toBe(true);
     await act(async () => { await vi.advanceTimersByTimeAsync(150); });
     expect(TestRecognition.current).not.toBe(firstAttempt);
     const transcript = '터미널 가고 싶어요';
@@ -169,11 +169,10 @@ describe('연결된 키오스크 사용자 흐름', () => {
     expect(api.understand).toHaveBeenCalledWith(ORIGIN_STATION_ID, transcript, expect.any(AbortSignal));
   });
 
-  it('AI 목적지 확인에서 이동 조건, 질문 반복, 인쇄 요약을 이어준다', async () => {
+  it('AI 목적지의 이동 조건과 하단 음성안내, 인쇄 요약을 이어준다', async () => {
     const campus = { ...destination, name: '단국대학교 천안캠퍼스' };
     const text = '단국대학교 천안캠퍼스 가는데 많이 안 걷고 싶어요';
     const reason = '내린 뒤 250m 정도 걸으면 돼요.';
-    const first = '출발 정류장에서 1번 버스를 타세요.';
     const headline = '1번 버스 → 병원 앞 정류장에서 내리세요';
     vi.mocked(api.understand).mockResolvedValue(envelope({
       status: 'needs_confirmation', reasonCode: 'USER_CONFIRMATION_REQUIRED', sort: 'walking',
@@ -185,8 +184,12 @@ describe('연결된 키오스크 사용자 흐름', () => {
     const routes = search();
     routes.routeOptions[0].reasonText = reason;
     vi.mocked(api.search).mockResolvedValue(envelope(routes));
-    vi.mocked(api.answer).mockResolvedValueOnce(envelope({ status: 'ok', intent: 'which_bus', text: first }));
-    vi.mocked(api.answer).mockResolvedValueOnce(envelope({ status: 'ok', intent: 'repeat', text: first }));
+    const bus = detail.segments[0];
+    if (bus.type !== 'bus') throw new Error('승차 구간이 필요합니다.');
+    vi.mocked(api.detail).mockResolvedValue(envelope({ ...detail, segments: [{ ...bus, routeName: '14',
+      boardStation: { ...bus.boardStation, name: '종합터미널' },
+      alightStation: { ...bus.alightStation, name: '순천향병원' }, stopCount: 6,
+    }] }));
     vi.mocked(api.printGuide).mockResolvedValue(envelope({ ...printed, headline }));
     await mount();
     await click('말로 찾기');
@@ -199,12 +202,10 @@ describe('연결된 키오스크 사용자 흐름', () => {
     expect(button('최소 도보').getAttribute('aria-pressed')).toBe('true');
     expect(routeCards()[0].textContent).toContain(reason);
     await act(async () => { routeCards()[0].click(); });
-    await click('몇 번 버스 타요?');
-    expect(host.textContent).toContain(first);
-    expect(voice.speak).toHaveBeenLastCalledWith(first);
-    await click('다시 말해 주세요');
-    expect(api.answer).toHaveBeenLastCalledWith(expect.objectContaining({ expectedRouteSnapshotVersion: 'v1' }),
-      '다시 말해 주세요', 'which_bus', expect.any(AbortSignal));
+    expect(host.textContent).not.toContain('AI 도우미에게 물어보기');
+    expect(host.textContent).not.toContain(reason);
+    await click('음성안내');
+    expect(voice.speak).toHaveBeenLastCalledWith('종합터미널 정류장에서 십사번 버스를 타세요. 6개 정류장을 이동한 뒤 순천향병원 정류장에서 내리시면 됩니다.');
     await click('안내표 인쇄하기');
     expect(host.querySelector('article header')?.textContent).toContain(headline);
   });

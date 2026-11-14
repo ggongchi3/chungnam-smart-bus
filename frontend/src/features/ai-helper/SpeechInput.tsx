@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import s from '../../app/App.module.css';
 import { api, ApiError } from '../../shared/api/client';
 import { MicrophoneIcon } from './MicrophoneIcon';
@@ -21,24 +22,18 @@ const browser = window as Window & {
 const LISTENING_WINDOW_MS = 3000;
 const RETRY_DELAY_MS = 150;
 const NO_SPEECH_MESSAGE = '들은 내용이 없어요. 다시 말하거나 글로 입력해 주세요.';
-const CONFIRM_MESSAGE = '입력된 말을 확인하고 버튼을 눌러 주세요.';
-
-interface Capture {
-  controller: AbortController;
-  stop?: () => void;
-}
 
 interface Props {
   disabled: boolean;
   onListen: () => void;
   onText: (text: string) => void;
-  variant?: 'destination' | 'question';
   onListeningChange?: (listening: boolean) => void;
+  children: ReactNode;
 }
 
-export function SpeechInput({ disabled, onListen, onText, variant = 'question', onListeningChange }: Props) {
+export function SpeechInput({ disabled, onListen, onText, onListeningChange, children }: Props) {
   const active = useRef<Recognition | null>(null);
-  const capture = useRef<Capture | null>(null);
+  const capture = useRef<AbortController | null>(null);
   const retry = useRef<number | null>(null);
   const [listening, setListening] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -46,7 +41,6 @@ export function SpeechInput({ disabled, onListen, onText, variant = 'question', 
   const SpeechRecognition = browser.SpeechRecognition ?? browser.webkitSpeechRecognition;
   const mimeType = recordingType();
   const available = Boolean(mimeType || SpeechRecognition);
-  const destination = variant === 'destination';
 
   useEffect(() => { onListeningChange?.(listening); }, [listening, onListeningChange]);
 
@@ -60,7 +54,7 @@ export function SpeechInput({ disabled, onListen, onText, variant = 'question', 
     active.current = null;
     capture.current = null;
     recognition?.abort();
-    recording?.controller.abort();
+    recording?.abort();
   }, []);
 
   const cancel = useCallback(() => {
@@ -87,18 +81,15 @@ export function SpeechInput({ disabled, onListen, onText, variant = 'question', 
   }, [disabled, cancel]);
 
   async function startCapture(type: string) {
-    const session: Capture = { controller: new AbortController() };
-    const { signal } = session.controller;
+    const session = new AbortController();
+    const { signal } = session;
     capture.current = session;
     let browserFallback = false;
     onListen();
     setListening(true);
     setMessage('마이크를 준비하고 있어요.');
     try {
-      const audio = await recordSpeech(type, signal, stop => {
-        session.stop = stop;
-        setMessage('듣고 있어요. 말을 마치면 버튼을 다시 눌러 주세요.');
-      });
+      const audio = await recordSpeech(type, signal, () => setMessage('듣고 있어요. 천천히 말씀해 주세요.'));
       if (signal.aborted) return;
       if (!audio.size) {
         setMessage(NO_SPEECH_MESSAGE);
@@ -109,7 +100,7 @@ export function SpeechInput({ disabled, onListen, onText, variant = 'question', 
       const { data } = await api.transcribe(audio, signal);
       if (signal.aborted) return;
       const transcript = data.text.trim().slice(0, 200);
-      setMessage(transcript ? CONFIRM_MESSAGE : NO_SPEECH_MESSAGE);
+      setMessage(transcript ? '' : NO_SPEECH_MESSAGE);
       if (transcript) onText(transcript);
     } catch (error) {
       if (signal.aborted) return;
@@ -131,9 +122,8 @@ export function SpeechInput({ disabled, onListen, onText, variant = 'question', 
     if (browserFallback) startNative();
   }
 
-  function toggle() {
-    if (capture.current?.stop) { capture.current.stop(); return; }
-    if (capture.current || active.current || retry.current !== null) { cancel(); return; }
+  function start() {
+    if (capture.current || active.current || retry.current !== null) return;
     if (mimeType) void startCapture(mimeType);
     else startNative();
   }
@@ -161,7 +151,7 @@ export function SpeechInput({ disabled, onListen, onText, variant = 'question', 
           if (!transcript) return;
           received = true;
           onText(transcript);
-          setMessage(CONFIRM_MESSAGE);
+          setMessage('');
         };
         recognition.onerror = ({ error }) => {
           if (active.current !== recognition) return;
@@ -205,14 +195,15 @@ export function SpeechInput({ disabled, onListen, onText, variant = 'question', 
     startAttempt();
   }
 
-  return <div className={destination ? s.destinationSpeech : s.speechInput}>
-    {destination && <p role="status">{available ? message : '이 브라우저에서는 글로 입력해 주세요.'}</p>}
-    {available && <button type="button" className={destination ? `${s.primary} ${s.destinationMic}` : `${s.helperButton} ${s.micButton}`} aria-pressed={listening}
-      disabled={disabled || processing} onClick={toggle}>
-      {destination && <MicrophoneIcon className={s.micIcon} />}
-      {processing ? '인식 중' : destination ? (listening ? '듣고 있어요' : '말하기') : (listening ? '말하기 중지' : '마이크로 말하기')}
-      {!destination && <MicrophoneIcon className={s.micIcon} />}
+  return <div className={s.destinationSpeech}>
+    <div className={s.speechPrompt}>
+      <p role="status">{available ? message : '이 브라우저에서는 글로 입력해 주세요.'}</p>
+      {!listening && children}
+    </div>
+    {available && <button type="button" className={`${s.primary} ${s.destinationMic}`} data-listening={listening}
+      disabled={disabled || listening} onClick={start}>
+      {!listening && <MicrophoneIcon className={s.micIcon} />}
+      {processing ? '인식 중' : listening ? '듣고 있어요' : '말하기'}
     </button>}
-    {!destination && <p role="status">{available ? message : '이 브라우저에서는 글이나 화면 버튼으로 이용해 주세요.'}</p>}
   </div>;
 }

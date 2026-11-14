@@ -6,7 +6,7 @@ export function recordingType() {
   return AUDIO_TYPES.find(type => MediaRecorder.isTypeSupported(type));
 }
 
-export async function recordSpeech(mimeType: string, signal: AbortSignal, onStart: (stop: () => void) => void) {
+export async function recordSpeech(mimeType: string, signal: AbortSignal, onStart: () => void) {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
   const release = () => stream.getTracks().forEach(track => track.stop());
   try {
@@ -23,7 +23,7 @@ export async function recordSpeech(mimeType: string, signal: AbortSignal, onStar
         recorder.onerror = () => reject(new Error('Recording failed'));
         recorder.start();
         timer = window.setTimeout(stop, MAX_RECORDING_MS);
-        onStart(stop);
+        onStart();
       });
     } finally {
       window.clearTimeout(timer);

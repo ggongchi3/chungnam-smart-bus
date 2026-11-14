@@ -2,14 +2,13 @@ import { createContext, useCallback, useContext, useEffect, useReducer, useRef, 
 import type { CSSProperties, ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import { api, ApiError, isAbortError } from '../shared/api/client';
-import type { AnswerData, Category, ConversationData, Destination, JourneyIntent, LiveData, OptionArrivals, RouteDetail, RouteOption, SearchArrivals, SelectionRequest, RouteSort, PlaceSort } from '../shared/api/types';
+import type { Category, ConversationData, Destination, LiveData, OptionArrivals, RouteDetail, RouteOption, SearchArrivals, SelectionRequest, RouteSort, PlaceSort } from '../shared/api/types';
 import { currentArrival, effectiveFreshness, formatBusLabel, formatDuration, formatDistance, formatStation, formatTime } from '../shared/api/format';
 import { RouteCardHeader, RouteCards } from '../features/route-search/RouteCards';
 import { useVoiceGuide } from '../features/voice-guide/useVoiceGuide';
-import { speechTexts } from '../features/voice-guide/speechText';
+import { routeSpeech, speechTexts } from '../features/voice-guide/speechText';
 import { PrintDocument } from '../features/print-guide/PrintDocument';
 import Keyboard from '../features/destination-search/Keyboard';
-import { RouteQuestions } from '../features/ai-helper/RouteQuestions';
 import { SpeechInput } from '../features/ai-helper/SpeechInput';
 import { MicrophoneIcon } from '../features/ai-helper/MicrophoneIcon';
 import { IDLE_COUNTDOWN_SECONDS, IDLE_WARNING_MS, LIVE_REFRESH_MS, ORIGIN_STATION_ID, ORIGIN_NAME, ORIGIN_PUBLIC_CODE } from '../../config/kiosk';
@@ -339,14 +338,6 @@ export function App() {
       if (!signal.aborted && guidance.data.routeSnapshotVersion === r.data.routeSnapshotVersion) patch({ guidance: displayGuidance(guidance.data) });
     });
   }
-  function askRoute(question: string, previousIntent: JourneyIntent | null, receive: (answer: AnswerData) => void) {
-    const detail = state.detail;
-    if (!detail) return;
-    void run(async signal => {
-      const result = await api.answer(selection(detail), question, previousIntent, signal);
-      if (!signal.aborted) receive(result.data);
-    });
-  }
   function preparePrint() {
     if (!state.detail) return;
     void run(async signal => { const r = await api.printGuide(selection(state.detail!), signal); if (!signal.aborted) patch({ print: r.data, screen: 'print' }); });
@@ -382,20 +373,18 @@ export function App() {
     routes: recommended ? s.recommendationScreen : '', detail: s.detailScreen, print: s.printScreen, done: s.done,
   }[state.screen];
   const screenSpeech: Record<State['screen'], string> = { home: '현재 정류장에서 목적지까지 가는 버스를 찾아드려요. 화면으로 찾기나 말로 찾기를 눌러 주세요.', assistant: conversation?.clarification?.question ?? (confirmedCandidate ? `${confirmedCandidate.name}이 맞나요?` : '가고 싶은 곳과 원하는 이동 방법을 말씀하거나 입력해 주세요.'), destinations: '어디로 가시나요? 검색하거나 목록에서 목적지를 선택해 주세요.', keyboard: '장소를 입력한 뒤 검색하기를 눌러 주세요.', results: `${state.resultTitle}. 검색 결과 ${state.results.length}건. 찾으시는 장소를 선택해 주세요.`, routes: noRoutes ? `이용할 수 있는 버스 경로를 찾지 못했어요. ${walkingDistance == null ? '' : `목적지까지 도보 ${formatDistance(walkingDistance)}예요.`}` : `이용 가능한 경로 ${state.search?.routeOptions.length ?? 0}개. 이동할 경로를 선택해 주세요.`, detail: '선택한 경로를 확인해 주세요. 아래 경로로 이동하시겠어요?', print: '종이 안내표를 출력해 드릴까요? 출력하기 버튼을 눌러 주세요.', done: '안내표를 확인해 주세요. 다시 인쇄하려면 계속 이용하기를 눌러 주세요.' };
-  const spokenText = ['detail', 'print', 'done'].includes(state.screen) && state.detail && state.guidance
-    ? speechTexts(state.guidance, state.detail).join(' ') : screenSpeech[state.screen];
+  let spokenText = screenSpeech[state.screen];
+  if (state.screen === 'detail' && state.detail?.journeyStatus === 'ready') {
+    spokenText = routeSpeech(state.detail) || spokenText;
+  } else if ((state.screen === 'print' || state.screen === 'done') && state.detail && state.guidance) {
+    spokenText = speechTexts(state.guidance, state.detail).join(' ');
+  }
   const sortedResults = state.results;
   const distanceNotice = placeSort === 'name' ? '장소명순 · 표시는 길을 따라 걷는 거리예요.' : '현재 정류장에서 길을 따라 걷는 거리순이에요.';
   const options = (state.search?.routeOptions ?? []).map(option => ({...option,routeNames:option.routeNames.map(displayText)}));
   const optionArrivals = searchArrivals?.routeSearchId === state.search?.routeSearchId ? searchArrivals?.options : undefined;
   const originName = state.station?.name ?? ORIGIN_NAME;
   const originCode = !state.station || state.station.stationId === ORIGIN_STATION_ID ? ORIGIN_PUBLIC_CODE : null;
-  const selectedReason = options.find(option => option.routeOptionId === state.detail?.routeOptionId)?.reasonText;
-
-  function readAloud(text: string) {
-    setShowVoice(true);
-    voice.speak(displayText(text));
-  }
 
   function toggleVoice() {
     setShowVoice(true);
@@ -450,15 +439,16 @@ export function App() {
           </section>
         </> : <>
           <Heading title="말로 목적지 찾기" subtitle={<>가고 싶은 곳을 말씀해 주세요.<br />원하는 조건도 함께 말씀하실 수 있어요.</>} />
-          <img src="/assets/voice-microphone.png" alt="" className={s.voiceArt} />
-          {!listening && <div className={s.voiceExamples} aria-label="예시로 검색">
-            <p>아래 버튼을 누른 후 이렇게 말씀해 보세요.</p>
-            {assistantExamples.map(text => <button key={text} type="button" disabled={state.busy}
-              onClick={() => searchAssistant(text)}>“{text}”</button>)}
-          </div>}
           <div className={s.voiceControls}>
-            <SpeechInput variant="destination" disabled={state.busy || idle !== null} onListen={voice.stop}
-              onListeningChange={setListening} onText={searchAssistant} />
+            <img src="/assets/voice-microphone.png" alt="" className={s.voiceArt} />
+            <SpeechInput disabled={state.busy || idle !== null} onListen={voice.stop}
+              onListeningChange={setListening} onText={searchAssistant}>
+              <div className={s.voiceExamples} aria-label="예시로 검색">
+                <p>아래 버튼을 누른 후 이렇게 말씀해 보세요.</p>
+                {assistantExamples.map(text => <button key={text} type="button" disabled={state.busy}
+                  onClick={() => searchAssistant(text)}>“{text}”</button>)}
+              </div>
+            </SpeechInput>
             {!listening && <button type="button" className={s.helperButton} disabled={state.busy}
               aria-expanded={showAssistantKeyboard} onClick={() => setShowAssistantKeyboard(open => !open)}>글로 입력하기</button>}
           </div>
@@ -558,10 +548,6 @@ export function App() {
             <SelectedRoute detail={state.detail} live={state.live} cached={optionArrivals?.[state.detail.routeOptionId]}
               verified={state.dataMode === 'live' || state.dataMode === 'static'} retry={() => void refreshLive()} />
             <JourneySteps detail={state.detail} high={high} />
-            {state.assistant && selectedReason && <p className={s.routeReason}>{displayText(selectedReason)}</p>}
-            {state.assistant && state.detail.journeyStatus === 'ready' && <RouteQuestions
-              key={`${state.detail.routeSearchId}/${state.detail.routeOptionId}`} busy={state.busy}
-              allowSpeechInput={idle === null} speaking={voice.speaking} onAsk={askRoute} onRead={readAloud} onStop={voice.stop} />}
           </div>
           <div className={s.actions}>
             <Primary secondary onClick={() => go('routes')}>이전</Primary>
@@ -588,7 +574,6 @@ export function App() {
           <div className={`${s.printerArt} ${s.completionArt}`}><img src="/assets/7144f.png" alt="안내표를 가져가는 모습" /></div>
           <p><em>{doneSeconds}</em>초 후 처음으로 돌아가요</p>
           <Primary onClick={() => go('print')}>계속 이용하기</Primary>
-          <button className={s.textButton} onClick={reset}>이용 마치기</button>
         </>}
         {state.error && <div className={s.error} role="alert"><p>{state.error}</p><button onClick={() => state.screen === 'home' ? void run(async signal => { const r = await api.station(ORIGIN_STATION_ID, signal); if (!signal.aborted) patch({ station: { ...r.data.station, name: r.data.station.stationId.startsWith('demo-') ? '현재 정류장' : displayText(r.data.station.name) }, dataMode: r.meta.dataMode }); }) : patch({ error: '' })}>{state.screen === 'home' ? '정류장 다시 확인' : '확인'}</button></div>}
       </main>

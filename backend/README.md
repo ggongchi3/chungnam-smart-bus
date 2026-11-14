@@ -20,7 +20,7 @@ backend/.venv/Scripts/python -m pip install -r backend/requirements-speech.txt
 backend/.venv/Scripts/hf.exe download Systran/faster-whisper-small config.json model.bin tokenizer.json vocabulary.txt --revision 536b0662742c02347bc0e980a01041f333bce120 --local-dir backend/.local/speech-model
 ```
 
-마이크 입력은 로컬 주소(`localhost` 또는 `127.0.0.1`)나 HTTPS 화면에서 허용한다. `말하기`를 누르고 말한 뒤 버튼을 다시 누르면 바로 인식한다. 다시 누르지 않아도 최대 9초 후 녹음을 끝낸다. 로컬 모델이 준비되지 않은 경우 지원되는 브라우저에서는 브라우저 음성 인식으로 다시 듣는다.
+마이크 입력은 로컬 주소(`localhost` 또는 `127.0.0.1`)나 HTTPS 화면에서 허용한다. `말하기`를 한 번 누르면 9초 동안 녹음한 뒤 자동으로 인식한다. 로컬 모델이 준비되지 않은 경우 지원되는 브라우저에서는 브라우저 음성 인식으로 다시 듣는다.
 
 명령은 프로젝트 루트에서 실행한다. 검증 환경은 Windows, Python **3.13.2**, FastAPI **0.115.5**, Uvicorn **0.32.0**, Pydantic **2.9.2**, SQLAlchemy **2.0.36**, HTTPX **0.27.2**, pytest **8.3.3**이다. SQLite는 Python 내장 라이브러리이며 실제 버전은 `docs/runtime-versions.json`에 기록한다. 전체 간접 의존성까지 `requirements.lock`에 고정했다. 규칙 기반 AI 모듈은 표준 라이브러리만 사용한다.
 
