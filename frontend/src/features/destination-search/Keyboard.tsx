@@ -7,12 +7,18 @@ interface KeyboardProps {
   onChange: (value: string) => void;
   onSubmit: () => void;
   disabled?: boolean;
+  maxLength?: number;
+  submitLabel?: string;
 }
 
 /** Recompose actual jamo: 받침 moves to the next syllable when a vowel follows. */
 export function appendKey(value: string, key: string): string {
+  return composeKey(value, key, 100);
+}
+
+function composeKey(value: string, key: string, maxLength: number): string {
   const result = Hangul.assemble([...(Hangul.disassemble(value) as string[]), ...Array.from(key)]);
-  return result.length <= 100 ? result : value;
+  return result.length <= maxLength ? result : value;
 }
 
 /** Remove one jamo, including one half of a compound 받침, rather than a syllable. */
@@ -27,13 +33,13 @@ const english = [Array.from('qwertyuiop'), Array.from('asdfghjkl-'), Array.from(
 const symbols = [Array.from('!@#$%^&*()'), Array.from('~_+=[]{}<>'), Array.from('/\\:;\'"`|·?')];
 const shifted: Record<string, string> = { 'ㅂ': 'ㅃ', 'ㅈ': 'ㅉ', 'ㄷ': 'ㄸ', 'ㄱ': 'ㄲ', 'ㅅ': 'ㅆ', 'ㅐ': 'ㅒ', 'ㅔ': 'ㅖ' };
 
-export default function Keyboard({ value, onChange, onSubmit, disabled = false }: KeyboardProps) {
+export default function Keyboard({ value, onChange, onSubmit, disabled = false, maxLength = 100, submitLabel = '검색하기' }: KeyboardProps) {
   const [language, setLanguage] = useState<'ko' | 'en'>('ko');
   const [symbolMode, setSymbolMode] = useState(false);
   const [shift, setShift] = useState(false);
   const rows = symbolMode ? symbols : language === 'ko' ? korean : english;
   const apply = (key: string) => {
-    onChange(appendKey(value, key));
+    onChange(composeKey(value, key, maxLength));
     setShift(false);
   };
   const display = (key: string) => shift && !symbolMode
@@ -67,7 +73,7 @@ export default function Keyboard({ value, onChange, onSubmit, disabled = false }
           <button className={`${styles.wide} ${styles.utility}`} type="button" disabled={disabled} onClick={() => apply(' ')}>한칸 띄우기</button>
         </div>
       </div>
-      <button type="button" className={styles.submit} disabled={disabled || !value.trim()} onClick={onSubmit}>검색하기</button>
+      <button type="button" className={styles.submit} disabled={disabled || !value.trim()} onClick={onSubmit}>{submitLabel}</button>
     </div>
   );
 }

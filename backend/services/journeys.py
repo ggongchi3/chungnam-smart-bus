@@ -11,7 +11,7 @@ from backend.models.snapshots import SavedRouteOption
 from backend.models.tables import DestinationAccess, RouteSearch
 from backend.integrations.providers import ArrivalObservation
 from backend.services import catalog, routing
-from backend.services.ai import fixed_guidance
+from backend.services.ai import fixed_guidance, print_headline
 from backend.services.time import quality
 
 
@@ -179,4 +179,5 @@ def print_notice(snapshot, data_mode):
 def print_guide(detail, state, now, *, session=None, data_mode='demo'):
     snapshot = live_info(detail, state, now, for_print=True, session=session)
     return s.PrintData(printGuideId='demo-print-' + uuid4().hex, generatedAt=now, routeDetail=detail.model_copy(deep=True),
-        liveInfoSnapshot=snapshot, guidance=fixed_guidance(detail, data_mode), notice=print_notice(snapshot, data_mode))
+        liveInfoSnapshot=snapshot, guidance=fixed_guidance(detail, data_mode), notice=print_notice(snapshot, data_mode),
+        headline=print_headline(detail))

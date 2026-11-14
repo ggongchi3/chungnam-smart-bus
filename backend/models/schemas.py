@@ -5,6 +5,8 @@ from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, StringConstrai
 
 Category = Literal['hospital', 'market', 'terminal', 'station', 'other']
 JourneyStatus = Literal['ready', 'recheck_required', 'unavailable']
+ConversationSort = Literal['walking', 'transfers', 'fastest']
+JourneyIntent = Literal['which_bus', 'how_many', 'where_board', 'where_alight', 'stop_count', 'walk', 'duration']
 Identifier = Annotated[str, StringConstraints(strict=True, min_length=1, max_length=200)]
 Nonnegative = Annotated[int, Field(ge=0)]
 NOTICE = '시연 데이터 · 실제 운행 정보 아님'
@@ -156,6 +158,7 @@ class RouteOption(Model):
     transferStations: list[StationRef] = Field(default_factory=list)
     features: list[str] = Field(default_factory=list)
     dataSource: str | None = None
+    reasonText: str | None = None
 
 
 class SearchRequest(Model):
@@ -163,6 +166,7 @@ class SearchRequest(Model):
     destinationId: Identifier
     departAt: AwareDatetime
     sort: Literal['fastest', 'transfers', 'walking', 'distance'] = 'transfers'
+    explain: bool = False
 
     @field_validator('departAt', mode='before')
     @classmethod
@@ -272,6 +276,32 @@ class InterpretationData(Model):
     reasonCode: Literal['MATCHED', 'USER_CONFIRMATION_REQUIRED', 'NO_REGISTERED_MATCH', 'AI_UNAVAILABLE']
 
 
+class ClarificationOption(Model):
+    destinationId: Identifier
+    label: str
+
+
+class Clarification(Model):
+    question: str
+    options: list[ClarificationOption]
+
+
+class ConversationData(InterpretationData):
+    sort: ConversationSort | None = None
+    clarification: Clarification | None = None
+
+
+class QuestionRequest(SelectionRequest):
+    question: Annotated[str, StringConstraints(strict=True, strip_whitespace=True, min_length=1, max_length=200)]
+    previousIntent: JourneyIntent | None = None
+
+
+class AnswerData(Model):
+    status: Literal['ok', 'unavailable']
+    intent: JourneyIntent | Literal['repeat', 'unknown'] | None = None
+    text: str | None = None
+
+
 class Step(Model):
     segmentId: Identifier
     text: str
@@ -290,6 +320,7 @@ class PrintData(Model):
     liveInfoSnapshot: LiveData
     notice: str
     guidance: GuidanceData
+    headline: str | None = None
 
 
 class AIInterpretation(Model):

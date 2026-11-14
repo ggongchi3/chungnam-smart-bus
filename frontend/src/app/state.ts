@@ -1,6 +1,6 @@
 import type { Destination, GuidanceData, LiveData, PrintData, RouteDetail, SearchData, Station, DataMode } from '../shared/api/types';
 import type { PlaceCategory } from '../shared/places';
-export type Screen = 'home' | 'destinations' | 'keyboard' | 'results' | 'routes' | 'detail' | 'print' | 'done';
+export type Screen = 'home' | 'destinations' | 'keyboard' | 'assistant' | 'results' | 'routes' | 'detail' | 'print' | 'done';
 export interface State {
   screen: Screen; highContrast: boolean; station: Station | null; dataMode: DataMode;
   destination: Destination | null; results: Destination[]; resultTitle: string;
@@ -9,8 +9,9 @@ export interface State {
   guidance: GuidanceData | null; print: PrintData | null; busy: boolean; error: string;
   selectedCategory: PlaceCategory | null;
   selectedRouteOptionId: string | null;
+  assistant: boolean;
 }
-export const initialState: State = { screen: 'home', highContrast: false, station: null, dataMode: 'demo', destination: null, results: [], resultTitle: '', search: null, detail: null, live: null, liveChecked:false, guidance: null, print: null, busy: false, error: '', selectedCategory:null, selectedRouteOptionId:null };
+export const initialState: State = { screen: 'home', highContrast: false, station: null, dataMode: 'demo', destination: null, results: [], resultTitle: '', search: null, detail: null, live: null, liveChecked:false, guidance: null, print: null, busy: false, error: '', selectedCategory:null, selectedRouteOptionId:null, assistant: false };
 export type Action = { type: 'patch'; value: Partial<State> } | { type: 'reset' } | { type: 'invalidate'; message: string };
 export function reducer(state: State, action: Action): State {
   if (action.type === 'reset') return { ...initialState, station: state.station, dataMode: state.dataMode, highContrast: state.highContrast };

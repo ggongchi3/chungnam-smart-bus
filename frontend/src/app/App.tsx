@@ -2,13 +2,16 @@ import { createContext, useCallback, useContext, useEffect, useReducer, useRef, 
 import type { CSSProperties, ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import { api, ApiError, isAbortError } from '../shared/api/client';
-import type { Category, Destination, LiveData, OptionArrivals, RouteDetail, RouteOption, SearchArrivals, SelectionRequest, RouteSort, PlaceSort } from '../shared/api/types';
+import type { AnswerData, Category, ConversationData, Destination, JourneyIntent, LiveData, OptionArrivals, RouteDetail, RouteOption, SearchArrivals, SelectionRequest, RouteSort, PlaceSort } from '../shared/api/types';
 import { currentArrival, effectiveFreshness, formatBusLabel, formatDuration, formatDistance, formatStation, formatTime } from '../shared/api/format';
 import { RouteCardHeader, RouteCards } from '../features/route-search/RouteCards';
 import { useVoiceGuide } from '../features/voice-guide/useVoiceGuide';
 import { speechTexts } from '../features/voice-guide/speechText';
 import { PrintDocument } from '../features/print-guide/PrintDocument';
 import Keyboard from '../features/destination-search/Keyboard';
+import { RouteQuestions } from '../features/ai-helper/RouteQuestions';
+import { SpeechInput } from '../features/ai-helper/SpeechInput';
+import { MicrophoneIcon } from '../features/ai-helper/MicrophoneIcon';
 import { IDLE_COUNTDOWN_SECONDS, IDLE_WARNING_MS, LIVE_REFRESH_MS, ORIGIN_STATION_ID, ORIGIN_NAME, ORIGIN_PUBLIC_CODE } from '../../config/kiosk';
 import { initialState, reducer } from './state';
 import type { State } from './state';
@@ -23,7 +26,7 @@ function Asset({ file, className = '' }: { file: string; className?: string }) {
   return <span className={`${s.asset} ${className}`} aria-hidden="true"><img src={`/assets/${file}`} alt="" /></span>;
 }
 function Primary({ children, onClick, disabled = false, secondary = false }: { children: ReactNode; onClick: () => void; disabled?: boolean; secondary?: boolean }) {
-  return <button className={`${s.primary} ${secondary ? s.secondary : ''}`} disabled={disabled} onClick={onClick}>{children}</button>;
+  return <button type="button" className={`${s.primary} ${secondary ? s.secondary : ''}`} disabled={disabled} onClick={onClick}>{children}</button>;
 }
 function Progress({ step }: { step: number }) {
   return <div className={s.progress} aria-label={`${step + 1}단계: ${['목적지 선택', '이동 경로 선택', '상세 이동 안내', '안내표 출력'][step]}`}><span>{['목적지 선택', '이동 경로 선택', '상세 이동 안내', '안내표 출력'][step]}</span><div>{[0, 1, 2, 3].map(i => <i key={i} className={i === step ? s.activeDot : ''} />)}</div></div>;
@@ -120,12 +123,23 @@ function selection(detail: RouteDetail): SelectionRequest {
   return { routeSearchId: detail.routeSearchId, routeOptionId: detail.routeOptionId, expectedRouteSnapshotVersion: detail.routeSnapshotVersion };
 }
 const categoryNames: Record<Category, string> = { hospital: '병원', market: '시장', terminal: '터미널', station: '역', other: '기타' };
-type RouteOrder = Extract<RouteSort, 'transfers' | 'distance'> | 'waiting';
+type RouteOrder = RouteSort | 'waiting';
+const standardSorts = [['transfers', '최소 환승'], ['waiting', '최소 대기'], ['distance', '최단 거리']] as const;
+const assistantSorts = [['walking', '최소 도보'], ['transfers', '최소 환승'], ['fastest', '최소 이동시간']] as const;
+const assistantExamples = [
+  '단국대학교 천안캠퍼스 가는데 많이 안 걷고 싶어요',
+  '중앙시장 가고싶어요',
+];
 
 export function App() {
   usePressFeedback();
   const [state, dispatch] = useReducer(reducer, initialState);
   const [query, setQuery] = useState('');
+  const [assistantText, setAssistantText] = useState('');
+  const [conversation, setConversation] = useState<ConversationData | null>(null);
+  const [listening, setListening] = useState(false);
+  const [showAssistantKeyboard, setShowAssistantKeyboard] = useState(false);
+  const [showOtherRoutes, setShowOtherRoutes] = useState(false);
   const [clock, setClock] = useState(Date.now());
   const [scale, setScale] = useState(1);
   const [idle, setIdle] = useState<number | null>(null);
@@ -144,7 +158,12 @@ export function App() {
 
   const clearPrintListener = useCallback(() => { if (printListener.current) window.removeEventListener('afterprint', printListener.current); printListener.current = null; }, []);
   const invalidate = useCallback((message: string) => { request.current?.abort(); clearPrintListener(); voice.stop(); dispatch({ type: 'invalidate', message }); }, [clearPrintListener, voice.stop]);
-  const reset = useCallback(() => { request.current?.abort(); clearPrintListener(); voice.stop(); setQuery(''); setIdle(null); activity.current = Date.now(); dispatch({ type: 'reset' }); }, [clearPrintListener, voice.stop]);
+  const reset = useCallback(() => {
+    request.current?.abort(); clearPrintListener(); voice.stop();
+    setQuery(''); setAssistantText(''); setConversation(null); setListening(false);
+    setShowAssistantKeyboard(false); setShowOtherRoutes(false); setIdle(null);
+    activity.current = Date.now(); dispatch({ type: 'reset' });
+  }, [clearPrintListener, voice.stop]);
   const run = useCallback(async (task: (signal: AbortSignal) => Promise<void>) => {
     request.current?.abort(); const controller = new AbortController(); request.current = controller;
     patch({ busy: true, error: '' });
@@ -167,6 +186,11 @@ export function App() {
     return () => { controller.abort(); request.current?.abort(); clearPrintListener(); observer.disconnect(); clearInterval(timer); };
   }, [patch, clearPrintListener]);
   useEffect(() => { voice.stop(); setShowVoice(false); shell.current?.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true }); shell.current?.querySelector(`.${s.content}`)?.scrollTo(0, 0); activity.current = Date.now(); }, [state.screen, voice.stop]);
+  useEffect(() => {
+    if (state.screen !== 'assistant' && state.screen !== 'routes') return;
+    shell.current?.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true });
+    shell.current?.querySelector(`.${s.content}`)?.scrollTo(0, 0);
+  }, [state.screen, conversation, showOtherRoutes]);
   useEffect(() => { if (!showVoice || voice.speaking) return; const timer = setTimeout(() => setShowVoice(false), 6000); return () => clearTimeout(timer); }, [showVoice, voice.message, voice.speaking]);
   useEffect(() => {
     const touch = () => { if (idle === null) activity.current = Date.now(); };
@@ -245,8 +269,34 @@ export function App() {
 
   function go(screen: State['screen']) {
     request.current?.abort(); clearPrintListener();
-    const clear = ['destinations', 'keyboard'].includes(screen) ? { search: null, detail: null, live: null, guidance: null, print: null, destination: null } : screen === 'results' ? { search:null, detail:null, live:null, guidance:null, print:null } : screen === 'routes' ? { detail: null, live: null, guidance: null, print: null } : {};
+    const clear = ['destinations', 'keyboard', 'assistant'].includes(screen) ? { search: null, detail: null, live: null, guidance: null, print: null, destination: null } : screen === 'results' ? { search:null, detail:null, live:null, guidance:null, print:null } : screen === 'routes' ? { detail: null, live: null, guidance: null, print: null } : {};
     patch({ screen, busy: false, error: '', ...clear });
+  }
+  function editAssistant(text: string) {
+    setAssistantText(text);
+    setConversation(null);
+  }
+  function searchAssistant(text: string) {
+    if (!text.trim() || state.busy) return;
+    voice.stop();
+    editAssistant(text);
+    void run(async signal => {
+      const result = await api.understand(ORIGIN_STATION_ID, text, signal);
+      if (signal.aborted) return;
+      setListening(false);
+      setConversation(result.data);
+      setShowAssistantKeyboard(false);
+      patch({ dataMode: result.meta.dataMode });
+    });
+  }
+  function restartAssistant() {
+    editAssistant('');
+    setListening(false);
+    setShowAssistantKeyboard(false);
+  }
+  function confirmDestination(destination: Destination) {
+    setShowOtherRoutes(false);
+    findRoutes(destination, conversation?.sort ?? 'transfers');
   }
   function loadCategory(category: PlaceCategory, ordering: PlaceSort = 'walking') {
     patch({ selectedCategory: category, destination:null, results:[] });
@@ -269,7 +319,12 @@ export function App() {
   function findRoutes(destination: Destination, ordering: RouteOrder = 'transfers') {
     patch({destination, selectedRouteOptionId:null, search:null, detail:null, live:null, guidance:null, print:null});
     setSort(ordering);
-    void run(async signal => { const r = await api.search(ORIGIN_STATION_ID, destination.destinationId, signal, ordering === 'waiting' ? 'transfers' : ordering); if (!signal.aborted) { patch({ destination, search: r.data, detail: null, live: null, guidance: null, print: null, screen: 'routes', dataMode: r.meta.dataMode }); } });
+    void run(async signal => {
+      const backendSort = ordering === 'waiting' ? 'transfers' : ordering;
+      const args = [ORIGIN_STATION_ID, destination.destinationId, signal, backendSort] as const;
+      const r = state.assistant ? await api.search(...args, true) : await api.search(...args);
+      if (!signal.aborted) patch({ destination, search: r.data, detail: null, live: null, guidance: null, print: null, screen: 'routes', dataMode: r.meta.dataMode });
+    });
   }
   function chooseRoute(option: RouteOption) {
     if (!state.search) return;
@@ -282,6 +337,14 @@ export function App() {
       patch({ detail: displayDetail(r.data), guidance: null, live: null, liveChecked: false, screen: 'detail' });
       const guidance = await api.guidance(selection(r.data), signal);
       if (!signal.aborted && guidance.data.routeSnapshotVersion === r.data.routeSnapshotVersion) patch({ guidance: displayGuidance(guidance.data) });
+    });
+  }
+  function askRoute(question: string, previousIntent: JourneyIntent | null, receive: (answer: AnswerData) => void) {
+    const detail = state.detail;
+    if (!detail) return;
+    void run(async signal => {
+      const result = await api.answer(selection(detail), question, previousIntent, signal);
+      if (!signal.aborted) receive(result.data);
     });
   }
   function preparePrint() {
@@ -303,17 +366,22 @@ export function App() {
   const high = state.highContrast;
   const noResults = state.screen === 'results' && !state.results.length;
   const noRoutes = state.screen === 'routes' && !state.busy && !state.search?.routeOptions.length;
+  const recommended = state.assistant && !showOtherRoutes && !noRoutes;
+  const preferenceSort = assistantSorts.find(([value]) => value === conversation?.sort && value !== 'transfers');
+  const confirmedCandidate = conversation?.candidates.length === 1 ? conversation.candidates[0] : undefined;
+  const walkingDistance = state.assistant ? state.destination?.walkingDistanceMeters : null;
   const printPending = state.screen === 'print' && state.busy;
   const step = state.screen === 'routes' ? 1 : state.screen === 'detail' ? 2 : state.screen === 'print' ? 3 : 0;
-  const topBack = state.screen === 'keyboard' || (state.screen === 'print' && !printPending)
+  const routeBack = state.assistant ? 'assistant' : state.results.length ? 'results' : 'destinations';
+  const topBack = state.screen === 'assistant' || state.screen === 'keyboard' || (state.screen === 'print' && !printPending)
     || (state.screen === 'results' && !noResults && state.selectedCategory !== null)
     || (state.screen === 'routes' && !noRoutes);
   const screenClass = {
-    home: s.home, destinations: '', keyboard: s.keyboardScreen,
+    home: s.home, destinations: '', keyboard: s.keyboardScreen, assistant: s.assistantScreen,
     results: noResults ? s.emptyResults : state.selectedCategory ? '' : s.searchResults,
-    routes: '', detail: s.detailScreen, print: s.printScreen, done: s.done,
+    routes: recommended ? s.recommendationScreen : '', detail: s.detailScreen, print: s.printScreen, done: s.done,
   }[state.screen];
-  const screenSpeech: Record<State['screen'], string> = { home: '현재 정류장에서 목적지까지 가는 버스를 찾아드려요. 목적지 찾기 버튼을 눌러 주세요.', destinations: '어디로 가시나요? 검색하거나 목록에서 목적지를 선택해 주세요.', keyboard: '장소를 입력한 뒤 검색하기를 눌러 주세요.', results: `${state.resultTitle}. 검색 결과 ${state.results.length}건. 찾으시는 장소를 선택해 주세요.`, routes: `이용 가능한 경로 ${state.search?.routeOptions.length ?? 0}개. 이동할 경로를 선택해 주세요.`, detail: '선택한 경로를 확인해 주세요. 아래 경로로 이동하시겠어요?', print: '종이 안내표를 출력해 드릴까요? 출력하기 버튼을 눌러 주세요.', done: '안내표를 확인해 주세요. 다시 인쇄하려면 계속 이용하기를 눌러 주세요.' };
+  const screenSpeech: Record<State['screen'], string> = { home: '현재 정류장에서 목적지까지 가는 버스를 찾아드려요. 화면으로 찾기나 말로 찾기를 눌러 주세요.', assistant: conversation?.clarification?.question ?? (confirmedCandidate ? `${confirmedCandidate.name}이 맞나요?` : '가고 싶은 곳과 원하는 이동 방법을 말씀하거나 입력해 주세요.'), destinations: '어디로 가시나요? 검색하거나 목록에서 목적지를 선택해 주세요.', keyboard: '장소를 입력한 뒤 검색하기를 눌러 주세요.', results: `${state.resultTitle}. 검색 결과 ${state.results.length}건. 찾으시는 장소를 선택해 주세요.`, routes: noRoutes ? `이용할 수 있는 버스 경로를 찾지 못했어요. ${walkingDistance == null ? '' : `목적지까지 도보 ${formatDistance(walkingDistance)}예요.`}` : `이용 가능한 경로 ${state.search?.routeOptions.length ?? 0}개. 이동할 경로를 선택해 주세요.`, detail: '선택한 경로를 확인해 주세요. 아래 경로로 이동하시겠어요?', print: '종이 안내표를 출력해 드릴까요? 출력하기 버튼을 눌러 주세요.', done: '안내표를 확인해 주세요. 다시 인쇄하려면 계속 이용하기를 눌러 주세요.' };
   const spokenText = ['detail', 'print', 'done'].includes(state.screen) && state.detail && state.guidance
     ? speechTexts(state.guidance, state.detail).join(' ') : screenSpeech[state.screen];
   const sortedResults = state.results;
@@ -322,6 +390,12 @@ export function App() {
   const optionArrivals = searchArrivals?.routeSearchId === state.search?.routeSearchId ? searchArrivals?.options : undefined;
   const originName = state.station?.name ?? ORIGIN_NAME;
   const originCode = !state.station || state.station.stationId === ORIGIN_STATION_ID ? ORIGIN_PUBLIC_CODE : null;
+  const selectedReason = options.find(option => option.routeOptionId === state.detail?.routeOptionId)?.reasonText;
+
+  function readAloud(text: string) {
+    setShowVoice(true);
+    voice.speak(displayText(text));
+  }
 
   function toggleVoice() {
     setShowVoice(true);
@@ -337,10 +411,66 @@ export function App() {
       </header>
       <main className={`${s.content} ${screenClass}`} aria-busy={state.busy}>
         {state.screen !== 'home' && state.screen !== 'done' && <div className={s.screenTop}>
-          {topBack && <button className={s.back} onClick={() => go(state.screen === 'print' ? 'detail' : state.screen === 'routes' && state.results.length ? 'results' : 'destinations')}>이전</button>}
+          {topBack && <button className={s.back} onClick={() => state.screen === 'assistant' ? (conversation ? restartAssistant() : reset())
+            : state.screen === 'routes' && state.assistant && showOtherRoutes ? setShowOtherRoutes(false)
+            : go(state.screen === 'print' ? 'detail' : state.screen === 'routes' ? routeBack : 'destinations')}>이전</button>}
           {printPending ? <div className={s.progressPlaceholder} /> : <Progress step={step} />}
         </div>}
-        {state.screen === 'home' && <><img className={s.startBus} src="/assets/b8667.png" alt="파란 버스" /><h1 tabIndex={-1}>현재 정류장에서 목적지까지<br />가는 버스를 찾아드려요</h1><p className={s.homeSubtitle}>목적지를 선택하면 버스를 안내해 드릴게요.</p><Primary disabled={!state.station || state.busy} onClick={() => go('destinations')}>목적지 찾기</Primary></>}
+        {state.screen === 'home' && <><img className={s.startBus} src="/assets/b8667.png" alt="파란 버스" /><h1 tabIndex={-1}>현재 정류장에서 목적지까지<br />가는 버스를 찾아드려요</h1><p className={s.homeSubtitle}>편한 방법을 선택해 주세요.</p>
+          <div className={s.homeActions}>
+            <button className={s.primary} aria-label="화면으로 찾기" disabled={!state.station || state.busy} onClick={() => go('destinations')}>
+              <img src="/assets/ec4c9.svg" alt="" /><strong>화면으로 찾기</strong><span>목적지를 직접 선택해요</span>
+            </button>
+            <button className={s.primary} aria-label="말로 찾기" disabled={!state.station || state.busy}
+              onClick={() => { patch({ assistant: true }); go('assistant'); }}>
+              <MicrophoneIcon /><strong>말로 찾기</strong><span>가고 싶은 곳을 말해요</span>
+            </button>
+          </div>
+        </>}
+        {state.screen === 'assistant' && (conversation ? <>
+          <Heading title={confirmedCandidate ? '이 장소가 맞나요?' : conversation.candidates.length ? '어디로 가시나요?' : '목적지를 확인해 주세요.'}
+            subtitle={conversation.candidates.length ? 'AI가 경로를 추천해 드려요.' : '장소 이름을 바꿔 다시 찾아보세요.'} />
+          <section className={s.voiceConfirmation} aria-label="목적지 확인">
+            <img src="/assets/voice-location-pin.png" alt="" className={s.confirmationPin} />
+            {confirmedCandidate ? <>
+              <p><strong>{displayText(confirmedCandidate.name)}</strong><br />“{assistantText}”</p>
+              <div className={s.actions}>
+                <Primary secondary disabled={state.busy} onClick={restartAssistant}>아니에요</Primary>
+                <Primary disabled={state.busy} onClick={() => confirmDestination(confirmedCandidate)}>맞아요</Primary>
+              </div>
+            </> : <>
+              <p>{conversation.clarification?.question ?? (conversation.status === 'unavailable'
+                ? 'AI 도우미를 이용할 수 없어요.' : '일치하는 목적지를 찾지 못했어요.')}</p>
+              <div className={s.assistantResults}>
+                {conversation.candidates.map(destination => <Primary key={destination.destinationId} disabled={state.busy}
+                  onClick={() => confirmDestination(destination)}>{displayText(destination.name)}</Primary>)}
+                <Primary secondary disabled={state.busy} onClick={restartAssistant}>다시 입력하기</Primary>
+              </div>
+            </>}
+          </section>
+        </> : <>
+          <Heading title="말로 목적지 찾기" subtitle={<>가고 싶은 곳을 말씀해 주세요.<br />원하는 조건도 함께 말씀하실 수 있어요.</>} />
+          <img src="/assets/voice-microphone.png" alt="" className={s.voiceArt} />
+          {!listening && <div className={s.voiceExamples} aria-label="예시로 검색">
+            <p>아래 버튼을 누른 후 이렇게 말씀해 보세요.</p>
+            {assistantExamples.map(text => <button key={text} type="button" disabled={state.busy}
+              onClick={() => searchAssistant(text)}>“{text}”</button>)}
+          </div>}
+          <div className={s.voiceControls}>
+            <SpeechInput variant="destination" disabled={state.busy || idle !== null} onListen={voice.stop}
+              onListeningChange={setListening} onText={searchAssistant} />
+            {!listening && <button type="button" className={s.helperButton} disabled={state.busy}
+              aria-expanded={showAssistantKeyboard} onClick={() => setShowAssistantKeyboard(open => !open)}>글로 입력하기</button>}
+          </div>
+          {showAssistantKeyboard && !listening && <form onSubmit={event => { event.preventDefault(); searchAssistant(assistantText); }}>
+            <label className={s.inputWrap}>
+              <input aria-label="목적지와 이동 조건" placeholder="예: 중앙시장에 가고 싶어요" value={assistantText}
+                maxLength={200} disabled={state.busy} onChange={event => editAssistant(event.target.value)} />
+            </label>
+            <div className={s.keyboard}><Keyboard value={assistantText} onChange={editAssistant} maxLength={200}
+              onSubmit={() => searchAssistant(assistantText)} disabled={state.busy} /></div>
+          </form>}
+        </>)}
         {state.screen === 'destinations' && <><Heading title="어디로 가시나요?" subtitle="검색하거나 아래 목록에서 선택해 주세요." /><button className={s.searchField} onClick={() => go('keyboard')}><Asset file={high ? '70f47.svg' : 'b06fb.svg'} className={s.searchIcon} />장소를 검색하세요</button><div className={s.categories}>{(['hospital', 'office', 'terminal', 'market', 'station'] as const).map((cat, i) => <button key={cat} className={s.category} disabled={state.busy} aria-pressed={state.selectedCategory === cat} onClick={() => loadCategory(cat)}><span className={s.categoryIcon}>{cat === 'market' ? <><Asset file={high ? 'df386.svg' : '8d70f.svg'} className={s.marketTop} /><Asset file={high ? '76506.svg' : '9042c.svg'} className={s.marketBottom} /></> : <Asset file={(high ? ['3a98b', 'd780a', '3a4ca', '', '4a3cf'] : ['26a86', '3b151', '62785', '', 'd92b2'])[i] + '.svg'} className={s.categoryArt} />}</span><span>{['병원', '관공서', '터미널', '시장·쇼핑', '역'][i]}</span>{state.selectedCategory === cat && <small>선택됨</small>}</button>)}</div><div className={s.extraCategories}>{(['education', 'culture'] as const).map(cat => <button className={s.chip} key={cat} aria-pressed={state.selectedCategory === cat} disabled={state.busy} onClick={() => loadCategory(cat)}>{CATEGORY_LABELS[cat]}</button>)}</div></>}
         {state.screen === 'keyboard' && <>
           <Heading title="어디로 가시나요?" subtitle="검색하거나 아래 목록에서 선택해 주세요." />
@@ -393,26 +523,34 @@ export function App() {
             <img src="/assets/a3ca0.png" alt="회색 버스" />
             <p>{state.search ? '이용할 수 있는 경로를 찾지 못했어요.' : '경로를 다시 검색해 주세요.'}</p>
             {state.destination && <p aria-label="선택한 장소">{state.destination.name}</p>}
+            {walkingDistance != null && <p>목적지까지 도보 {formatDistance(walkingDistance)}</p>}
             <div className={s.actions}>
-              <Primary secondary onClick={() => go(state.results.length ? 'results' : 'destinations')}>이전</Primary>
+              <Primary secondary onClick={() => go(routeBack)}>이전</Primary>
               <Primary disabled={!state.destination || state.busy} onClick={() => state.destination && findRoutes(state.destination, sort)}>경로 다시 검색</Primary>
             </div>
           </div>
         </> : <>
-          <Heading title="어떤 경로로 이동하시겠어요?" subtitle="이용할 경로를 선택해 주세요." />
+          <Heading title={recommended ? (conversation?.sort ? '조건에 맞는 경로를 찾았어요' : '추천 경로를 찾았어요')
+            : state.assistant ? '다른 경로도 확인해 보세요' : '어떤 경로로 이동하시겠어요?'}
+            subtitle={recommended && sort === 'walking' ? '적게 걷고 싶은 조건을 고려해 추천했어요.'
+              : sort === 'fastest' ? '예상 이동시간이 짧은 순서예요. 버스 대기시간은 제외돼요.'
+              : recommended ? '이동할 경로를 확인해 주세요.'
+              : state.assistant ? '원하는 기준으로 경로를 다시 찾아볼 수 있어요.' : '이용할 경로를 선택해 주세요.'} />
           <Summary />
-          <div className={s.listHeading}>
+          {!recommended && <div className={s.listHeading}>
             <span>이용 가능 경로</span>
             <span className={s.routeSort} aria-label="경로 정렬">
-              {([['transfers', '최소 환승'], ['waiting', '최소 대기'], ['distance', '최단 거리']] as const).map(([value, label]) =>
+              {(state.assistant && preferenceSort ? [...standardSorts, preferenceSort] : standardSorts).map(([value, label]) =>
                 <button key={value} className={s.chip} aria-pressed={sort === value} disabled={state.busy}
-                  title={value === 'waiting' ? '첫 버스 도착 예정 순' : undefined}
+                  title={value === 'waiting' ? '첫 버스 도착 예정 순' : value === 'fastest' ? '대기시간 제외' : undefined}
                   onClick={() => value === 'waiting' ? setSort(value) : state.destination && findRoutes(state.destination, value)}>{label}</button>)}
             </span>
-          </div>
-          <RouteCards options={options} selected={state.selectedRouteOptionId} busy={state.busy}
+          </div>}
+          <RouteCards options={options} recommended={recommended} selected={state.selectedRouteOptionId} busy={state.busy}
             simulate={prototypeEnabled(state.dataMode)} sortByWait={sort === 'waiting'} now={Date.now()}
             checkingArrivals={state.dataMode === 'static' && !optionArrivals} arrivals={optionArrivals} onChoose={chooseRoute} />
+          {recommended && options.length > 0 && <button type="button" className={`${s.helperButton} ${s.otherRoutes}`}
+            disabled={state.busy} onClick={() => setShowOtherRoutes(true)}>다른 경로도 보기</button>}
         </>)}
         {state.screen === 'detail' && state.detail && <>
           <Heading title="선택한 경로를 확인해 주세요." subtitle="아래 경로로 이동하시겠어요?" />
@@ -420,6 +558,10 @@ export function App() {
             <SelectedRoute detail={state.detail} live={state.live} cached={optionArrivals?.[state.detail.routeOptionId]}
               verified={state.dataMode === 'live' || state.dataMode === 'static'} retry={() => void refreshLive()} />
             <JourneySteps detail={state.detail} high={high} />
+            {state.assistant && selectedReason && <p className={s.routeReason}>{displayText(selectedReason)}</p>}
+            {state.assistant && state.detail.journeyStatus === 'ready' && <RouteQuestions
+              key={`${state.detail.routeSearchId}/${state.detail.routeOptionId}`} busy={state.busy}
+              allowSpeechInput={idle === null} speaking={voice.speaking} onAsk={askRoute} onRead={readAloud} onStop={voice.stop} />}
           </div>
           <div className={s.actions}>
             <Primary secondary onClick={() => go('routes')}>이전</Primary>

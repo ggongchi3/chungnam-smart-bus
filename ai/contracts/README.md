@@ -73,9 +73,9 @@
 - 버전이 비었거나, 구간이 없거나, 구간 유형을 알 수 없거나, segmentId가 중복이거나, 고를 수 있는 active 템플릿이 없으면 `{"status": "unavailable", "routeSnapshotVersion": <입력 버전 또는 "">, "steps": []}`를 반환한다.
 - 문장의 슬롯 값(정류장명·노선명·정류장 수 등)은 백엔드가 채운다. 템플릿 목록은 [easy_guidance/templates.json](../easy_guidance/templates.json)이다.
 
-## 3. 대화 기능 (제안 v0.2, 백엔드 미연결)
+## 3. 대화 기능
 
-`RuleBasedAIAdapter`에 다섯 메서드를 더했다. 백엔드 `AIAdapter` Protocol에는 아직 없으므로 지금 동작에는 영향이 없다. 설명은 [conversation/README.md](../conversation/README.md), JSON Schema는 [schemas.json](schemas.json)의 `Understand*`·`Clarify*`·`ExplainRoute*`·`AnswerQuestion*`·`PrintHeadline*`이다.
+`RuleBasedAIAdapter`와 대화 문구 모듈을 키오스크의 **AI 목적지 찾기 도우미**에서 사용한다. 모듈 계약은 [conversation/README.md](../conversation/README.md)와 [schemas.json](schemas.json)의 `Understand*`·`Clarify*`·`ExplainRoute*`·`AnswerQuestion*`·`PrintHeadline*`에 있다.
 
 | 메서드 | 입력 | 출력 |
 | --- | --- | --- |
@@ -88,15 +88,14 @@
 - 문장(`question`·`text`)은 모두 [conversation/phrases.json](../conversation/phrases.json)의 고정 문구 + 입력 값이다. 숫자·이름을 새로 만들지 않는다.
 - 실패는 `status: "unavailable"`(understand는 `destination.status`)이며 예외를 던지지 않는다.
 
-### 연결 제안 (백엔드·프론트 결정 필요)
+### 공개 API와 화면 연결
 
-- **백엔드**: 아래 중 편한 방식. AI 호출은 기존 `AIBoundary`(1초 예산)로 감싸고, 실패하면 각 기능을 건너뛴다.
-  - `POST /destination-interpretations` 응답에 `preference.sort`와 `clarification`(question·options)을 더하거나, 새 `POST /conversation/understand`를 둔다.
-  - `RouteOption`마다 `reasonText`(= `explain_route`)를 붙이거나 `GET .../options/{id}`에 넣는다.
-  - `POST /conversation/answers` `{routeSearchId, routeOptionId, question, previousAnswer?}` → `{intent, text}`.
-  - `PrintData.headline`(= `print_headline`). 인쇄표 맨 위에 한 줄, 기존 단계별 인쇄표는 아래에 그대로.
-- **프론트 A**: `App.tsx`의 `searchText()`가 일반 검색이 비었을 때 해석 결과의 `preference.sort`로 `findRoutes(dest, sort)`를 부르면 "덜 걷고 싶어요"가 기존 `최소 도보` 정렬로 바로 이어진다. `needs_confirmation`이면 `question`을 제목으로, `options`를 큰 버튼으로.
-- **프론트 B**: 묻고 듣기 답과 추천 이유는 기존 `speechPlayer`로 읽으면 된다. **음성 입력(STT)은 지금 프론트에 없다**(`speechSynthesis` 출력만). 말로 묻기를 실제로 하려면 STT 도입 여부를 정해야 하며, 그 전에는 화면 키보드·질문 버튼("몇 번 버스 타요?" 등)으로 같은 함수를 쓸 수 있다.
+- `POST /conversation/understand`는 목적지 해석 요청을 받아 등록 후보, `sort`, 필요한 경우 `clarification`을 돌려준다. 화면은 큰 버튼으로 목적지를 확인받고 해당 조건으로 경로를 검색한다.
+- `POST /route-searches`에서 `explain: true`를 보내면 각 버스 후보에 `reasonText`가 붙는다. 최소 이동시간은 대기 제외 기준이다.
+- `POST /conversation/answers`는 경로 선택 식별자, `expectedRouteSnapshotVersion`, `question`, 선택 항목인 `previousIntent`를 받는다. 응답은 `{status, intent, text}`이며 반복 답변은 이전 질문의 유형을 현재 경로에 다시 적용한다.
+- `POST /print-guides`의 `headline`은 같은 경로 스냅샷에서 만든 승차·환승·하차 요약이다. 인쇄표 제목 아래에 표시한다.
+- 요청과 질문의 해석은 `AIBoundary`를 거친다. 되묻기, 추천 이유, 답변, 인쇄 요약은 서버가 확인한 자료를 고정 문구에 넣는다.
+- 브라우저가 한국어 음성 인식을 지원하면 마이크 입력을 사용할 수 있다. 화면 키보드와 질문 버튼을 제공하며 답변은 한국어 음성으로 읽을 수 있다.
 
 ## 연결 결정과 후속 검토
 
@@ -108,6 +107,6 @@
 6. **category 미전달**: 입력에 Destination의 `category`가 없어 분류 표현은 이름·별칭의 핵심어로 연결한다. category를 함께 받으면 분류 매칭을 더 명확히 할 수 있다(선택).
 7. **도보 시간 단위**: `walk.basic`의 백엔드 문장은 60초 미만이면 초로 읽고, 60초 이상이면 화면·인쇄와 같이 분 단위로 올림한다. 89초는 약 2분이다. 응답의 `durationSeconds`는 초 단위를 유지한다.
 8. **인쇄 안내표 슬롯(제안, 디자인 Print Guide 2026-11-05)**: 출력물(감열지 80mm, 인쇄 폭 68mm)에 **운행 방향(방면)**과 **하차 직전 정류장**이 들어간다. 둘 다 지금 백엔드 응답에 없으므로 `templates.json`에 proposal `bus.print`(슬롯 `direction`, `previousStation.name`)로 기록했다. 값은 백엔드가 실제 노선 순서로 채우고, AI는 값을 만들지 않는다.
-9. **대화 기능 연결(제안)**: 위 3절. 백엔드 Protocol·엔드포인트·`PrintData.headline`, 프론트 STT 도입 여부가 정해지면 연결 테스트를 이어서 붙인다.
-10. **같은 이름의 정류장(백엔드 확인 요청)**: 천안 정적 데이터에서 `종합터미널 → 천안고속버스터미널` 121번 직통 경로가 `종합터미널(685)`에서 타서 46개 정류장을 돌아 `종합터미널(2357)`에서 내린다(대기 제외 약 68분). 순환 노선을 거의 한 바퀴 도는 경로라 직통 후보로 보여 줄지 백엔드 확인이 필요하다. AI 문장은 이름이 같으면 정류장 번호를 붙여 가른다.
+9. **대화 기능 연결**: 위 3절의 공개 API 흐름을 `ai/evaluation/test_backend_integration.py`에서 천안 정적 데이터로 검증한다.
+10. **터미널 우회 경로**: 종합터미널에서 천안고속버스터미널까지 검색하면 121번 순환 경로는 후보에서 제외된다. 버스 후보가 없고 도보 거리가 확인되면 AI 도우미에 해당 거리를 표시한다.
 11. **장소 표현 보완**: 등록 이름 앞 지역명(천안·남산 등)을 뺀 말도 그 장소로 본다('중앙시장' → 천안중앙시장, '고속터미널' → 천안고속버스터미널, '시청' → 천안시청). 분류 이름 자체('병원'·'시장'·'터미널')는 계속 해당 분류 후보를 모두 고르고 확인을 요청한다.

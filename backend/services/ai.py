@@ -1,14 +1,17 @@
 from pydantic import ValidationError
 from time import monotonic
 
+from ai.conversation import dialogue, explain
+from ai.conversation.understand import SORTS
 from backend.models import schemas as s
 
 
-async def interpret(boundary, text, destinations, data_mode, *, reload_destinations=None):
-    started = monotonic()
-    payload = {'text': text, 'dataMode': data_mode,
-               'allowedDestinations': [d.model_dump(include={'destinationId', 'name', 'aliases'}) for d in destinations]}
-    raw = await boundary.call('interpret_destination', payload)
+def interpretation_payload(text, destinations, data_mode):
+    return {'text': text, 'dataMode': data_mode,
+            'allowedDestinations': [d.model_dump(include={'destinationId', 'name', 'aliases'}) for d in destinations]}
+
+
+def checked_interpretation(raw, destinations, reload_destinations, deadline):
     fallback = s.InterpretationData(status='unavailable', candidates=[], reasonCode='AI_UNAVAILABLE')
     try:
         if (type(raw) is not dict or type(raw.get('candidateDestinationIds')) is not list or
@@ -34,7 +37,7 @@ async def interpret(boundary, text, destinations, data_mode, *, reload_destinati
             if not set(ids).issubset(current):
                 return fallback
             allowed = current
-        if monotonic() - started > boundary.budget:
+        if monotonic() > deadline:
             return fallback
         # Never expose model-generated explanations; backend owns reason codes.
         reasons = {'matched': 'MATCHED', 'needs_confirmation': 'USER_CONFIRMATION_REQUIRED',
@@ -47,6 +50,60 @@ async def interpret(boundary, text, destinations, data_mode, *, reload_destinati
                                      reasonCode=reasons[value.status])
     except (ValidationError, TypeError, ValueError):
         return fallback
+
+
+async def interpret(boundary, text, destinations, data_mode, *, reload_destinations=None):
+    deadline = monotonic() + boundary.budget
+    raw = await boundary.call('interpret_destination', interpretation_payload(text, destinations, data_mode))
+    return checked_interpretation(raw, destinations, reload_destinations, deadline)
+
+
+async def understand(boundary, text, destinations, data_mode, *, reload_destinations):
+    deadline = monotonic() + boundary.budget
+    raw = await boundary.call('understand_request', interpretation_payload(text, destinations, data_mode)) or {}
+    result = checked_interpretation(raw.get('destination'), destinations, reload_destinations, deadline)
+    preference = raw.get('preference')
+    sort = preference.get('sort') if isinstance(preference, dict) else None
+    clarification = None
+    if result.status == 'needs_confirmation':
+        names = [candidate.model_dump(include={'destinationId', 'name'}) for candidate in result.candidates]
+        message = explain.clarify({'candidates': names})
+        if message['status'] == 'ok':
+            clarification = s.Clarification(question=message['question'], options=message['options'])
+    return s.ConversationData(**result.model_dump(), clarification=clarification,
+                              sort=sort if result.status != 'unavailable' and sort in SORTS else None)
+
+
+def explain_search(search, sort):
+    for option in search.routeOptions:
+        if option.routeNames:
+            result = explain.explain_route({'routeOption': option.model_dump(), 'sort': sort if sort in SORTS else None})
+            option.reasonText = result['text']
+    return search
+
+
+async def answer(boundary, detail, question, previous_intent):
+    route = detail.model_dump(mode='json')
+    payload = {'routeDetail': route, 'question': question}
+    raw = await boundary.call('answer_question', payload)
+    if not raw or raw.get('status') != 'ok':
+        return s.AnswerData(status='unavailable')
+    # Bind the selected intent to the current route. Repeating a reply never
+    # requires accepting arbitrary display or speech text from the client.
+    intent = raw.get('intent')
+    if intent not in dialogue.INTENTS:
+        return s.AnswerData(status='unavailable')
+    if intent == 'repeat' and previous_intent:
+        try:
+            payload['previousAnswer'] = dialogue.reply(previous_intent, route)
+        except (KeyError, ValueError, TypeError):
+            pass
+    result = dialogue.answer(payload, classify_intent=lambda _: intent)
+    return s.AnswerData.model_validate(result)
+
+
+def print_headline(detail):
+    return explain.print_headline({'routeDetail': detail.model_dump(mode='json')})['text']
 
 
 def spoken_stop(station):

@@ -489,7 +489,7 @@ def test_openapi_and_actual_json(env):
     assert client.get('/docs').status_code == 200
     schema = client.get('/openapi.json').json()
     operations = [v for p in schema['paths'].values() for v in p.values()]
-    assert len(operations) == 8
+    assert len(operations) == 10
     assert all('422' not in v['responses'] and '400' in v['responses'] for v in operations)
     assert schema['components']['schemas']['SearchRequest']['required'] == ['originStationId','destinationId','departAt']
     assert schema['components']['schemas']['Bus']['properties']['type']['const'] == 'bus'

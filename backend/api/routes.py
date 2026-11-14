@@ -54,7 +54,8 @@ def search(body: s.SearchRequest, request: Request, db: Session):
     # FastAPI runs this CPU/SQLite-only handler in its worker pool. Cold graph
     # matching must not block station/live requests on the ASGI event loop.
     now, provider = state(request)
-    return response(request, journeys.create_search(db, body, provider, now, request.app.state.settings.data_mode, transport=request.app.state.transport))
+    result = journeys.create_search(db, body, provider, now, request.app.state.settings.data_mode, transport=request.app.state.transport)
+    return response(request, ai.explain_search(result, body.sort) if body.explain else result)
 
 
 @router.get('/route-searches/{routeSearchId}/options/{routeOptionId}', response_model=s.Envelope[s.RouteDetail])
@@ -95,6 +96,15 @@ async def search_arrivals(routeSearchId: s.Identifier, request: Request, db: Ses
 
 @router.post('/destination-interpretations', response_model=s.Envelope[s.InterpretationData])
 async def interpretation(body: s.InterpretationRequest, request: Request, db: Session):
+    return await interpret_request(body, request, db, ai.interpret)
+
+
+@router.post('/conversation/understand', response_model=s.Envelope[s.ConversationData])
+async def understand(body: s.InterpretationRequest, request: Request, db: Session):
+    return await interpret_request(body, request, db, ai.understand)
+
+
+async def interpret_request(body, request, db, interpret):
     now, provider = state(request)
     journeys.require_core(provider)
     allowed = catalog.destinations(db, body.originStationId, visible_ids=request.app.state.place_ids, transport=request.app.state.transport)
@@ -105,8 +115,8 @@ async def interpretation(body: s.InterpretationRequest, request: Request, db: Se
         with request.app.state.database.session() as latest_db:
             return catalog.destinations(latest_db, body.originStationId, visible_ids=request.app.state.place_ids, transport=request.app.state.transport)
 
-    result = await ai.interpret(request.app.state.ai, body.text, allowed, request.app.state.settings.data_mode,
-                                reload_destinations=current_candidates)
+    result = await interpret(request.app.state.ai, body.text, allowed, request.app.state.settings.data_mode,
+                             reload_destinations=current_candidates)
     return response(request, result)
 
 
@@ -130,3 +140,11 @@ async def print_guide(body: s.SelectionRequest, request: Request, db: Session):
     now, provider, detail = selected(request, db, body)
     return response(request, journeys.print_guide(detail, provider, now, session=db,
                     data_mode=request.app.state.settings.data_mode))
+
+
+@router.post('/conversation/answers', response_model=s.Envelope[s.AnswerData])
+async def answer(body: s.QuestionRequest, request: Request, db: Session):
+    _, _, detail = selected(request, db, body)
+    result = await ai.answer(request.app.state.ai, detail, body.question, body.previousIntent)
+    selected(request, db, body)
+    return response(request, result)

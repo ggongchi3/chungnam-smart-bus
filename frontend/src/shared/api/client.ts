@@ -1,5 +1,5 @@
 import type {
-  Category, DestinationData, Envelope, GuidanceData, InterpretationData, LiveData,
+  AnswerData, Category, ConversationData, DestinationData, Envelope, GuidanceData, InterpretationData, JourneyIntent, LiveData,
   Meta, PrintData, RouteDetail, SearchArrivals, SearchData, SelectionRequest, StationData, RouteSort, PlaceSort,
 } from './types';
 
@@ -59,13 +59,18 @@ async function attempt<T>(path: string, method: 'GET' | 'POST', body: unknown, s
   let timedOut = false;
   const onAbort = () => controller.abort();
   signal?.addEventListener('abort', onAbort, { once: true });
-  const timer = setTimeout(() => { timedOut = true; controller.abort(); }, path === '/route-searches' ? 30_000 : TIMEOUT_MS);
+  const recording = body instanceof Blob ? body : null;
+  const timeout = recording ? 45_000 : path === '/route-searches' ? 30_000 : TIMEOUT_MS;
+  const timer = setTimeout(() => { timedOut = true; controller.abort(); }, timeout);
   try {
     const response = await fetch(BASE + path, {
       method,
       signal: controller.signal,
       cache: 'no-store',
-      ...(method === 'POST' ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}),
+      ...(method === 'POST' ? {
+        headers: { 'Content-Type': recording?.type || 'application/json' },
+        body: recording ?? JSON.stringify(body),
+      } : {}),
     });
     const payload: unknown = await response.json().catch(() => null);
     // Abort can happen while consuming the response body as well as during fetch.
@@ -123,14 +128,20 @@ export const api = {
     if (options?.kind) params.set('kind', options.kind);
     return request<DestinationData>(`/destinations?${params}`, 'GET', undefined, signal);
   },
-  search: (origin: string, destination: string, signal?: AbortSignal, sort?: RouteSort) => request<SearchData>('/route-searches', 'POST', {
+  search: (origin: string, destination: string, signal?: AbortSignal, sort?: RouteSort, explain = false) => request<SearchData>('/route-searches', 'POST', {
     originStationId: origin, destinationId: destination, departAt: new Date().toISOString(),
     ...(sort ? {sort} : {}),
+    ...(explain ? {explain} : {}),
   }, signal),
   detail: (searchId: string, optionId: string, signal?: AbortSignal) => request<RouteDetail>(optionPath(searchId, optionId), 'GET', undefined, signal),
   searchArrivals: (searchId: string, signal?: AbortSignal) => request<SearchArrivals>(`/route-searches/${encode(searchId)}/arrivals`, 'GET', undefined, signal),
   live: (searchId: string, optionId: string, signal?: AbortSignal) => request<LiveData>(`${optionPath(searchId, optionId)}/live`, 'GET', undefined, signal),
   interpret: (origin: string, text: string, signal?: AbortSignal) => request<InterpretationData>('/destination-interpretations', 'POST', { originStationId: origin, text: text.trim() }, signal),
+  understand: (origin: string, text: string, signal?: AbortSignal) => request<ConversationData>('/conversation/understand', 'POST', { originStationId: origin, text: text.trim() }, signal),
+  transcribe: (audio: Blob, signal: AbortSignal) =>
+    request<{ text: string }>('/speech/transcriptions', 'POST', audio, signal),
+  answer: (selection: SelectionRequest, question: string, previousIntent: JourneyIntent | null, signal?: AbortSignal) =>
+    request<AnswerData>('/conversation/answers', 'POST', { ...selection, question: question.trim(), previousIntent }, signal),
   guidance: (selection: SelectionRequest, signal?: AbortSignal) => request<GuidanceData>('/easy-guidance', 'POST', selection, signal),
   printGuide: (selection: SelectionRequest, signal?: AbortSignal) => request<PrintData>('/print-guides', 'POST', selection, signal),
 };

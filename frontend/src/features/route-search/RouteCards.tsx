@@ -2,10 +2,12 @@ import { Fragment, type ReactNode } from 'react';
 import type { OptionArrivals, RouteOption, StationRef } from '../../shared/api/types';
 import { currentArrival, formatBusLabel, formatDuration } from '../../shared/api/format';
 import { routeTiming, simulatedArrivalLabel } from '../../shared/prototypeTiming';
+import { displayText } from '../../shared/places';
 import s from '../../app/App.module.css';
 
 interface Props {
   options: RouteOption[];
+  recommended?: boolean;
   selected: string | null;
   busy: boolean;
   simulate: boolean;
@@ -55,7 +57,7 @@ function visibleRoute(option: RouteOption) {
   ]);
 }
 
-export function RouteCards({options, selected, busy, simulate, sortByWait, checkingArrivals, now, arrivals, onChoose}: Props) {
+export function RouteCards({options, recommended = false, selected, busy, simulate, sortByWait, checkingArrivals, now, arrivals, onChoose}: Props) {
   const cards = options.map(option => {
     const snapshot = arrivals?.[option.routeOptionId];
     const boarding = snapshot?.arrivals[0];
@@ -80,13 +82,14 @@ export function RouteCards({options, selected, busy, simulate, sortByWait, check
     for (const label of labels) shownRoutes.add(label);
     return [variants[0]];
   });
-  return <div className={s.routeList} role="group" aria-label="이용 가능 경로">{uniqueCards.map(({option, firstArrival}) => {
+  const displayedCards = recommended ? uniqueCards.slice(0, 1) : uniqueCards;
+  return <div className={s.routeList} role="group" aria-label="이용 가능 경로">{displayedCards.map(({option, firstArrival}) => {
     const timing = routeTiming(option, simulate);
     const stops = option.boardStation && option.alightStation
       ? [option.boardStation, ...(option.transferStations ?? []), option.alightStation] : [];
     const arrival = firstArrival?.label ?? (simulate && arrivals ? simulatedArrivalLabel(option.routeOptionId, 0)
       : checkingArrivals ? '도착 정보 확인 중' : '도착 정보 확인 불가');
-    return <button key={option.routeOptionId} className={s.comparisonCard} aria-pressed={selected === option.routeOptionId}
+    return <button key={option.routeOptionId} className={`${s.comparisonCard} ${recommended ? s.recommendedCard : ''}`} aria-pressed={selected === option.routeOptionId}
       disabled={busy || option.journeyStatus !== 'ready'} onClick={() => onChoose(option)}>
       <RouteCardHeader names={option.routeNames} transferCount={option.transferCount} duration={timing.total ?? timing.movement}
         arrival={option.routeNames.length > 0 ? arrival : undefined}
@@ -106,6 +109,7 @@ export function RouteCards({options, selected, busy, simulate, sortByWait, check
         })}
       </span> : <span className={s.routeStationText}>{option.routeNames.length
         ? '정류장은 상세 안내에서 확인해 주세요.' : '현재 정류장에서 목적지까지 도보 이동'}</span>}
+      {option.reasonText && <span className={s.routeReason}>{displayText(option.reasonText)}</span>}
     </button>;
   })}</div>;
 }

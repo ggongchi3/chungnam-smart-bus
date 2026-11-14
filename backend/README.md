@@ -11,6 +11,17 @@ backend/.venv/Scripts/python -m uvicorn backend.main:app --host 127.0.0.1 --port
 
 현재 모드에서 `demo-stop-*` 출발지로 목적지·경로 검색을 요청하면 400이다. 기존 합성 테스트는 `create_app(..., place_catalog='legacy', transport_catalog='legacy')`를 사용한다. 전체 테스트와 실제 HTTP 검증 재현 명령은 최신 보고서에 있다.
 
+### 한국어 마이크 인식 준비
+
+Windows에서는 프로젝트 루트에서 아래 명령을 한 번 실행한다. 모델 다운로드는 약 484 MB다. 이후 `backend.main:app`을 실행하면 브라우저가 녹음한 짧은 음성을 FastAPI 서버에서 처리한다. 녹음은 메모리에서 처리하고, 모델 설치 후에는 음성 인식에 외부 서비스 연결이 필요 없다.
+
+```powershell
+backend/.venv/Scripts/python -m pip install -r backend/requirements-speech.txt
+backend/.venv/Scripts/hf.exe download Systran/faster-whisper-small config.json model.bin tokenizer.json vocabulary.txt --revision 536b0662742c02347bc0e980a01041f333bce120 --local-dir backend/.local/speech-model
+```
+
+마이크 입력은 로컬 주소(`localhost` 또는 `127.0.0.1`)나 HTTPS 화면에서 허용한다. `말하기`를 누르고 말한 뒤 버튼을 다시 누르면 바로 인식한다. 다시 누르지 않아도 최대 9초 후 녹음을 끝낸다. 로컬 모델이 준비되지 않은 경우 지원되는 브라우저에서는 브라우저 음성 인식으로 다시 듣는다.
+
 명령은 프로젝트 루트에서 실행한다. 검증 환경은 Windows, Python **3.13.2**, FastAPI **0.115.5**, Uvicorn **0.32.0**, Pydantic **2.9.2**, SQLAlchemy **2.0.36**, HTTPX **0.27.2**, pytest **8.3.3**이다. SQLite는 Python 내장 라이브러리이며 실제 버전은 `docs/runtime-versions.json`에 기록한다. 전체 간접 의존성까지 `requirements.lock`에 고정했다. 규칙 기반 AI 모듈은 표준 라이브러리만 사용한다.
 
 2026-11-09 7단계 검증: 전체 **377 passed·실패0·skip0**, 실제 규칙 AI를 연결한 격리 HTTP **55건**, 같은 PC의 새 가상환경에서도 HTTP **55건**을 통과했다. 확인된 이용 불가409·AI 후보 순서·500 CORS 오류를 수정했다. 프론트/화면 디자인이 없어 브라우저·음성·인쇄 미리보기는 차단이다. 최신 [통합 보고서](../docs/stage7-integration-report.md), [기능표](../docs/stage7-feature-matrix.md), [11/10 재현 절차](../docs/stage7-reproduction.md)를 따른다. 아래 날짜별 실행 기록은 당시 검증 범위이며 최신 전체 통합 완료를 뜻하지 않는다.

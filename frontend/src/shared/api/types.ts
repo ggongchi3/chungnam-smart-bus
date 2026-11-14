@@ -107,6 +107,7 @@ export interface RouteOption {
   transferStations?: StationRef[];
   features?: string[];
   dataSource?: string | null;
+  reasonText?: string | null;
 }
 export interface SearchRequest { originStationId: string; destinationId: string; departAt: string }
 export interface SearchData {
@@ -175,6 +176,16 @@ export interface InterpretationData {
   candidates: Destination[];
   reasonCode: 'MATCHED' | 'USER_CONFIRMATION_REQUIRED' | 'NO_REGISTERED_MATCH' | 'AI_UNAVAILABLE';
 }
+export interface ConversationData extends InterpretationData {
+  sort: Extract<RouteSort, 'walking' | 'transfers' | 'fastest'> | null;
+  clarification: { question: string; options: { destinationId: string; label: string }[] } | null;
+}
+export type JourneyIntent = 'which_bus' | 'how_many' | 'where_board' | 'where_alight' | 'stop_count' | 'walk' | 'duration';
+export interface AnswerData {
+  status: 'ok' | 'unavailable';
+  intent: JourneyIntent | 'repeat' | 'unknown' | null;
+  text: string | null;
+}
 export interface Step { segmentId: string; text: string }
 export interface GuidanceData {
   routeSnapshotVersion: string;
@@ -188,6 +199,7 @@ export interface PrintData {
   liveInfoSnapshot: LiveData;
   notice: string;
   guidance: GuidanceData;
+  headline?: string | null;
 }
 
 export const DEMO_NOTICE = '시연 데이터 · 실제 운행 정보 아님';

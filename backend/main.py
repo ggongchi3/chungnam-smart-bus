@@ -20,9 +20,11 @@ from backend.integrations.ai import AIBoundary
 from backend.integrations.providers import DemoProvider, UnconnectedLiveProvider, StaticReferenceProvider
 from backend.seed import seed
 from backend.api.routes import cheonan_router, router
+from backend.api.speech import speech_router
 from backend.config import ROOT
 from backend.services.places import load_places, register_places
 from backend.services.cheonan_routing import CheonanNetwork
+from backend.services.speech import SpeechTranscriber
 
 
 def create_app(settings=None, clock=None, provider=None, ai_adapter=None, *, place_catalog='legacy', transport_catalog='legacy'):
@@ -65,6 +67,8 @@ def create_app(settings=None, clock=None, provider=None, ai_adapter=None, *, pla
     app.include_router(router)
     if transport is not None:
         app.include_router(cheonan_router)
+        app.state.speech = SpeechTranscriber()
+        app.include_router(speech_router)
 
     @app.middleware('http')
     async def common_server_errors(request, call_next):

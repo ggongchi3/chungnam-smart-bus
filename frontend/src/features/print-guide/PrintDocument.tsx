@@ -17,6 +17,7 @@ export function PrintDocument({ snapshot, originName, destinationName }: PrintDo
     <article className={styles.document} aria-label="인쇄용 이동 안내표" data-route-version={detail.routeSnapshotVersion}>
       <header className={styles.header}>
         <h1>나의 버스 이동 안내표</h1>
+        {snapshot.headline && <p className={styles.headline}>{displayText(snapshot.headline)}</p>}
         <dl className={styles.journey}>
           <dt>출발 정류장</dt><dd>{displayText(originName)}{originCode && ` ${originCode}`}</dd>
           <dt>목적지</dt><dd className={styles.destination}>{displayText(destinationName)}</dd>
