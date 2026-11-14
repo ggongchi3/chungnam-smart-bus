@@ -92,7 +92,7 @@ afterEach(async () => {
 });
 
 describe('연결된 키오스크 사용자 흐름', () => {
-  it('브라우저 음성 서비스 없이 녹음해 한국어 텍스트를 목적지 확인에 사용한다', async () => {
+  it('조건 없이 말한 목적지를 확인한 뒤 전체 경로 목록을 바로 연다', async () => {
     const stopTrack = vi.fn();
     const getUserMedia = vi.fn(async () => ({ getTracks: () => [{ stop: stopTrack }] }));
     const mediaDevices = Object.getOwnPropertyDescriptor(navigator, 'mediaDevices');
@@ -116,6 +116,9 @@ describe('연결된 키오스크 사용자 흐름', () => {
     vi.mocked(api.understand).mockResolvedValue(envelope({
       status: 'matched', reasonCode: 'MATCHED', sort: null, clarification: null, candidates: [destination],
     }));
+    const routes = search();
+    routes.routeOptions.push({ ...routes.routeOptions[0], routeOptionId: 'option-2', routeNames: ['2번'] });
+    vi.mocked(api.search).mockResolvedValue(envelope(routes));
     try {
       await mount();
       await click('말로 찾기');
@@ -128,6 +131,15 @@ describe('연결된 키오스크 사용자 흐름', () => {
       expect(stopTrack).toHaveBeenCalledOnce();
       expect(api.transcribe).toHaveBeenCalledWith(expect.objectContaining({ type: 'audio/webm;codecs=opus' }), expect.any(AbortSignal));
       expect(api.understand).toHaveBeenCalledWith(ORIGIN_STATION_ID, transcript, expect.any(AbortSignal));
+      expect(heading()).toBe('이 장소가 맞나요?');
+      await click('맞아요');
+      expect(api.search).toHaveBeenCalledWith(ORIGIN_STATION_ID, destination.destinationId, expect.any(AbortSignal), 'transfers');
+      expect(heading()).toBe('다른 경로도 확인해 보세요');
+      expect(routeCards()).toHaveLength(2);
+      expect(button('최소 환승').getAttribute('aria-pressed')).toBe('true');
+      expect(button('최소 대기')).toBeDefined();
+      expect(button('최단 거리')).toBeDefined();
+      await click('이전');
       expect(heading()).toBe('이 장소가 맞나요?');
     } finally {
       if (mediaDevices) Object.defineProperty(navigator, 'mediaDevices', mediaDevices);

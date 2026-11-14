@@ -21,7 +21,7 @@ const browser = window as Window & {
 
 const LISTENING_WINDOW_MS = 3000;
 const RETRY_DELAY_MS = 150;
-const NO_SPEECH_MESSAGE = '들은 내용이 없어요. 다시 말하거나 글로 입력해 주세요.';
+const NO_SPEECH_MESSAGE = '들은 내용이 없어요.\n다시 말하거나 글로 입력해 주세요.';
 
 interface Props {
   disabled: boolean;
@@ -198,7 +198,7 @@ export function SpeechInput({ disabled, onListen, onText, onListeningChange, chi
   return <div className={s.destinationSpeech}>
     <div className={s.speechPrompt}>
       <p role="status">{available ? message : '이 브라우저에서는 글로 입력해 주세요.'}</p>
-      {!listening && children}
+      {!listening && message !== NO_SPEECH_MESSAGE && children}
     </div>
     {available && <button type="button" className={`${s.primary} ${s.destinationMic}`} data-listening={listening}
       disabled={disabled || listening} onClick={start}>

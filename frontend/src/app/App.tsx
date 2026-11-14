@@ -136,6 +136,7 @@ export function App() {
   const [query, setQuery] = useState('');
   const [assistantText, setAssistantText] = useState('');
   const [conversation, setConversation] = useState<ConversationData | null>(null);
+  const routePreference = state.assistant ? conversation?.sort : null;
   const [listening, setListening] = useState(false);
   const [showAssistantKeyboard, setShowAssistantKeyboard] = useState(false);
   const [showOtherRoutes, setShowOtherRoutes] = useState(false);
@@ -295,7 +296,7 @@ export function App() {
   }
   function confirmDestination(destination: Destination) {
     setShowOtherRoutes(false);
-    findRoutes(destination, conversation?.sort ?? 'transfers');
+    findRoutes(destination, routePreference ?? 'transfers');
   }
   function loadCategory(category: PlaceCategory, ordering: PlaceSort = 'walking') {
     patch({ selectedCategory: category, destination:null, results:[] });
@@ -321,7 +322,7 @@ export function App() {
     void run(async signal => {
       const backendSort = ordering === 'waiting' ? 'transfers' : ordering;
       const args = [ORIGIN_STATION_ID, destination.destinationId, signal, backendSort] as const;
-      const r = state.assistant ? await api.search(...args, true) : await api.search(...args);
+      const r = routePreference ? await api.search(...args, true) : await api.search(...args);
       if (!signal.aborted) patch({ destination, search: r.data, detail: null, live: null, guidance: null, print: null, screen: 'routes', dataMode: r.meta.dataMode });
     });
   }
@@ -357,8 +358,9 @@ export function App() {
   const high = state.highContrast;
   const noResults = state.screen === 'results' && !state.results.length;
   const noRoutes = state.screen === 'routes' && !state.busy && !state.search?.routeOptions.length;
-  const recommended = state.assistant && !showOtherRoutes && !noRoutes;
-  const preferenceSort = assistantSorts.find(([value]) => value === conversation?.sort && value !== 'transfers');
+  const recommended = Boolean(routePreference) && !showOtherRoutes && !noRoutes;
+  const preferenceSort = assistantSorts.find(([value]) => value === routePreference && value !== 'transfers');
+  const confirmationSubtitle = routePreference ? 'AI가 경로를 추천해 드려요.' : '목적지를 확인하면 이용할 수 있는 경로를 보여 드려요.';
   const confirmedCandidate = conversation?.candidates.length === 1 ? conversation.candidates[0] : undefined;
   const walkingDistance = state.assistant ? state.destination?.walkingDistanceMeters : null;
   const printPending = state.screen === 'print' && state.busy;
@@ -401,7 +403,7 @@ export function App() {
       <main className={`${s.content} ${screenClass}`} aria-busy={state.busy}>
         {state.screen !== 'home' && state.screen !== 'done' && <div className={s.screenTop}>
           {topBack && <button className={s.back} onClick={() => state.screen === 'assistant' ? (conversation ? restartAssistant() : reset())
-            : state.screen === 'routes' && state.assistant && showOtherRoutes ? setShowOtherRoutes(false)
+            : state.screen === 'routes' && routePreference && showOtherRoutes ? setShowOtherRoutes(false)
             : go(state.screen === 'print' ? 'detail' : state.screen === 'routes' ? routeBack : 'destinations')}>이전</button>}
           {printPending ? <div className={s.progressPlaceholder} /> : <Progress step={step} />}
         </div>}
@@ -418,7 +420,7 @@ export function App() {
         </>}
         {state.screen === 'assistant' && (conversation ? <>
           <Heading title={confirmedCandidate ? '이 장소가 맞나요?' : conversation.candidates.length ? '어디로 가시나요?' : '목적지를 확인해 주세요.'}
-            subtitle={conversation.candidates.length ? 'AI가 경로를 추천해 드려요.' : '장소 이름을 바꿔 다시 찾아보세요.'} />
+            subtitle={conversation.candidates.length ? confirmationSubtitle : '장소 이름을 바꿔 다시 찾아보세요.'} />
           <section className={s.voiceConfirmation} aria-label="목적지 확인">
             <img src="/assets/voice-location-pin.png" alt="" className={s.confirmationPin} />
             {confirmedCandidate ? <>
@@ -520,7 +522,7 @@ export function App() {
             </div>
           </div>
         </> : <>
-          <Heading title={recommended ? (conversation?.sort ? '조건에 맞는 경로를 찾았어요' : '추천 경로를 찾았어요')
+          <Heading title={recommended ? '조건에 맞는 경로를 찾았어요'
             : state.assistant ? '다른 경로도 확인해 보세요' : '어떤 경로로 이동하시겠어요?'}
             subtitle={recommended && sort === 'walking' ? '적게 걷고 싶은 조건을 고려해 추천했어요.'
               : sort === 'fastest' ? '예상 이동시간이 짧은 순서예요. 버스 대기시간은 제외돼요.'
@@ -530,7 +532,7 @@ export function App() {
           {!recommended && <div className={s.listHeading}>
             <span>이용 가능 경로</span>
             <span className={s.routeSort} aria-label="경로 정렬">
-              {(state.assistant && preferenceSort ? [...standardSorts, preferenceSort] : standardSorts).map(([value, label]) =>
+              {(preferenceSort ? [...standardSorts, preferenceSort] : standardSorts).map(([value, label]) =>
                 <button key={value} className={s.chip} aria-pressed={sort === value} disabled={state.busy}
                   title={value === 'waiting' ? '첫 버스 도착 예정 순' : value === 'fastest' ? '대기시간 제외' : undefined}
                   onClick={() => value === 'waiting' ? setSort(value) : state.destination && findRoutes(state.destination, value)}>{label}</button>)}

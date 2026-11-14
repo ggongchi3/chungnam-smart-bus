@@ -24,8 +24,7 @@
 .primary { display:flex; align-items:center; justify-content:center; border:0; border-radius:1.852cqw; min-height:var(--action-height); padding:2.5cqw 3.333cqw; color:var(--button-text); font-weight:700; font-size:3.704cqw; line-height:1.4; background:linear-gradient(var(--button-from),var(--button-to)); box-shadow:0 .556cqw 1.111cqw #32325d40,0 .278cqw .648cqw #0005; }
 .homeActions { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:3.704cqw; }
 .homeActions .primary { flex-direction:column; min-height:33.333cqw; gap:2.2cqw; padding:3cqw 2.5cqw; }
-.homeActions img, .homeActions svg { width:6.667cqw; height:6.667cqw; }
-.homeActions img { filter:brightness(0) invert(1); }
+.homeActions img { width:6.667cqw; height:6.667cqw; filter:brightness(0) invert(1); }
 .high .homeActions img { filter:brightness(0); }
 .homeActions strong { font-size:5.556cqw; word-break:keep-all; }
 .homeActions span { max-width:34cqw; font-size:3.333cqw; font-weight:500; line-height:1.35; word-break:keep-all; }
@@ -63,12 +62,12 @@
 .voiceControls > .helperButton { margin-top:2cqw; }
 .destinationSpeech { display:grid; }
 .speechPrompt { min-height:24.815cqw; }
-.speechPrompt > p { margin:4.907cqw 0 0; text-align:center; font-size:max(14px, 3.333cqw); color:var(--sub); }
+.speechPrompt > p { margin:4.907cqw 0 0; text-align:center; white-space:pre-line; font-size:max(14px, 3.333cqw); color:var(--sub); }
 .speechPrompt > p:empty { display:none; }
 .speechPrompt > .voiceExamples { padding-top:3.704cqw; }
 .speechPrompt > p:not(:empty) + .voiceExamples { padding-top:1cqw; }
 .destinationMic { min-height:15.556cqw; font-size:5.556cqw; gap:2cqw; }
-.destinationMic[data-listening=true] { background:#a8a8a8; color:#202020; opacity:1; }
+.destinationMic[data-listening=true] { background:#a8a8a8; color:#fff; opacity:1; }
 .high .destinationMic[data-listening=true] { background:#454545; color:var(--text); border:1px solid currentColor; }
 .voiceConfirmation { text-align:center; }
 .confirmationPin { margin:6cqw auto 0; }
@@ -79,6 +78,7 @@
 .helperButton { min-height:max(44px, 10cqw); padding:1.5cqw 2.5cqw; border:1px solid var(--control-border); border-radius:1.852cqw; background:var(--surface); color:var(--text); font-size:max(15px, 3.704cqw); font-weight:600; line-height:1.4; word-break:keep-all; }
 .helperButton:disabled { opacity:.5; }
 .micIcon { width:1.15em; height:1.15em; flex-shrink:0; }
+.high .micIcon { filter:brightness(0); }
 .routeReason { display:block; padding:2.5cqw 3cqw; margin:2cqw 0 0; border-left:3px solid var(--accent); color:var(--text); text-align:left; font-size:max(15px, 3.704cqw); line-height:1.5; word-break:keep-all; }
 .comparisonCard[aria-pressed=true] .routeReason { color:var(--selected-text); border-color:currentColor; }
 .recommendationScreen .routeList { margin-top:5.556cqw; }
